@@ -1,3 +1,9 @@
+# NEW README
+
+- This [netron](https://github.com/lutzroeder/netron) project is fetched as a git-submodule into `vsdk` repository.
+- To develop `netron`, please read [**DEVELOPMENT.md**](../netron/DEVELOPMENT.md)
+
+---
 
 <p align='center'><img width='400' src='media/logo.png'/></p>
 
