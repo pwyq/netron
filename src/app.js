@@ -477,6 +477,19 @@ class Application {
             {
                 label: 'Report &Issues',
                 click: () => { electron.shell.openExternal('https://www.github.com/' + this.package.repository + '/issues/new'); }
+            },
+            {
+                label: '&Github Repo',
+                click: () => { electron.shell.openExternal('https://www.github.com/' + this.package.repository); }
+            },
+            { type: 'separator' },
+            {
+                label: 'VSKY Netron &JIRA (test)', // what are `&`doing here? 
+                click: () => { electron.shell.openExternal('https://jira.sw.nxp.com/browse/VSKY-1275'); }
+            },
+            {
+                label: 'Netron Dev &Repo (test)',
+                click: () => { electron.shell.openExternal('https://github.com/pwyq/netron/tree/dev'); }
             }
         ];
 
