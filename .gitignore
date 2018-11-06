@@ -4,5 +4,6 @@ build/*
 node_modules/*
 third_party/*
 test/data/*
+tools/metadata/testenv/*
 package-lock.json
 *.pyc

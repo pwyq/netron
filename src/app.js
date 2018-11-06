@@ -484,7 +484,7 @@ class Application {
             },
             { type: 'separator' },
             {
-                label: 'VSKY Netron &JIRA (test)', // what are `&`doing here? 
+                label: 'VSKY Netron &JIRA (test)', // what are `&`doing here?
                 click: () => { electron.shell.openExternal('https://jira.sw.nxp.com/browse/VSKY-1275'); }
             },
             {
