@@ -76,13 +76,13 @@ class NodeSidebar {
 
     constructor(node, host) {
         var keys = Object.keys(node);
-        // console.log("node properties = " + keys);
+        console.log("node properties = " + keys);
         var tmp1 = Object.keys(node._graph);
         var tmp2 = Object.keys(node._node);
         var tmp3 = Object.keys(node._attributes);
-        // console.log("node._graph = " + tmp1);
-        // console.log("node._node = " + tmp2);
-        // console.log("node._attributes = " + tmp3);
+        console.log("node._graph = " + tmp1);
+        console.log("node._node = " + tmp2);
+        console.log("node._attributes = " + tmp3);
         
         this._host = host;
         this._node = node;

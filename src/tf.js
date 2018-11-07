@@ -286,7 +286,7 @@ tf.Graph = class {
             nodes.forEach((node) => {
                 for (var i = 0; i < node.input.length; i++)
                 {
-                    // console.log("node.input[i] = " + node.input[i]);
+                    console.log("node.input[i] = " + node.input[i]);
                     var split = node.input[i].split(':', 2);
                     var inputName = split[0];
                     if (!inputName.startsWith('^')) {

@@ -3419,7 +3419,7 @@
           "type": "type"
         },
         {
-          "default": 9.999999747378752e-06,
+          "default": 1e-05,
           "name": "tolerance",
           "type": "float"
         }
@@ -14720,6 +14720,10 @@
         {
           "name": "element_shape",
           "typeAttr": "shape_type"
+        },
+        {
+          "name": "max_num_elements",
+          "type": 3
         }
       ],
       "outputs": [
@@ -17912,7 +17916,7 @@
           "type": "type"
         },
         {
-          "default": 9.999999747378752e-05,
+          "default": 0.0001,
           "description": "A small float number added to the variance of x.",
           "name": "epsilon",
           "type": "float"
@@ -18009,7 +18013,7 @@
           "type": "type"
         },
         {
-          "default": 9.999999747378752e-05,
+          "default": 0.0001,
           "description": "A small float number added to the variance of x.",
           "name": "epsilon",
           "type": "float"
@@ -18124,7 +18128,7 @@
           "type": "type"
         },
         {
-          "default": 9.999999747378752e-05,
+          "default": 0.0001,
           "description": "A small float number added to the variance of x.",
           "name": "epsilon",
           "type": "float"
@@ -18239,7 +18243,7 @@
           "type": "type"
         },
         {
-          "default": 9.999999747378752e-05,
+          "default": 0.0001,
           "description": "A small float number added to the variance of x.",
           "name": "epsilon",
           "type": "float"
@@ -21486,7 +21490,7 @@
     "schema": {
       "attributes": [
         {
-          "default": 0.20000000298023224,
+          "default": 0.2,
           "name": "alpha",
           "type": "float"
         },
@@ -21537,7 +21541,7 @@
     "schema": {
       "attributes": [
         {
-          "default": 0.20000000298023224,
+          "default": 0.2,
           "name": "alpha",
           "type": "float"
         },
@@ -26683,7 +26687,7 @@
           "type": "int"
         },
         {
-          "default": 0.800000011920929,
+          "default": 0.8,
           "description": "The maximum ratio between number of entries and number of\nbuckets before growing the table. Must be between 0 and 1.",
           "name": "max_load_factor",
           "type": "float"
@@ -26755,7 +26759,7 @@
           "type": "int"
         },
         {
-          "default": 0.800000011920929,
+          "default": 0.8,
           "description": "The maximum ratio between number of entries and number of\nbuckets before growing the table. Must be between 0 and 1.",
           "name": "max_load_factor",
           "type": "float"
@@ -31903,13 +31907,13 @@
           "type": "float"
         },
         {
-          "default": 9.999999747378752e-06,
+          "default": 1e-05,
           "description": "A small float number to avoid dividing by 0.",
           "name": "variance_epsilon",
           "type": "float"
         },
         {
-          "default": 0.0010000000474974513,
+          "default": 0.001,
           "description": "Minimum value of `y_max - y_min`",
           "name": "min_separation",
           "type": "float"
@@ -41865,7 +41869,7 @@
           "type": "int"
         },
         {
-          "default": 0.10000000149011612,
+          "default": 0.1,
           "description": "The cropped area of the image must contain at least this\nfraction of any bounding box supplied. The value of this parameter should be\nnon-negative. In the case of 0, the cropped area does not need to overlap\nany of the bounding boxes supplied.",
           "name": "min_object_covered",
           "type": "float"
@@ -41873,7 +41877,7 @@
         {
           "default": [
             0.75,
-            1.3300000429153442
+            1.33
           ],
           "description": "The cropped area of the image must have an aspect ratio =\nwidth / height within this range.",
           "name": "aspect_ratio_range",
@@ -41881,7 +41885,7 @@
         },
         {
           "default": [
-            0.05000000074505806,
+            0.05,
             1.0
           ],
           "description": "The cropped area of the image must contain a fraction of the\nsupplied image within this range.",
@@ -41979,7 +41983,7 @@
         {
           "default": [
             0.75,
-            1.3300000429153442
+            1.33
           ],
           "description": "The cropped area of the image must have an aspect ratio =\nwidth / height within this range.",
           "name": "aspect_ratio_range",
@@ -41987,7 +41991,7 @@
         },
         {
           "default": [
-            0.05000000074505806,
+            0.05,
             1.0
           ],
           "description": "The cropped area of the image must contain a fraction of the\nsupplied image within this range.",
@@ -45518,7 +45522,7 @@
           "type": "int"
         },
         {
-          "default": 0.0010000000474974513,
+          "default": 0.001,
           "description": "Threshold for word occurrence. Words that appear with higher\nfrequency will be randomly down-sampled. Set to 0 to disable.",
           "name": "subsample",
           "type": "float"
