@@ -117,7 +117,7 @@ setuptools.setup(
             'cntk.js', 'cntk-metadata.json', 'cntk-proto.js',
             'pytorch.js', 'pytorch-metadata.json', 'pickle.js',
             'sklearn.js', 'sklearn-metadata.json',
-            'tf.js', 'tf-metadata.json', 'tf-proto.js', 
+            'tf.js', 'tf-metadata.json', 'tf-proto.js', 'tf-metadata-test.json',
             'tflite.js', 'tflite-metadata.json', 'tflite-schema.js', 
             'view-browser.html', 'view-browser.js',
             'view-grapher.css', 'view-grapher.js',

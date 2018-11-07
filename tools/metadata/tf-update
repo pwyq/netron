@@ -74,7 +74,8 @@ if [ ${__build} ]; then
 fi
 
 if [ ${__update} ]; then
-    echo "Generate 'tf-metadata.json'"
+    # echo "Generate 'tf-metadata.json'"
+    echo "Generate 'tf-metadata-test.json'"
     protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/attr_value.proto --python_out=${tools}/metadata
     protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/tensor.proto --python_out=${tools}/metadata
     protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/types.proto --python_out=${tools}/metadata
