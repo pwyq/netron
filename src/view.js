@@ -796,6 +796,7 @@ view.View = class {
     }
     
     showNodeProperties(node, input) {
+        console.log("\nNode is: " + node);
         if (node) {
             var view = new NodeSidebar(node, this._host);
             view.on('show-documentation', (sender, e) => {
