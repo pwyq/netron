@@ -79,6 +79,7 @@ pytorch.ModelFactory = class {
             constructorTable['torch.nn.modules.batchnorm.BatchNorm1d'] = function () {};
             constructorTable['torch.nn.modules.batchnorm.BatchNorm2d'] = function () {};
             constructorTable['torch.nn.modules.batchnorm.BatchNorm3d'] = function () {};
+            constructorTable['torch.nn.modules.container.ModuleList'] = function () {};
             constructorTable['torch.nn.modules.container.Sequential'] = function () {};
             constructorTable['torch.nn.modules.conv.Conv1d'] = function () {};
             constructorTable['torch.nn.modules.conv.Conv2d'] = function () {};
@@ -99,6 +100,7 @@ pytorch.ModelFactory = class {
             constructorTable['torch.nn.modules.pooling.MaxPool2d'] = function() {};
             constructorTable['torch.nn.modules.rnn.LSTM'] = function () {};
             constructorTable['torch.nn.modules.sparse.Embedding'] = function () {};
+            constructorTable['torch.nn.modules.upsampling.Upsample'] = function() {};
             constructorTable['torchvision.models.alexnet.AlexNet'] = function () {};
             constructorTable['torchvision.models.densenet.DenseNet'] = function () {};
             constructorTable['torchvision.models.densenet._DenseBlock'] = function () {};
@@ -121,6 +123,7 @@ pytorch.ModelFactory = class {
             constructorTable['torch.nn.parameter.Parameter'] = function(data, requires_grad) { this.data = data; this.requires_grad = requires_grad; };
             constructorTable['torch.ByteStorage'] = function (size) { this.size = size; this.dataTypeSize = 1; this.dataType = 'uint8'; };
             constructorTable['torch.LongStorage'] = function (size) { this.size = size; this.dataTypeSize = 4; this.dataType = 'int64'; };
+            constructorTable['torch.HalfStorage'] = function (size) { this.size = size; this.dataTypeSize = 2; this.dataType = 'float16'; };
             constructorTable['torch.FloatStorage'] = function (size) { this.size = size; this.dataTypeSize = 4; this.dataType = 'float32'; };
             constructorTable['torch.DoubleStorage'] = function (size) { this.size = size; this.dataTypeSize = 8; this.dataType = 'float64'; };
             constructorTable['torch.FloatTensor'] = function () {
@@ -164,6 +167,13 @@ pytorch.ModelFactory = class {
                 obj.backward_hooks =  backward_hooks;
                 return obj;
             };
+            functionTable['torch._utils._rebuild_parameter'] = function(data, requires_grad, backward_hooks) {
+                var obj = {};
+                obj.__type__ = 'torch.nn.parameter.Parameter';
+                constructorTable[obj.__type__].apply(obj, [ data, requires_grad ]);
+                obj.backward_hooks = backward_hooks;
+                return obj;
+            };
 
             var function_call = (name, args) => {
                 var func = functionTable[name];
@@ -176,6 +186,7 @@ pytorch.ModelFactory = class {
                     constructor.apply(obj, args);
                 }
                 else {
+                    debugger;
                     host.exception(new pytorch.Error("Unknown function '" + name + "' in '" + identifier + "'."), false);
                 }
                 return obj;
@@ -600,6 +611,11 @@ pytorch.Tensor = class {
                     case 'uint8':
                         results.push(context.dataView.getUint8(context.index, this._littleEndian));
                         context.index += 1;
+                        context.count++;
+                        break;
+                    case 'float16':
+                        results.push(context.dataView.getFloat16(context.index, this._littleEndian));
+                        context.index += 2;
                         context.count++;
                         break;
                     case 'float32':

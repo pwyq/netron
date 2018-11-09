@@ -128,36 +128,42 @@ function loadModel(target, item, callback) {
             callback(new Error("ERROR: Invalid model format '" + model.format + "'."), null);
             return;
         }
-        else {
-            try {
-                model.graphs.forEach((graph) => {
-                    graph.inputs.forEach((input) => {
+        if (item.producer && model.producer != item.producer) {
+            callback(new Error("ERROR: Invalid producer '" + model.producer + "'."), null);
+            return;
+        }
+        try {
+            model.graphs.forEach((graph) => {
+                graph.inputs.forEach((input) => {
+                });
+                graph.outputs.forEach((output) => {
+                });
+                graph.nodes.forEach((node) => {
+                    node.attributes.forEach((attribute) => {
+                        var value = view.View.formatAttributeValue(attribute.value, attribute.type)
+                        if (value && value.length > 1000) {
+                            value = value.substring(0, 1000) + '...';
+                        }
                     });
-                    graph.outputs.forEach((output) => {
+                    node.inputs.forEach((input) => {
+                        input.connections.forEach((connection) => {
+                            if (connection.initializer) {
+                                var value = connection.initializer.toString();
+                            }
+                        });
                     });
-                    graph.nodes.forEach((node) => {
-                        node.attributes.forEach((attribute) => {
-                        });
-                        node.inputs.forEach((input) => {
-                            input.connections.forEach((connection) => {
-                                if (connection.initializer) {
-                                    var value = connection.initializer.toString();
-                                }
-                            });
-                        });
-                        node.outputs.forEach((output) => {
-                            output.connections.forEach((connection) => {
-                            });
+                    node.outputs.forEach((output) => {
+                        output.connections.forEach((connection) => {
                         });
                     });
                 });
-            }
-            catch (error) {
-                callback(error, null);
-                return;
-            }
-            callback(null, model);
+            });
         }
+        catch (error) {
+            callback(error, null);
+            return;
+        }
+        callback(null, model);
     });
 }
 
@@ -227,7 +233,7 @@ function request(location, cookie, callback) {
         response.on("data", (chunk) => {
             position += chunk.length;
             if (length >= 0) {
-                var label = location.length > 70 ? location.substring(0, 67) + '...' : location; 
+                var label = location.length > 70 ? location.substring(0, 66) + '...' : location; 
                 process.stdout.write('  (' + ('  ' + Math.floor(100 * (position / length))).slice(-3) + '%) ' + label + '\r');
             }
             else {
@@ -250,7 +256,8 @@ function request(location, cookie, callback) {
 
 function download(folder, targets, sources, completed, callback) {
     if (targets.every((file) => fs.existsSync(folder + '/' + file))) {
-        callback(null, targets);
+        targets.forEach((target) => completed.push(target));
+        callback(null, completed);
         return;
     }
     var source = '';

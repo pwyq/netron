@@ -1,8 +1,12 @@
 
 from __future__ import unicode_literals
 
+import onnx
+print(onnx.__file__)
+
 import json
 import io
+import os
 import sys
 
 from onnx import defs
@@ -190,7 +194,63 @@ def generate_json(schemas, json_file):
             fout.write(line)
             fout.write('\n')
 
-if __name__ == '__main__':
+def metadata():
     schemas = defs.get_all_schemas_with_history()
     schemas = sorted(schemas, key=lambda schema: schema.name)
-    generate_json(schemas, '../../src/onnx-metadata.json')
+    generate_json(schemas, '../src/onnx-metadata.json')
+
+def convert():
+    file = sys.argv[2];
+    base, extension = os.path.splitext(file)
+    if extension == '.mlmodel':
+        import coremltools
+        import onnxmltools
+        coreml_model = coremltools.utils.load_spec(file)
+        onnx_model = onnxmltools.convert.convert_coreml(coreml_model)
+        onnxmltools.utils.save_model(onnx_model, base + '.onnx')
+    elif extension == '.h5':
+        import keras
+        import onnxmltools
+        keras_model = keras.models.load_model(file)
+        onnx_model = onnxmltools.convert.convert_keras(keras_model)
+        onnxmltools.utils.save_model(onnx_model, base + '.onnx')
+    elif extension == '.pkl':
+        from sklearn.externals import joblib
+        import onnxmltools
+        sklearn_model = joblib.load(file)
+        onnx_model = onnxmltools.convert.convert_sklearn(sklearn_model)
+        onnxmltools.utils.save_model(onnx_model, base + '.onnx')
+    base, extension = os.path.splitext(file)
+    if extension == '.onnx':
+        import onnx
+        from google.protobuf import text_format
+        onnx_model = onnx.load(file)
+        text = text_format.MessageToString(onnx_model)
+        with open(base + '.pbtxt', 'w') as text_file:
+            text_file.write(text)
+
+def optimize():
+    import onnx
+    from onnx import optimizer
+    file = sys.argv[2];
+    base, extension = os.path.splitext(file)
+    onnx_model = onnx.load(file)
+    passes = optimizer.get_available_passes()
+    optimized_model = optimizer.optimize(onnx_model, passes)
+    onnx.save(optimized_model, base + '.optimized.onnx')
+
+
+def infer():
+    import onnx
+    import onnx.shape_inference
+    from onnx import shape_inference
+    file = sys.argv[2];
+    base, extension = os.path.splitext(file)
+    onnx_model = onnx.load(base + '.onnx')
+    onnx_model = onnx.shape_inference.infer_shapes(onnx_model);
+    onnx.save(onnx_model, base + '.shape.onnx')
+
+if __name__ == '__main__':
+    command_table = { 'metadata': metadata, 'convert': convert, 'optimize': optimize, 'infer': infer }
+    command = sys.argv[1];
+    command_table[command]()
