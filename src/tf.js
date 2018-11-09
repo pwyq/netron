@@ -286,7 +286,7 @@ tf.Graph = class {
             nodes.forEach((node) => {
                 for (var i = 0; i < node.input.length; i++)
                 {
-                    console.log("node.input[i] = " + node.input[i]);
+                    // console.log("node.input[i] = " + node.input[i]);
                     var split = node.input[i].split(':', 2);
                     var inputName = split[0];
                     if (!inputName.startsWith('^')) {
@@ -464,8 +464,61 @@ tf.Node = class {
             Object.keys(node.attr).forEach((name) => {
                 var value = node.attr[name];
                 this._attributes.push(new tf.Attribute(name, value, node.op, metadata));
+                // console.log("name="+name+", value="+value+", node.op="+node.op+", metadata="+metadata);
+                // var str = JSON.stringify(metadata);
+                // console.log(str);
+                // console.log(typeof name);       // string
+                // console.log(typeof value);      // object
+                // console.log(typeof node.op);    // string
+                // console.log(typeof metadata);   // object
+                
+                // if (name == 'data_format') {
+                //     console.log("\n data_format:");
+                //     console.log(node.attr[name]);
+                // }
+                // if (name == 'padding') {
+                //     console.log("\n padding:");
+                //     console.log(node.attr[name]);
+                // }
+                // if (name == 'hardware_target') {
+                //     console.log("\n hardware_target:");
+                //     console.log(node.attr[name]);
+                // }
+
+                // TODO: IMPORTANT hardcode hw target and quantization type
+                // this._attributes.push(new tf.Attribute('hardware_target', null, ))
+                // if (!node.attr.includes('hardware_target')) {
+                //     this._attributes.push(new tf.Attribute('hardware_target', null, node.op, metadata));
+                // }
+
+                // if (!node.attr.includes('quantization_type')) {
+                //     this._attributes.push(new tf.Attribute('quantization_type', null, node.op, metadata));
+                // }
+                // console.log("node.attr = " + node.attr);
+                // console.log("Object.keys(node.attr) = " + Object.keys(node.attr));                   // TODO
+                // console.log("type of Object.keys(node.attr) = " + typeof(Object.keys(node.attr)));
+
+                // if (!('hardware_target' in node.attr)) {
+                    // console.log("hhhhhhhhh")
+                    // var tmpName = 'hardware_target';
+                    // this._attributes.push(new tf.Attribute(tmpName, undefined, node.op, metadata));
+                // }
+
+                // if (!('quantization_type' in node.attr)) {
+                //     this._attributes.push(new tf.Attribute('quantization_type', undefined, node.op, metadata));
+                // }
             });
+
+
+            // for (var i = 0; i < this._attributes.length; i++) {
+            //     console.log(this._attributes[i]);
+            // }
         }
+    }
+
+    set addCustomAttributes(customAttribute) {
+        // customAttribute needs to include name, value, node.op, metadata
+        return undefined;
     }
 
     get graph() {
@@ -577,6 +630,8 @@ tf.Attribute = class {
         else if (schema && schema.type) {
             this._type = schema.type;
         }
+        // Check tensorflow attr_value
+        // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/framework/attr_value.proto
         if (value.hasOwnProperty('type')) {
             this._value = () => tf.Tensor.formatDataType(value.type);
             this._type = 'type';
@@ -684,6 +739,7 @@ tf.Attribute = class {
             this._type = 'shape[]';
         }
     }
+
 
     get name() {
         return this._name;
@@ -1262,7 +1318,8 @@ tf.OperatorMetadata = class {
             callback(null, tf.OperatorMetadata.operatorMetadata);
         }
         else {
-            host.request(null, 'tf-metadata.json', 'utf-8', (err, data) => {
+            // host.request(null, 'tf-metadata.json', 'utf-8', (err, data) => {
+            host.request(null, 'tf-metadata-test.json', 'utf-8', (err, data) => {
                 tf.OperatorMetadata.operatorMetadata = new tf.OperatorMetadata(data);
                 callback(null, tf.OperatorMetadata.operatorMetadata);
             });

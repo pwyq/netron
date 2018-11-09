@@ -36,18 +36,23 @@ view.View = class {
         document.documentElement.style.overflow = 'hidden';
         document.body.scroll = 'no';        
         document.getElementById('model-properties-button').addEventListener('click', (e) => {
+            console.log("you clicked here 10");
             this.showModelProperties();
         });
         document.getElementById('zoom-in-button').addEventListener('click', (e) => {
+            console.log("you clicked here 11");
             this.zoomIn();
         });
         document.getElementById('zoom-out-button').addEventListener('click', (e) => {
+            console.log("you clicked here 9");
             this.zoomOut();
         });
         document.getElementById('toolbar').addEventListener('mousewheel', (e) => {
+            console.log("you clicked here 15");
             this.preventZoom(e);
         });
         document.getElementById('sidebar').addEventListener('mousewheel', (e) => {
+            console.log("you clicked here 16");
             this.preventZoom(e);
         });
         document.addEventListener('keydown', (e) => {
@@ -140,6 +145,7 @@ view.View = class {
     toggleDetails() {
         this._showDetails = !this._showDetails;
         this.show('Spinner');
+        console.log("you click 30");
         this.updateGraph(this._model, this._activeGraph, (err) => {
             if (err) {
                 this.error('Graph update failed.', err);
@@ -154,6 +160,7 @@ view.View = class {
     toggleNames() {
         this._showNames = !this._showNames;
         this.show('Spinner');
+        console.log("you click 20");
         this.updateGraph(this._model, this._activeGraph, (err) => {
             if (err) {
                 this.error('Graph update failed.', err);
@@ -719,7 +726,9 @@ view.View = class {
         }
     }
 
+    // TODO TODO: following will be called after you pressed the export key
     export(file) {
+        console.log("export file=" + file);
         var extension = '';
         var lastIndex = file.lastIndexOf('.');
         if (lastIndex != -1) {
@@ -729,7 +738,7 @@ view.View = class {
             var graphElement = document.getElementById('graph');
             var exportElement = graphElement.cloneNode(true);
             this.applyStyleSheet(exportElement, 'view-grapher.css');
-            exportElement.setAttribute('id', 'export');
+            exportElement.setAttribute('id', 'export-pic');
             exportElement.removeAttribute('width');
             exportElement.removeAttribute('height');
             exportElement.style.removeProperty('opacity');
@@ -783,6 +792,40 @@ view.View = class {
                 document.body.insertBefore(imageElement, document.body.firstChild);
             }
         }
+
+        if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
+            // TODO TODO call python script here
+            console.log("file = " + file);
+            // let python = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/test2.py']))
+            // let py = spawn('python', [path.join(app.getAppPath(), 'python_scripts/test2.py')])
+            console.log("__dirname = " + __dirname);
+            // let python = spawn('python', [path.join(__dirname, '../python_scripts/', 'test2.py')]);
+            // console.log("spawn..........................................");
+            // python.on('close', function() {
+            //     console.log("python ends");
+            // });
+            // var pythonshell = require('python-shell');
+            // pythonshell.send('hhhhhhhhhhhhhhhhhheeeeeeeeeeeeeeeeeeeeeellllooooooooooo');
+            // pythonshell.run('../python_scripts/test2.py', options, function(err, result) {
+            //     console.log("err"+err);
+            //     console.log("result"+result);
+            // });
+            const { spawn } = require('child_process');
+            const ls = spawn('ls', ['-lh', '/usr']);
+            
+            ls.stdout.on('data', (data) => {
+              console.log(`stdout: ${data}`);
+            });
+            
+            ls.stderr.on('data', (data) => {
+              console.log(`stderr: ${data}`);
+            });
+            
+            ls.on('close', (code) => {
+              console.log(`child process exited with code ${code}`);
+            });
+
+        }
     }
 
     showModelProperties() {
@@ -796,7 +839,7 @@ view.View = class {
     }
     
     showNodeProperties(node, input) {
-        console.log("\nNode is: " + node);
+        // console.log("\nNode is: " + node);
         if (node) {
             var view = new NodeSidebar(node, this._host);
             view.on('show-documentation', (sender, e) => {
@@ -805,6 +848,7 @@ view.View = class {
             view.on('export-tensor', (sender, tensor) => {
                 this._host.require('numpy', (err) => {
                     if (!err) {
+                        // TODO: note here it allows user to export the tensor content to npy file via an upper right button.
                         var defaultPath = tensor.name ? tensor.name.split('/').join('_').split(':').join('_').split('.').join('_') : 'tensor';
                         this._host.save('NumPy Array', 'npy', defaultPath, (file) => {
                             try {

@@ -75,21 +75,32 @@ class Sidebar {
 class NodeSidebar {
 
     constructor(node, host) {
-        var keys = Object.keys(node);
-        console.log("node properties = " + keys);
-        var tmp1 = Object.keys(node._graph);
-        var tmp2 = Object.keys(node._node);
-        var tmp3 = Object.keys(node._attributes);
-        console.log("node._graph = " + tmp1);
-        console.log("node._node = " + tmp2);
-        console.log("node._attributes = " + tmp3);
+        // var keys = Object.keys(node);
+        // console.log("node properties = " + keys);
+        // var tmp1 = Object.keys(node._graph);
+        // var tmp2 = Object.keys(node._node);
+        // var tmp3 = Object.keys(node._attributes);
+        // console.log("node._graph = " + tmp1);
+        // console.log("node._node = " + tmp2);
+        // console.log("node._attributes = " + tmp3);
+
         
-        this._host = host;
-        this._node = node;
-        this._elements = [];
-        this._attributes = [];
-        this._inputs = [];
-        this._outputs = [];
+        
+        
+        // TODO: note attributes are not yet pushed at here. So nothing will show up here
+        // var tmp4 = Object.keys(node._node.attributes);
+        // console.log("attributes = " + tmp4);
+        // for (var i = 0; i < node._node.attributes.length; i++) {
+            //     console.log("attributes[" + i + "] = " + node._node.attributes[i]);
+            // }
+            
+            this._host = host;
+            this._node = node;
+            this._elements = [];
+            this._attributes = [];
+            this._inputs = [];
+            this._outputs = [];
+            this._customAttributes = [];
 
         var operatorElement = document.createElement('div');
         operatorElement.className = 'sidebar-view-title';
@@ -102,36 +113,58 @@ class NodeSidebar {
             documentationButton.className = 'sidebar-view-title-button';
             documentationButton.innerText = '?';
             documentationButton.addEventListener('click', (e) => {
+                console.log("you clicked here 5");  // the ? mark button for documentation
                 this._raise('show-documentation', null);
             });
             operatorElement.appendChild(documentationButton);
         }
 
         if (node.name) {
+            // console.log("name = " + name);
             this.addProperty('name', new ValueTextView(node.name));
         }
 
         if (node.domain) {
+            // console.log("domain = " + domain);
             this.addProperty('domain', new ValueTextView(node.domain));
         }
 
         if (node.description) {
+            // console.log("description = " + description);
             this.addProperty('description', new ValueTextView(node.description));
         }
 
         if (node.device) {
+            // console.log("device = " + device);
             this.addProperty('device', new ValueTextView(node.device));
         }
 
+        // ===========================================
         // if (node.hardwareTarget) {
         //     this.addProperty('hardwareTarget', new ValueTextView(node.hardwareTarget));
         // }
+        // else {
+        //     console.log(node + "doesn't have hardware target");
+        // }
 
+        // if (node.quantizationType) {
+        //     this.addProperty('')
+        // }
+        // ===========================================
+        
         var attributes = node.attributes;
         if (attributes && attributes.length > 0) {
             this.addHeader('Attributes');
             attributes.forEach((attribute) => {
                 this.addAttribute(attribute.name, attribute);
+                // console.log(Object.keys(attribute._value));
+                
+                // console.log("attribute.name = " + attribute.name + ", attribute = " + attribute);
+                // attribute.name = ksize, attribute = [object Object]
+                // attribute.name = padding, attribute = [object Object]
+                // attribute.name = T, attribute = [object Object]
+                // attribute.name = strides, attribute = [object Object]
+                // attribute.name = data_format, attribute = [object Object]
             });
         }
 
@@ -150,11 +183,36 @@ class NodeSidebar {
                 this.addOutput(output.name, output);
             });
         }
+        // ===========================================
+        // var customAttributes = node.customAttributes;
+        // if (customAttributes && customAttributes.length > 0) {
+        //     this.addHeader('Custom Attributes');
+        //     customAttributes.forEach((customAttribute) => {
+        //         this.addCustom(customAttribute.name, customAttribute);
+        //     });
+        // }
+        // ===========================================
 
         var divider = document.createElement('div');
         divider.setAttribute('style', 'margin-bottom: 20px');
         this._elements.push(divider);
+
+        // this.printNodeInfo(this._node);
     }
+
+    // printNodeInfo(node) {
+    //     nodeName = this._node.name
+    //     nodeOp = this._node.op
+    //     nodeInput = this._node.input
+    //     nodeOutput = this._node.output
+    //     nodeAttr = this._node.attr
+
+    //     console.log("User selcted node: "+nodeName)
+    //     console.log("node Operation = " + nodeOp)
+    //     console.log("node Input = " + nodeInput)
+    //     console.log("node Output = " + nodeOutput)
+    //     console.log("node Attribute = " + nodeAttr)
+    // }
 
     get elements() {
         return this._elements;
@@ -172,6 +230,7 @@ class NodeSidebar {
         this._elements.push(item.element);
     }
 
+    // TODO: IMPORTANT
     addAttribute(name, attribute) {
         var item = new NameValueView(name, new NodeAttributeView(attribute));
         this._attributes.push(item);
@@ -197,6 +256,13 @@ class NodeSidebar {
             this._elements.push(item.element);
         }
     }
+    // ===========================================
+    // addCustom(name, customAttribute) {
+    //     var customItem = new NameValueView(name, new NodeCustomAttributeView(customAttribute));
+    //     this._customAttributes.push(customItem);
+    //     this._customElements.push(customItem.customElement);
+    // }
+    // ===========================================
 
     toggleInput(name) {
         this._inputs.forEach((input) => {
@@ -285,6 +351,7 @@ class ValueTextView {
 
 class NodeAttributeView {
 
+    // TODO: IMPORTANT
     constructor(attribute) {
         this._attribute = attribute;
         this._element = document.createElement('div');
@@ -295,8 +362,10 @@ class NodeAttributeView {
             this._expander.className = 'sidebar-view-item-value-expander';
             this._expander.innerText = '+';
             this._expander.addEventListener('click', (e) => {
+                console.log("you clicked here 6");  // the plus button for revealing attributes
                 this.toggle();
             });
+            // TODO: need to add a dropdown value here for user to select hardware target or quantization type
             this._element.appendChild(this._expander);
         }
         var value = '';
@@ -319,6 +388,7 @@ class NodeAttributeView {
         return [ this._element ];
     }
 
+    // TODO: add a line to add hw target
     toggle() {
         if (this._expander.innerText == '+') {
             this._expander.innerText = '-';
@@ -406,6 +476,7 @@ class ConnectionView {
             this._expander.className = 'sidebar-view-item-value-expander';
             this._expander.innerText = '+';
             this._expander.addEventListener('click', (e) => {
+                console.log("you clicked here 7");  // the plus button for revealing input tensor
                 this.toggle();
             });
             this._element.appendChild(this._expander);
@@ -433,6 +504,7 @@ class ConnectionView {
         return this._element;
     }
 
+    // TODO: IMPORTANT
     toggle() {
         if (this._expander) {
             if (this._expander.innerText == '+') {
@@ -504,6 +576,7 @@ class ConnectionView {
                         this._saveButton.className = 'sidebar-view-item-value-expander';
                         this._saveButton.innerHTML = '&#x1F4BE;';
                         this._saveButton.addEventListener('click', (e) => {
+                            console.log("you clicked here 8");
                             this._raise('export-tensor', initializer);
                         });
                         this._element.appendChild(this._saveButton);
@@ -609,6 +682,7 @@ class ModelSidebar {
                 graphButton.id = graph.name;
                 graphButton.innerText = '\u21a9';
                 graphButton.addEventListener('click', (e) => {
+                    console.log("you clicked here 1");
                     this._raise('update-active-graph', e.target.id);
                 });
                 graphTitleElement.appendChild(graphButton);
@@ -710,6 +784,7 @@ class GraphOperatorListView {
         this._expander.className = 'sidebar-view-item-value-expander';
         this._expander.innerText = '+';
         this._expander.addEventListener('click', (e) => {
+            console.log("you clicked here 2");
             this.toggle();
         });
 
@@ -832,6 +907,7 @@ In domain <tt>{{{domain}}}</tt> since version <tt>{{{since_version}}}</tt> at su
         var document = parser.parseFromString(html, 'text/html');
         var element = document.firstChild;
         element.addEventListener('click', (e) => {
+            console.log("you clicked here 3");
             if (e.target && e.target.href) {
                 var link = e.target.href;
                 if (link.startsWith('http://') || link.startsWith('https://')) {
@@ -880,6 +956,7 @@ class FindSidebar {
         });
         this._resultElement = document.createElement('ol');
         this._resultElement.addEventListener('click', (e) => {
+            console.log("you clicked here 4");
             this.select(e);
         });
         this._contentElement.appendChild(this._searchElement);

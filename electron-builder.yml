@@ -2,6 +2,8 @@ appId: com.lutzroeder.netron
 productName: Netron
 files:
   - 'src/**/*'
+extraResources:
+  - 'python_scripts/*'
 directories:
   buildResources: setup
   output: ./build/electron

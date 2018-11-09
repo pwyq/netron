@@ -27,6 +27,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 '.html': 'text/html',
                 '.js':   'text/javascript',
                 '.css':  'text/css',
+                '.txt':  'text/plain',
                 '.png':  'image/png',
                 '.gif':  'image/gif',
                 '.jpg':  'image/jpeg',

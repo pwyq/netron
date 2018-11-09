@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const process = require('process');
 const url = require('url');
+const spawn = require('child_process');
 
 class Application {
 
@@ -181,7 +182,37 @@ class Application {
         });
     }
 
-    _export() {
+    _exportJSON() {
+        console.log("_exportJSON()");
+        var view = this._views.activeView;
+        if (view && view.path) {
+            var defaultPath = 'Untitled';
+            var file = view.path;
+            var lastIndex = file.lastIndexOf('.');
+            if (lastIndex != -1) {
+                defaultPath = file.substring(0, lastIndex);
+            }
+            var owner = electron.BrowserWindow.getFocusedWindow();
+            // following options is shown on the pop up window
+            var showSaveDialogOptions = {
+                title: 'Export JSON',
+                defaultPath: defaultPath,
+                buttonLabel: 'Export',
+                filters: [
+                    { name: 'TXT', extensions: [ 'txt' ] },
+                    { name: 'JSON', extensions: [ 'json' ] }
+                ]
+            };
+            electron.dialog.showSaveDialog(owner, showSaveDialogOptions, (filename) => {
+                if (filename) {
+                    view.execute('export-json', { 'file': filename });
+                }
+            });
+        }
+    }
+
+    _exportPic() {
+        console.log("_exportPic()");
         var view = this._views.activeView;
         if (view && view.path) {
             var defaultPath = 'Untitled';
@@ -192,7 +223,7 @@ class Application {
             }
             var owner = electron.BrowserWindow.getFocusedWindow();
             var showSaveDialogOptions = {
-                title: 'Export',
+                title: 'Export Picture',
                 defaultPath: defaultPath,
                 buttonLabel: 'Export',
                 filters: [
@@ -202,7 +233,7 @@ class Application {
             };
             electron.dialog.showSaveDialog(owner, showSaveDialogOptions, (filename) => {
                 if (filename) {
-                    view.execute('export', { 'file': filename });
+                    view.execute('export-pic', { 'file': filename });
                 }
             });
         }
@@ -345,9 +376,15 @@ class Application {
                 { type: 'separator' },
                 { 
                     id: 'file.export',
-                    label: '&Export...',
+                    label: '&Export Picture...',
                     accelerator: 'CmdOrCtrl+Shift+E',
-                    click: () => this._export(),
+                    click: () => this._exportPic(),
+                },
+                {
+                    id: 'file.exportJson',
+                    label: '&Export JSON...',
+                    accelerator: 'CmdOrCtrl+Shift+J',
+                    click: () => this._exportJSON(),
                 },
                 { type: 'separator' },
                 { role: 'close' },
@@ -484,7 +521,7 @@ class Application {
             },
             { type: 'separator' },
             {
-                label: 'VSKY Netron &JIRA (test)', // what are `&`doing here?
+                label: 'VSKY Netron J&IRA (test)', // what are `&`doing here?
                 click: () => { electron.shell.openExternal('https://jira.sw.nxp.com/browse/VSKY-1275'); }
             },
             {
@@ -508,6 +545,9 @@ class Application {
 
         var commandTable = {};
         commandTable['file.export'] = {
+            enabled: (context) => { return context.view && context.view.path ? true : false; }
+        };
+        commandTable['file.exportJson'] = {
             enabled: (context) => { return context.view && context.view.path ? true : false; }
         };
         commandTable['edit.cut'] = {
