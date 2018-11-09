@@ -30,12 +30,6 @@ sync() {
     git_sync tensorflow https://github.com/tensorflow/tensorflow.git
 }
 
-<<<<<<< HEAD:tools/metadata/tf-update
-if [ ${__update} ]; then
-    echo "Generate 'tf-proto.js'"
-    # ${node_modules}/protobufjs/bin/pbjs -t static-module -w closure --no-encode --no-delimited --no-comments --keep-case --decode-text -r tf -o ${src}/tf-proto.js \
-    ${node_modules}/protobufjs/bin/pbjs -t static-module -w closure --no-encode --no-delimited --keep-case --decode-text -r tf -o ${src}/tf-proto.js \
-=======
 install() {
     virtualenv --quiet -p ${python} ${virtualenv}
     source ${virtualenv}/bin/activate
@@ -47,7 +41,6 @@ install() {
 schema() {
     echo "Generate 'tf-proto.js'"
     ${node_modules}/protobufjs/bin/pbjs -t static-module -w closure --no-encode --no-delimited --no-comments --keep-case --decode-text -r tf -o ${src}/tf-proto.js \
->>>>>>> 85181042013628543fb54d927773af66f1846957:tools/tf
         ${third_party}/${identifier}/tensorflow/core/protobuf/saved_model.proto \
         ${third_party}/${identifier}/tensorflow/core/protobuf/meta_graph.proto \
         ${third_party}/${identifier}/tensorflow/core/protobuf/saver.proto \
@@ -63,23 +56,6 @@ schema() {
         ${third_party}/${identifier}/tensorflow/core/framework/resource_handle.proto
 }
 
-<<<<<<< HEAD:tools/metadata/tf-update
-if [ ${__update} ]; then
-    # echo "Generate 'tf-metadata.json'"
-    echo "Generate 'tf-metadata-test.json'"
-    protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/attr_value.proto --python_out=${tools}/metadata
-    protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/tensor.proto --python_out=${tools}/metadata
-    protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/types.proto --python_out=${tools}/metadata
-    protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/tensor_shape.proto --python_out=${tools}/metadata
-    protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/resource_handle.proto --python_out=${tools}/metadata
-    protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/api_def.proto --python_out=${tools}/metadata
-    protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/op_def.proto --python_out=${tools}/metadata
-    touch ${tools}/metadata/tensorflow/__init__.py
-    touch ${tools}/metadata/tensorflow/core/__init__.py
-    touch ${tools}/metadata/tensorflow/core/framework/__init__.py
-    pushd ${tools}/metadata > /dev/null
-    ${python} tf-metadata.py
-=======
 metadata() {
     echo "Generate 'tf-metadata.json'"
     source ${virtualenv}/bin/activate
@@ -95,7 +71,6 @@ metadata() {
     touch ${tools}/tensorflow/core/framework/__init__.py
     pushd ${tools} > /dev/null
     ${python} tf-script.py
->>>>>>> 85181042013628543fb54d927773af66f1846957:tools/tf
     popd > /dev/null
     rm -rf ${tools}/tensorflow
     deactivate
