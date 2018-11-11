@@ -4,7 +4,7 @@ Netron can run as both an [Electron](https://electronjs.org) app or a Python web
 
 ## Develop the Electron app
 
-To start the Electron app, install [Node.js](https://nodejs.org) and run: 
+To start the Electron app, install [Node.js](https://nodejs.org) and run:  (for Windows user, run under the root of this repository in `cmd`)
 
 ```bash
 npm install
@@ -28,3 +28,8 @@ npm install
 python setup.py build
 PYTHONPATH=build/python/lib python -c "import netron; netron.main()"
 ```
+
+## Debug
+
+## Debug Renderer Process
+Install `Debugger for Chrome` to use this DEBUG configuration.
