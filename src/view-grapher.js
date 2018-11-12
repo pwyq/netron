@@ -276,7 +276,6 @@ grapher.NodeElement = class {
                 itemGroupElement.setAttribute('id', item.identifier);
             }
             if (handler) {
-                // console.log("you clicked 13");
                 itemGroupElement.addEventListener('click', handler);
             }
             if (title) {
@@ -318,7 +317,6 @@ grapher.NodeElement = class {
             attributeGroupElement.setAttribute('class', 'node-attribute');
             rootElement.appendChild(attributeGroupElement);
             if (this._attributeHandler) {
-                // console.log("you clicked 14");
                 attributeGroupElement.addEventListener('click', this._attributeHandler);
             }
             attributesPathElement = this.createElement('path');

@@ -39,7 +39,6 @@ host.BrowserHost = class {
         this._view = view;
 
         window.addEventListener('keydown', (e) => {
-            console.log("key pressed");
             this._keyHandler(e);
         });
 
@@ -142,7 +141,6 @@ host.BrowserHost = class {
     }
 
     export(file, blob) {
-        console.log("You clicked export"):
         var element = document.createElement('a');
         element.download = file;
         element.href = URL.createObjectURL(blob);
@@ -411,7 +409,6 @@ host.BrowserHost = class {
         if (e.shiftKey && (e.ctrlKey || e.metaKey)) {
             switch (e.keyCode) {
                 case 69: // E
-                    console.log("pressed E");
                     if (e.altKey) {
                         this._view.export(document.title + '.svg');
                     }
@@ -421,7 +418,6 @@ host.BrowserHost = class {
                     e.preventDefault();
                     break;
                 case 74: // J
-                    console.log("pressed J");
                     if (e.altKey) {
                         this._view.export(document.title + '.txt');
                     }
