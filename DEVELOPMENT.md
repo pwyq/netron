@@ -33,3 +33,16 @@ PYTHONPATH=build/python/lib python -c "import netron; netron.main()"
 
 ## Debug Renderer Process
 Install `Debugger for Chrome` to use this DEBUG configuration.
+
+- `protoc`
+- `python 3.7`
+- `pip`
+- `virtualenv`
+    - On windows:
+        - `pip install virtualenv`
+        - `pip install virtualenvwrapper-win`
+
+```bash
+cd tools
+./tf sync install schema metadata
+```

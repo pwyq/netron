@@ -7,3 +7,6 @@ test/data/*
 tools/metadata/testenv/*
 package-lock.json
 *.pyc
+
+# extra
+helper/netron-dev-tmp/*.txt

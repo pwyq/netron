@@ -794,23 +794,92 @@ view.View = class {
         }
 
         if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
+            // https://nodejs.org/api/child_process.html#child_process_child_process
+
+            // const electron = require('electron');
+            // electron.app.releaseSingleInstanceLock();   // allow spawn, not sure if this works; looks like not working
+
+            // https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
+
+
             // TODO TODO call python script here
             console.log("file = " + file);
             // let python = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/test2.py']))
             // let py = spawn('python', [path.join(app.getAppPath(), 'python_scripts/test2.py')])
             console.log("__dirname = " + __dirname);
-            // let python = spawn('python', [path.join(__dirname, '../python_scripts/', 'test2.py')]);
-            // console.log("spawn..........................................");
-            // python.on('close', function() {
-            //     console.log("python ends");
-            // });
-            // var pythonshell = require('python-shell');
-            // pythonshell.send('hhhhhhhhhhhhhhhhhheeeeeeeeeeeeeeeeeeeeeellllooooooooooo');
-            // pythonshell.run('../python_scripts/test2.py', options, function(err, result) {
-            //     console.log("err"+err);
-            //     console.log("result"+result);
-            // });
-            const { spawn } = require('child_process');
+
+            /*Not Working
+            const shell = require('shelljs');
+            //shell.exec(comandToExecute, {silent:true}).stdout;
+            //you need little improvisation
+            shell.exec('py ../python_scripts/test2.py');
+            */
+
+            /*Not working
+            const exec = require('child_process').exec;
+            var script_path = __dirname + './python_scripts/test2.py'
+            my_command = 'py ' + script_path;
+            // https://stackoverflow.com/questions/37331797/can-i-pass-a-variable-in-javascript-to-a-child-process-exec-command
+            var yourscript = exec(my_command, (error, stdout, stderr) => {
+                console.log(`${stdout}`);
+                console.log(`${stderr}`);
+                if (error !== null) {
+                    console.log(`exec error: ${error}`);
+                }
+            });
+            */
+
+            //Working
+            // TODO: detect python version? some use `python` some use `py`
+
+            // BUG: from stdout, i can see the python scripts was ran, but not storing to local, maybe because thsi is different process?
+            // and the following looks like not running in sequential order.
+            // the spawned python process is before the ls process, but the ls got stdout first
+            if (extension == 'txt') {
+                const { spawn } = require('child_process');
+                // path issue when building into executable
+                // https://stackoverflow.com/questions/41199981/run-python-script-in-electron-app
+
+                // var py_path = path.join(__dirname, '../app.asar.unpacked/python_scripts', 'test3.py'); // NOOO
+                // var py_path = path.join(__dirname, '../resources/python_scripts', 'test3.py');  // NOOOOOOOOOOOOOOOOO
+                
+                // const app = require('electron').app
+                // const { app } = require('electron');
+                // var paths = path.join(app.getAppPath(), '..', 'python_scripts/test3.py');
+                // console.log("asd;lfkjas;ldkfjas;ldkfjas;dlfkj path = " + paths);
+                // var paths = path.join(__dirname, '../python_scripts', 'test3.py');
+                var paths = path.join(path.dirname(__dirname), 'python_scripts', 'test3.py');
+                console.log("paths = " + paths);
+                const py = spawn('python', [paths]);
+                // let py = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/test3.py')]);    // NOOOOOOOOOOO
+                
+
+                // TODO: last try: https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
+
+                console.log("py_path = " + py_path);
+                // spawns the child process asynchronously
+                // var py_path = path.join(__dirname, '../python_scripts', 'test3.py');// work when in debugger
+                // const py = spawn('py', [py_path]);   // works
+    
+                py.stdout.on('data', (data) => {
+                    console.log(`stdout: ${data}`);
+                    // work around, let python scripts prints everything... 
+                    // then write to file... don't know
+                    //  if the buffer could handle all the info
+                    this._host.export(file, new Blob([ data ], { type: 'text/plain' }));    // works
+                  });
+                  
+                py.stderr.on('data', (data) => {
+                console.log(`stderr: ${data}`);
+                });
+                
+                py.on('close', (code) => {
+                console.log(`python child process exited with code ${code}`);
+                });
+            }
+
+            // Following works
+            // const { spawn } = require('child_process');
             const ls = spawn('ls', ['-lh', '/usr']);
             
             ls.stdout.on('data', (data) => {
@@ -822,9 +891,9 @@ view.View = class {
             });
             
             ls.on('close', (code) => {
-              console.log(`child process exited with code ${code}`);
+              console.log(`ls child process exited with code ${code}`);
             });
-
+            // */
         }
     }
 

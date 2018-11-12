@@ -1,12 +1,30 @@
 appId: com.lutzroeder.netron
+
 productName: Netron
+
 files:
   - 'src/**/*'
+
+# asarUnpack:
+#   - "python_scripts/*"
+
+# Indeed copied, but can't be called?
+# win-unpacked
+#   - resources
+#     - python_scripts
 extraResources:
   - 'python_scripts/*'
+
+# win-unpacked
+#   - resources
+#   - python_scripts
+# extraFiles:
+#   - 'python_scripts/*'
+
 directories:
   buildResources: setup
   output: ./build/electron
+
 fileAssociations:
   - name: "ONNX Model"
     ext: onnx
@@ -54,9 +72,11 @@ fileAssociations:
     ext: prototxt
   - name: "PyTorch Model"
     ext: pth
+
 publish:
   - provider: github
     releaseType: release
+
 mac:
   category: public.app-category.developer-tools
   target: 
@@ -64,13 +84,17 @@ mac:
   - zip
   extendInfo:
     NSRequiresAquaSystemAppearance: false
+
 linux:
   target:
-  - AppImage
-  - deb
+    - AppImage
+    - deb
+
 win:
   target:
-  - nsis
+    - nsis
+    - zip
+
 dmg:
   iconSize: 160
   contents:
@@ -80,5 +104,6 @@ dmg:
     y: 170
     type: link
     path: /Applications
+
 nsis:
   perMachine: true
