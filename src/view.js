@@ -719,9 +719,7 @@ view.View = class {
         }
     }
 
-    // TODO TODO: following will be called after you pressed the export key
     export(file) {
-        console.log("export file=" + file);
         var extension = '';
         var lastIndex = file.lastIndexOf('.');
         if (lastIndex != -1) {
@@ -788,20 +786,20 @@ view.View = class {
 
         if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
 
-            // TODO TODO call python script here
-            console.log("file = " + file);
-            console.log("__dirname = " + __dirname);    // C:\Users\nxf48721\Downloads\bitbucket_repo\vsdk\s32v234_sdk\tools\gui\netron\src
+            /* TODO TODO
+            NOTE
+                - https://www.pyinstaller.org/
+            TODO
+                - test generation
+            */
 
+            var outputFilePath = file;
             var pbFilePath = this._host.getFileName();
-            console.log(pbFilePath); //outputs: C:\Users\nxf48721\Desktop\importer\FREESPACE_graph.pb
 
             if (extension == 'txt') {
                 const { spawn } = require('child_process');
-
-               try {
-                   // https://github.com/electron-userland/electron-builder/issues/751
-                    var execFile = require('child_process').execFile;
-                    //    var exe_path = path.join(__dirname, '../python_scripts/dist/test3/test3.exe');
+                try {
+                    // https://github.com/electron-userland/electron-builder/issues/751
                     if (this._host.getIsDev()) {
                         var exe_path = path.join(__dirname, '../python_scripts/dist/test2/test2.exe');
                     }
@@ -809,29 +807,20 @@ view.View = class {
                         // https://github.com/electron-userland/electron-builder/issues/751
                         var exe_path = path.join(process.resourcesPath, "python_scripts/dist/test2/test2.exe")
                     }
-                   execFile(exe_path, function(err, data) {
-                       if (err) {
+                    var execFile = require('child_process').execFile;
+                    var parameters = [outputFilePath, pbFilePath];
+                    execFile(exe_path, parameters, function(err, data) {
+                        if (err) {
                            console.log("ERROR: " + err);
                            return;
-                       }
-                       var output = data.toString();
-                       console.log(output);    // work, output the python `print`
-                       /*
-                       NOTE
-                            - https://www.pyinstaller.org/
-                       TODO
-                            - use user path to store...
-                                - https://ourcodeworld.com/articles/read/154/how-to-execute-an-exe-file-system-application-using-electron-framework
-                                - https://stackoverflow.com/questions/25984395/after-compiling-python-program-how-to-input-arguments
-                            - pass user path to python script
-                            - test generation
-                        */
-                    //    this._host.export(file, new Blob([ output ], { type: 'text/plain' }));
-                   });
-               }
-               catch (err) {
-                   console.log("==== ERROR ====:\n " + err);
-               }
+                        }
+                        var output = data.toString();
+                        console.log(output);    // work, output the python `print`
+                    });
+                }
+                catch (err) {
+                    console.log("==== ERROR ====:\n " + err);
+                }
             }
         }
     }

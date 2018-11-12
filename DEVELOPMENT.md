@@ -49,3 +49,9 @@ Install `Debugger for Chrome` to use this DEBUG configuration.
 cd tools
 ./tf sync install schema metadata
 ```
+
+
+## To use python scripts
+1. add python scripts under `${root}/python_scripts`
+2. compile python scripts to executable, using `pyinstaller your_python_scripts.py -y`
+3. use `execFile`
