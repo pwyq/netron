@@ -7,7 +7,6 @@ const os = require('os');
 const path = require('path');
 const process = require('process');
 const url = require('url');
-const spawn = require('child_process');
 
 class Application {
 

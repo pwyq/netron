@@ -37,10 +37,13 @@ Install `Debugger for Chrome` to use this DEBUG configuration.
 - `protoc`
 - `python 3.7`
 - `pip`
+- `yarn` (recommended to use this as packge manager)
 - `virtualenv`
     - On windows:
         - `pip install virtualenv`
         - `pip install virtualenvwrapper-win`
+- `pip install google`
+- `pip install pyinstaller`
 
 ```bash
 cd tools

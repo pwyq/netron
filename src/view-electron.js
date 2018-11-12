@@ -15,7 +15,7 @@ host.ElectronHost = class {
         this._isDev = ('ELECTRON_IS_DEV' in process.env) ?
             (parseInt(process.env.ELECTRON_IS_DEV, 10) === 1) :
             (process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath));
-
+        
         if (!this._isDev) {
             this._telemetry = require('universal-analytics')('UA-54146-13');
         }
@@ -59,11 +59,20 @@ host.ElectronHost = class {
         return 'Electron';
     }
 
+    _setFileName(name) {
+        this._loadedFile = name;
+    }
+    
+    getFileName() {
+        return this._loadedFile;
+    }
+
     initialize(view) {
         this._view = view;
         this._view.show('Welcome');
 
         electron.ipcRenderer.on('open', (event, data) => {
+            this._setFileName(data.file);
             this._openFile(data.file);
         });
         electron.ipcRenderer.on('export-pic', (event, data) => {

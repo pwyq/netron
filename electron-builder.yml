@@ -2,6 +2,9 @@ appId: com.lutzroeder.netron
 
 productName: Netron
 
+# Package electron code into a asar archive. Set to false to debug issues.
+# asar: true
+
 files:
   - 'src/**/*'
 
@@ -13,7 +16,13 @@ files:
 #   - resources
 #     - python_scripts
 extraResources:
-  - 'python_scripts/*'
+  - from: "python_scripts"
+    to: "python-rpc"
+    filter:
+      - "**/*"
+  - "python_scripts/dist/test3/*"
+  # - 'extraResources/**'
+  # - 'python_scripts/*'
 
 # win-unpacked
 #   - resources

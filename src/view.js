@@ -808,6 +808,10 @@ view.View = class {
             // let py = spawn('python', [path.join(app.getAppPath(), 'python_scripts/test2.py')])
             console.log("__dirname = " + __dirname);
 
+
+            pbFilePath = this._host.fileName();
+            console.log(pbFilePath); //outputs: C:\Users\nxf48721\Desktop\importer\FREESPACE_graph.pb
+
             /*Not Working
             const shell = require('shelljs');
             //shell.exec(comandToExecute, {silent:true}).stdout;
@@ -848,34 +852,52 @@ view.View = class {
                 // var paths = path.join(app.getAppPath(), '..', 'python_scripts/test3.py');
                 // console.log("asd;lfkjas;ldkfjas;ldkfjas;dlfkj path = " + paths);
                 // var paths = path.join(__dirname, '../python_scripts', 'test3.py');
+
+                /*Not working
                 var paths = path.join(path.dirname(__dirname), 'python_scripts', 'test3.py');
                 console.log("paths = " + paths);
                 const py = spawn('python', [paths]);
-                // let py = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/test3.py')]);    // NOOOOOOOOOOO
-                
+                */
+               // let py = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/test3.py')]);    // NOOOOOOOOOOO
+               
+               var execFile = require('child_process').execFile;
+               var exe_path = path.join(__dirname, '../python_scripts/dist/test3/test3.exe');
+               execFile(exe_path, function(err, data) {
+                   if (err) {
+                       console.log("ERROR: " + err);
+                       return;
+                   }
+                   console.log(data.toString());    // work
+                   this._host.export(file, new Blob([ data.toString() ], { type: 'text/plain' }));
+               });
 
-                // TODO: last try: https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
 
-                console.log("py_path = " + py_path);
+               // TODO: last try: https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
+            //    var py_path = path.join(__dirname, '../python-rpc', 'test3.py');
+            //    console.log("py_path = " + py_path);
+            //    const py = spawn('python', [py_path]);
+
+
                 // spawns the child process asynchronously
+                // console.log("py_path = " + py_path);
                 // var py_path = path.join(__dirname, '../python_scripts', 'test3.py');// work when in debugger
                 // const py = spawn('py', [py_path]);   // works
     
-                py.stdout.on('data', (data) => {
-                    console.log(`stdout: ${data}`);
-                    // work around, let python scripts prints everything... 
-                    // then write to file... don't know
-                    //  if the buffer could handle all the info
-                    this._host.export(file, new Blob([ data ], { type: 'text/plain' }));    // works
-                  });
+                // py.stdout.on('data', (data) => {
+                //     console.log(`stdout: ${data}`);
+                //     // work around, let python scripts prints everything... 
+                //     // then write to file... don't know
+                //     //  if the buffer could handle all the info
+                //     this._host.export(file, new Blob([ data ], { type: 'text/plain' }));    // works
+                //   });
                   
-                py.stderr.on('data', (data) => {
-                console.log(`stderr: ${data}`);
-                });
+                // py.stderr.on('data', (data) => {
+                // console.log(`stderr: ${data}`);
+                // });
                 
-                py.on('close', (code) => {
-                console.log(`python child process exited with code ${code}`);
-                });
+                // py.on('close', (code) => {
+                // console.log(`python child process exited with code ${code}`);
+                // });
             }
 
             // Following works
@@ -1218,3 +1240,5 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
     module.exports.View = view.View;
     module.exports.ModelFactoryService = view.ModelFactoryService;
 }
+
+/* EoF */
