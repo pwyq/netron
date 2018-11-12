@@ -7,12 +7,12 @@ var marked = marked || require('marked');
 coreml.ModelFactory = class {
 
     match(context, host) {
-        var extension = context.identifier.split('.').pop();
+        var extension = context.identifier.split('.').pop().toLowerCase();
         return extension == 'mlmodel';
     }
 
     open(context, host, callback) { 
-        host.require('coreml-proto', (err) => {
+        host.require('./coreml-proto', (err, module) => {
             if (err) {
                 callback(err, null);
                 return;

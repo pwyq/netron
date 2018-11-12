@@ -10,7 +10,7 @@ tf.ModelFactory = class {
 
     match(context, host) {
         var identifier = context.identifier;
-        var extension = identifier.split('.').pop();
+        var extension = identifier.split('.').pop().toLowerCase();
         switch (identifier) {
             case 'predict_net.pb':
             case 'init_net.pb':
@@ -32,7 +32,7 @@ tf.ModelFactory = class {
     }
 
     open(context, host, callback) { 
-        host.require('tf-proto', (err) => {
+        host.require('./tf-proto', (err, module) => {
             if (err) {
                 callback(err, null);
                 return;
@@ -43,7 +43,7 @@ tf.ModelFactory = class {
             var savedModel = null;
             var format = null;
             var identifier = context.identifier; 
-            var extension = identifier.split('.').pop();
+            var extension = identifier.split('.').pop().toLowerCase();
             if (extension == 'pbtxt' || extension == 'prototxt') {
                 var tags = context.tags;
                 if (tags.saved_model_schema_version || tags.meta_graphs) {
@@ -976,6 +976,7 @@ tf.Tensor = class {
                 key = key.startsWith('DT_') ? key.substring(3) : key;
                 tf.Tensor.dataType[value] = key.toLowerCase();
             });
+            tf.Tensor.dataType[tf.proto.DataType.DT_HALF] = 'float16';
             tf.Tensor.dataType[tf.proto.DataType.DT_FLOAT] = 'float32';
             tf.Tensor.dataType[tf.proto.DataType.DT_DOUBLE] = 'float64';
         }

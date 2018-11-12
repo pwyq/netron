@@ -8,7 +8,7 @@ caffe.ModelFactory = class {
 
     match(context, host) {
         var identifier = context.identifier;
-        var extension = identifier.split('.').pop();
+        var extension = identifier.split('.').pop().toLowerCase();
         if (extension == 'caffemodel') {
             return true;
         }
@@ -26,7 +26,7 @@ caffe.ModelFactory = class {
     }
 
     open(context, host, callback) { 
-        host.require('caffe-proto', (err) => {
+        host.require('./caffe-proto', (err, module) => {
             if (err) {
                 callback(err, null);
                 return;

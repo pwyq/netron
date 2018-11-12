@@ -15,6 +15,7 @@ const gzip = require('../src/gzip');
 const tar = require('../src/tar');
 
 global.TextDecoder = require('util').TextDecoder;
+global.protobuf = protobuf;
 
 var models = JSON.parse(fs.readFileSync(__dirname + '/models.json', 'utf-8'));
 var folder = __dirname + '/data';
@@ -22,10 +23,13 @@ var folder = __dirname + '/data';
 class TestHost {
 
     require(id, callback) {
-        var filename = path.join(path.join(__dirname, '../src'), id + '.js');
-        var data = fs.readFileSync(filename, 'utf-8');
-        eval(data);
-        callback(null);
+        try {
+            var file = path.join(path.join(__dirname, '../src'), id + '.js');
+            callback(null, require(file));
+        }
+        catch (err) {
+            callback(err, null);
+        }
     }
 
     request(base, file, encoding, callback) {
@@ -48,7 +52,7 @@ class TestHost {
     }
 
     exception(err, fatal) {
-        console.log(err.toString());
+        console.log('HOST: ' + err.toString());
     }
 }
 
@@ -170,7 +174,7 @@ function loadModel(target, item, callback) {
 
 function decompress(buffer, identifier) {
     var archive = null;
-    extension = identifier.split('.').pop();
+    extension = identifier.split('.').pop().toLowerCase();
     if (extension == 'gz' || extension == 'tgz') {
         archive = new gzip.Archive(buffer);
         if (archive.entries.length == 1) {
@@ -189,7 +193,7 @@ function decompress(buffer, identifier) {
         }
     }
 
-    switch (identifier.split('.').pop()) {
+    switch (identifier.split('.').pop().toLowerCase()) {
         case 'tar':
             archive = new tar.Archive(buffer);
             break;
@@ -357,10 +361,12 @@ function next() {
     download(folder, targets, sources, [], (err, completed) => {
         if (err) {
             if (item.status == 'script' && item.script) {
-                try { 
-                    var command = path.join(__dirname, item.script[0]) + ' ' + item.script[1];
-                    console.log('  ' + command);
-                    child_process.execSync(command, { stdio: [ 0, 1 , 2] });
+                try {
+                    var root = path.dirname(__dirname);
+                    var command = item.script[0].replace('${root}', root);
+                    var arguments = item.script[1].replace('${root}', root);
+                    console.log('  ' + command + ' ' + arguments);
+                    child_process.execSync(command + ' ' + arguments, { stdio: [ 0, 1 , 2] });
                     completed = targets;
                 }
                 catch (err) {
@@ -375,8 +381,10 @@ function next() {
         }
         loadModel(folder + '/' + completed[0], item, (err, model) => {
             if (err) {
-                console.log(err);
-                return;
+                if (!item.error && item.error != err.message) {
+                    console.log(err);
+                    return;
+                }
             }
             next();
         });

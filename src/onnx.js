@@ -35,14 +35,14 @@ onnx.ModelFactory = class {
     }
 
     open(context, host, callback) { 
-        host.require('onnx-proto', (err) => {
+        host.require('./onnx-proto', (err, module) => {
             if (err) {
                 callback(err, null);
                 return;
             }
             var model = null;
             var identifier = context.identifier; 
-            var extension = identifier.split('.').pop();
+            var extension = identifier.split('.').pop().toLowerCase();
             if (extension == 'pbtxt' || extension == 'prototxt') {
                 try {
                     onnx.proto = protobuf.roots.onnx.onnx;

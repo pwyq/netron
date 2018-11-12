@@ -118,6 +118,7 @@ host.BrowserHost = class {
     }
 
     require(id, callback) {
+        window.module = { exports: {} };
         var script = document.scripts.namedItem(id);
         if (script) {
             callback(null);
@@ -128,10 +129,13 @@ host.BrowserHost = class {
         script.setAttribute('type', 'text/javascript');
         script.setAttribute('src', this._url(id + '.js'));
         script.onload = () => {
-            callback(null);
+            var exports = window.module.exports;
+            delete window.module;
+            callback(null, exports);
         };
         script.onerror = (e) => {
-            callback(new Error('The script \'' + e.target.src + '\' failed to load.'));
+            delete window.module;
+            callback(new Error('The script \'' + e.target.src + '\' failed to load.'), null);
         };
         document.head.appendChild(script);
     }
@@ -312,7 +316,7 @@ host.BrowserHost = class {
                 Object.keys(json.files).forEach((key) => {
                     var file = json.files[key];
                     identifier = file.filename;
-                    var extension = identifier.split('.').pop();
+                    var extension = identifier.split('.').pop().toLowerCase();
                     if (extension == 'json' || extension == 'pbtxt' || extension == 'prototxt') {
                         var encoder = new TextEncoder();
                         buffer = encoder.encode(file.content);

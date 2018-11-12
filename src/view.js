@@ -853,7 +853,7 @@ view.View = class {
                 this.showOperatorDocumentation(node);
             });
             view.on('export-tensor', (sender, tensor) => {
-                this._host.require('numpy', (err) => {
+                this._host.require('./numpy', (err, numpy) => {
                     if (!err) {
                         // TODO: note here it allows user to export the tensor content to npy file via an upper right button.
                         var defaultPath = tensor.name ? tensor.name.split('/').join('_').split(':').join('_').split('.').join('_') : 'tensor';
@@ -1040,7 +1040,7 @@ view.ModelFactoryService = class {
             var identifier = context.identifier;
             var buffer = context.buffer;
 
-            extension = identifier.split('.').pop();
+            extension = identifier.split('.').pop().toLowerCase();
             if (extension == 'gz' || extension == 'tgz') {
                 archive = new gzip.Archive(buffer);
                 if (archive.entries.length == 1) {
@@ -1059,7 +1059,7 @@ view.ModelFactoryService = class {
                 }
             }
 
-            switch (identifier.split('.').pop()) {
+            switch (identifier.split('.').pop().toLowerCase()) {
                 case 'tar':
                     archive = new tar.Archive(buffer);
                     break;
@@ -1132,7 +1132,7 @@ view.ModelFactoryService = class {
                 });
             }
             else {
-                var extension = context.identifier.split('.').pop();
+                var extension = context.identifier.split('.').pop().toLowerCase();
                 switch (extension) {
                     case 'json':
                     case 'pb':

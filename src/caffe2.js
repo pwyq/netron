@@ -21,13 +21,13 @@ caffe2.ModelFactory = class {
     }    
 
     open(context, host, callback) {
-        host.require('caffe2-proto', (err) => {
+        host.require('./caffe2-proto', (err, module) => {
             if (err) {
                 callback(err, null);
                 return;
             }
             var netDef = null;
-            var extension = context.identifier.split('.').pop();
+            var extension = context.identifier.split('.').pop().toLowerCase();
             if (extension == 'pbtxt' || extension == 'prototxt') {
                 try {
                     caffe2.proto = protobuf.roots.caffe2.caffe2;
