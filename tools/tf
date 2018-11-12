@@ -77,14 +77,8 @@ schema() {
 }
 
 metadata() {
-<<<<<<< HEAD
     echo "Generate 'tf-metadata.json'"
     source ${virtualenv}/Scripts/activate
-=======
-    bold "tf metadata"
-    source ${virtualenv}/bin/activate
-    pushd ${tools} > /dev/null
->>>>>>> b3eeb9dcff8c900ff661bf2f9d909829ddd08dc6
     protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/attr_value.proto --python_out=${tools}
     protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/tensor.proto --python_out=${tools}
     protoc --proto_path ${third_party}/${identifier} tensorflow/core/framework/types.proto --python_out=${tools}
