@@ -808,8 +808,7 @@ view.View = class {
             // let py = spawn('python', [path.join(app.getAppPath(), 'python_scripts/test2.py')])
             console.log("__dirname = " + __dirname);
 
-
-            pbFilePath = this._host.fileName();
+            var pbFilePath = this._host.getFileName();
             console.log(pbFilePath); //outputs: C:\Users\nxf48721\Desktop\importer\FREESPACE_graph.pb
 
             /*Not Working
@@ -861,16 +860,17 @@ view.View = class {
                // let py = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/test3.py')]);    // NOOOOOOOOOOO
                
                var execFile = require('child_process').execFile;
-               var exe_path = path.join(__dirname, '../python_scripts/dist/test3/test3.exe');
+            //    var exe_path = path.join(__dirname, '../python_scripts/dist/test3/test3.exe');
+               var exe_path = path.join(__dirname, '../python_scripts/dist/test2/test2.exe');   // HOW TO USE PYTHON3????????????????????????????
                execFile(exe_path, function(err, data) {
                    if (err) {
                        console.log("ERROR: " + err);
                        return;
                    }
-                   console.log(data.toString());    // work
-                   this._host.export(file, new Blob([ data.toString() ], { type: 'text/plain' }));
+                   var output = data.toString();
+                   console.log(output);    // work
+                   this._host.export(file, new Blob([ output ], { type: 'text/plain' }));
                });
-
 
                // TODO: last try: https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
             //    var py_path = path.join(__dirname, '../python-rpc', 'test3.py');
