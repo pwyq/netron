@@ -3,18 +3,8 @@ import os
 print("hello from test2.py")
 print(os.getcwd())
 prefix = "C:\\Users\\nxf48721\\Downloads\\bitbucket_repo\\vsdk\\s32v234_sdk\\tools\\gui\\netron\\python_scripts"
-# file_path = prefix + "output_from_netron_python.txt"
 file_path = os.path.join(prefix, "output_from_netron_python.txt")
 print(file_path)
-
-# fd = os.open(file_path, os.O_WRONLY | os.O_CREAT, 0o777)
-# fp = open(fd, "w+")
-# with fp:
-#     fp.write("hello from netron via python exe")
-
-# with open(file_path, "w+") as f:
-#     f.write("hello from netron via python exe.\n")
-# os.chmod(file_path, 0o777)
 
 # FOLLOWING IS FOR PYTHON3
 os.umask(0)
