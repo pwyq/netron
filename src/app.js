@@ -23,7 +23,6 @@ class Application {
         // }
 
         electron.app.on('second-instance', (event, commandLine, workingDirectory) => {
-            console.log("you are trying to run second instance?");
             var currentDirectory = process.cwd();
             process.chdir(workingDirectory);
             var open = this._parseCommandLine(commandLine);

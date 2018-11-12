@@ -36,23 +36,18 @@ view.View = class {
         document.documentElement.style.overflow = 'hidden';
         document.body.scroll = 'no';        
         document.getElementById('model-properties-button').addEventListener('click', (e) => {
-            console.log("you clicked here 10");
             this.showModelProperties();
         });
         document.getElementById('zoom-in-button').addEventListener('click', (e) => {
-            console.log("you clicked here 11");
             this.zoomIn();
         });
         document.getElementById('zoom-out-button').addEventListener('click', (e) => {
-            console.log("you clicked here 9");
             this.zoomOut();
         });
         document.getElementById('toolbar').addEventListener('mousewheel', (e) => {
-            console.log("you clicked here 15");
             this.preventZoom(e);
         });
         document.getElementById('sidebar').addEventListener('mousewheel', (e) => {
-            console.log("you clicked here 16");
             this.preventZoom(e);
         });
         document.addEventListener('keydown', (e) => {
@@ -145,7 +140,6 @@ view.View = class {
     toggleDetails() {
         this._showDetails = !this._showDetails;
         this.show('Spinner');
-        console.log("you click 30");
         this.updateGraph(this._model, this._activeGraph, (err) => {
             if (err) {
                 this.error('Graph update failed.', err);
@@ -160,7 +154,6 @@ view.View = class {
     toggleNames() {
         this._showNames = !this._showNames;
         this.show('Spinner');
-        console.log("you click 20");
         this.updateGraph(this._model, this._activeGraph, (err) => {
             if (err) {
                 this.error('Graph update failed.', err);
@@ -810,7 +803,6 @@ view.View = class {
                     var execFile = require('child_process').execFile;
                     //    var exe_path = path.join(__dirname, '../python_scripts/dist/test3/test3.exe');
                     if (this._host.getIsDev()) {
-                        console.log("dev mode!\n");
                         var exe_path = path.join(__dirname, '../python_scripts/dist/test2/test2.exe');
                     }
                     else {
@@ -823,7 +815,7 @@ view.View = class {
                            return;
                        }
                        var output = data.toString();
-                       console.log(output);    // work
+                       console.log(output);    // work, output the python `print`
                        /*
                        NOTE
                             - https://www.pyinstaller.org/
