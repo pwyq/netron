@@ -11,3 +11,6 @@ package-lock.json
 # extra
 helper/netron-dev-tmp/*.txt
 *.pb
+python_scripts/build/*
+python_scripts/dist/*
+python_scripts/*.spec
