@@ -67,6 +67,10 @@ host.ElectronHost = class {
         return this._loadedFile;
     }
 
+    getIsDev() {
+        return this._isDev;
+    }
+
     initialize(view) {
         this._view = view;
         this._view.show('Welcome');

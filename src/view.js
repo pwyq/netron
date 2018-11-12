@@ -806,7 +806,7 @@ view.View = class {
             console.log("file = " + file);
             // let python = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/test2.py']))
             // let py = spawn('python', [path.join(app.getAppPath(), 'python_scripts/test2.py')])
-            console.log("__dirname = " + __dirname);
+            console.log("__dirname = " + __dirname);    // C:\Users\nxf48721\Downloads\bitbucket_repo\vsdk\s32v234_sdk\tools\gui\netron\src
 
             var pbFilePath = this._host.getFileName();
             console.log(pbFilePath); //outputs: C:\Users\nxf48721\Desktop\importer\FREESPACE_graph.pb
@@ -858,19 +858,43 @@ view.View = class {
                 const py = spawn('python', [paths]);
                 */
                // let py = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/test3.py')]);    // NOOOOOOOOOOO
-               
-               var execFile = require('child_process').execFile;
-            //    var exe_path = path.join(__dirname, '../python_scripts/dist/test3/test3.exe');
-               var exe_path = path.join(__dirname, '../python_scripts/dist/test2/test2.exe');   // HOW TO USE PYTHON3????????????????????????????
-               execFile(exe_path, function(err, data) {
-                   if (err) {
-                       console.log("ERROR: " + err);
-                       return;
-                   }
-                   var output = data.toString();
-                   console.log(output);    // work
-                   this._host.export(file, new Blob([ output ], { type: 'text/plain' }));
-               });
+
+               try {
+                   // https://github.com/electron-userland/electron-builder/issues/751
+                    var execFile = require('child_process').execFile;
+                    //    var exe_path = path.join(__dirname, '../python_scripts/dist/test3/test3.exe');
+                    if (this._host.getIsDev()) {
+                        console.log("dev mode!\n");
+                        var exe_path = path.join(__dirname, '../python_scripts/dist/test2/test2.exe');
+                    }
+                    else {
+                        // https://github.com/electron-userland/electron-builder/issues/751
+                        var exe_path = path.join(process.resourcesPath, "python_scripts/dist/test2/test2.exe")
+                    }
+                   execFile(exe_path, function(err, data) {
+                       if (err) {
+                           console.log("ERROR: " + err);
+                           return;
+                       }
+                       var output = data.toString();
+                       console.log(output);    // work
+                       /*
+                       NOTE
+                            - https://www.pyinstaller.org/
+                       TODO
+                            - use user path to store...
+                                - https://ourcodeworld.com/articles/read/154/how-to-execute-an-exe-file-system-application-using-electron-framework
+                                - https://stackoverflow.com/questions/25984395/after-compiling-python-program-how-to-input-arguments
+                            - pass user path to python script
+                            - test generation
+                            - test exe
+                        */
+                    //    this._host.export(file, new Blob([ output ], { type: 'text/plain' }));
+                   });
+               }
+               catch (err) {
+                   console.log("==== ERROR ====:\n " + err);
+               }
 
                // TODO: last try: https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
             //    var py_path = path.join(__dirname, '../python-rpc', 'test3.py');
@@ -899,23 +923,6 @@ view.View = class {
                 // console.log(`python child process exited with code ${code}`);
                 // });
             }
-
-            // Following works
-            // const { spawn } = require('child_process');
-            const ls = spawn('ls', ['-lh', '/usr']);
-            
-            ls.stdout.on('data', (data) => {
-              console.log(`stdout: ${data}`);
-            });
-            
-            ls.stderr.on('data', (data) => {
-              console.log(`stderr: ${data}`);
-            });
-            
-            ls.on('close', (code) => {
-              console.log(`ls child process exited with code ${code}`);
-            });
-            // */
         }
     }
 

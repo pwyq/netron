@@ -17,7 +17,7 @@ files:
 #     - python_scripts
 extraResources:
   - from: "python_scripts"
-    to: "python-rpc"
+    to: "python_scripts"
     filter:
       - "**/*"
   - "python_scripts/dist/test3/*"
