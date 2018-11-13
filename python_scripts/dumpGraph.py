@@ -6,21 +6,19 @@ import sys
 import tensorflow as tf
 
 from sys import platform as _platform
+from google.protobuf import json_format
 from tensorflow.python.tools import freeze_graph as fg
 
 
-def outputToFile(file_path, data):
-    os.umask(0)
-    with open(os.open(file_path, os.O_CREAT | os.O_WRONLY, 0o777), 'w') as f:
-        f.write("hello from netron via python exe")
-        f.write(data)
+def loadGraphDef(aProtobufFile):
+    return fg._parse_input_graph_proto(aProtobufFile, True)
 
 
-def loadFrozenGraphByPB(aPB):
+def loadFrozenGraphByPB(aPaProtobufFileB):
     # Import graph_def into a new graph
     with tf.Graph().as_default() as lGraph:
         # op.name prefix will be `import/` if name=None
-        tf.import_graph_def(aPB, input_map=None, return_elements=None, name="", producer_op_list=None)
+        tf.import_graph_def(aProtobufFile, input_map=None, return_elements=None, name="", producer_op_list=None)
     return lGraph
 
 
@@ -77,23 +75,19 @@ def printOperationInfo(aGraph, aOpName):
     print("14. opColocationGroups =\n\t{}".format(opColocationGroups))
 
     print("==== Attributes ====")
-    for n in input_graph_def.node:
+    graph_def = loadGraphDef(pb_file)
+    for n in graph_def.node:
         if (aOpName in n.name):
             for k in n.attr.keys():
                 print('key = {}\nv:\n{}'.format(k, n.attr[k]))
     print("====================")
 
 
-def main():
-    printOperationInfo(graph, operationName)
-    # op = graph.get_operation_by_name(operationName)
-
-
 def dumpToTXT(output_file, pb_file):
     os.umask(0)
     with open(os.open(output_file, os.O_CREAT | os.O_WRONLY, 0o777), 'w') as f:
         print("digraph graphname {", file=f)
-        graph_def = fg._parse_input_graph_proto(pb_file, True)
+        graph_def = loadGraphDef(pb_file)
         for node in graph_def.node:
             output_name = node.name
             print("  \"" + output_name + "\" [label=\"" + node.op + "\"];", file=f)
@@ -103,10 +97,21 @@ def dumpToTXT(output_file, pb_file):
                 print("  \"" + input_name + "\" -> \"" + output_name + "\";", file=f)
         print("}", file=f)
 
+
+def dumpToJSON(output_file, pb_file):
+    os.umask(0)
+    with open(os.open(output_file, os.O_CREAT | os.O_WRONLY, 0o777), 'w') as f1:
+        graph_def = loadGraphDef(pb_file)
+        # for node in graph_def.node:
+        #     print(node)
+        json_string = json_format.MessageToJson(graph_def)
+        f1.write(json_string)
+
+
 if __name__ == '__main__':
     # TODO
-    # - output to JSON
     # - docstring
+
     output_file_path = ""
     pb_file_path = ""
     if _platform == "win32" or _platform == "win64":
@@ -117,15 +122,17 @@ if __name__ == '__main__':
     elif _platform == "darwin":
         pass  # TODO to test
     elif _platform == "linux" or _platform == "linux2":
-        pass  # TODO to test
-    # print(pb_file_path)
-    # print(os.path.isfile(pb_file_path))  # True from Netron debugger, when testing, need to pass as string (ie, 'C:\path\to\files')
+        # TODO to test
+        output_file_path = sys.argv[1]
+        pb_file_path = sys.argv[2]
 
     assert(os.path.isfile(pb_file_path) is True)
+    assert(os.path.isdir(os.path.dirname(output_file_path)) is True)
 
-    print("==== test dumpToTXT ====")
-    dumpToTXT(output_file_path, pb_file_path)
-    print("==== test dumpToTXT ====")
+    if sys.argv[3] == "txt":
+        dumpToTXT(output_file_path, pb_file_path)
+    elif sys.argv[3] == "json":
+        dumpToJSON(output_file_path, pb_file_path)
 
     print("{} is done.".format(os.path.basename(__file__)))
 

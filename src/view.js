@@ -788,27 +788,45 @@ view.View = class {
             var outputFilePath = file;
             var pbFilePath = this._host.getFileName();
 
+            const { spawn } = require('child_process');
+            var execFile = require('child_process').execFile;
+            if (this._host.getIsDev()) {
+                var exe_path = path.join(__dirname, '../python_scripts/dist/dumpGraph/dumpGraph.exe');
+            }
+            else {
+                // https://github.com/electron-userland/electron-builder/issues/751
+                var exe_path = path.join(process.resourcesPath, "python_scripts/dist/dumpGraph/dumpGraph.exe")
+            }
+            
             if (extension == 'txt') {
-                const { spawn } = require('child_process');
                 try {
-                    // https://github.com/electron-userland/electron-builder/issues/751
-                    if (this._host.getIsDev()) {
-                        var exe_path = path.join(__dirname, '../python_scripts/dist/test2/test2.exe');
-                    }
-                    else {
-                        // https://github.com/electron-userland/electron-builder/issues/751
-                        var exe_path = path.join(process.resourcesPath, "python_scripts/dist/test2/test2.exe")
-                    }
-                    var execFile = require('child_process').execFile;
-                    var parameters = [outputFilePath, pbFilePath];
+                    var parameters = [outputFilePath, pbFilePath, 'txt'];
                     execFile(exe_path, parameters, function(err, data) {
                         if (err) {
                            console.log("ERROR: " + err);
                            return;
                         }
                         var output = data.toString();
-                        console.log(output);    // work, output the python `print`
+                        console.log(output);
                     });
+                    // TODO: send notification when export is done
+                }
+                catch (err) {
+                    console.log("==== ERROR ====:\n " + err);
+                }
+            }
+            if (extension == 'json') {
+                try {
+                    var parameters = [outputFilePath, pbFilePath, 'json'];
+                    execFile(exe_path, parameters, function(err, data) {
+                        if (err) {
+                           console.log("ERROR: " + err);
+                           return;
+                        }
+                        var output = data.toString();
+                        console.log(output);
+                    });
+                    // TODO: send notification when export is done
                 }
                 catch (err) {
                     console.log("==== ERROR ====:\n " + err);
