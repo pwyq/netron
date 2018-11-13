@@ -58,3 +58,5 @@ cd tools
 
 if there is linking issue using pylint in VS Code,
 https://stackoverflow.com/a/50432805/10620764
+
+clean up `python_scripts/build/{updated python scripts}` and `python_scripts/dist/{updated python scripts}`

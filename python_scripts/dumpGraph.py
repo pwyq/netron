@@ -25,11 +25,6 @@ def loadFrozenGraphByPB(aPB):
 
 
 def loadFrozenGraphByFile(aFronzenFileName):
-    # load the protobuf file from disk and parse it to retrieve the
-    # unserialized graph_def
-    # following 3 lines do the exact thing same thing as `freeze_graph._
-    # parse_input_graph_proto(graph, True)`
-
     # use as_graph_def() to return a serialized GraphDef
     with tf.gfile.GFile(aFronzenFileName, 'rb') as f:
         lGraphDef = tf.GraphDef()
@@ -94,9 +89,9 @@ def main():
     # op = graph.get_operation_by_name(operationName)
 
 
-def outputToTXT(output_file, pb_file):
+def dumpToTXT(output_file, pb_file):
     os.umask(0)
-    with open(os.open(file_path, os.O_CREAT | os.O_WRONLY, 0o777), 'w') as f:
+    with open(os.open(output_file, os.O_CREAT | os.O_WRONLY, 0o777), 'w') as f:
         print("digraph graphname {", file=f)
         graph_def = fg._parse_input_graph_proto(pb_file, True)
         for node in graph_def.node:
@@ -115,20 +110,22 @@ if __name__ == '__main__':
     output_file_path = ""
     pb_file_path = ""
     if _platform == "win32" or _platform == "win64":
+        # TODO
+        # test if work on path that contains spaces
         output_file_path = sys.argv[1].replace(os.path.sep, '\\')
         pb_file_path = sys.argv[2].replace(os.path.sep, '\\')
     elif _platform == "darwin":
-        pass  # TODO test
+        pass  # TODO to test
     elif _platform == "linux" or _platform == "linux2":
-        pass  # TODO test
+        pass  # TODO to test
     # print(pb_file_path)
     # print(os.path.isfile(pb_file_path))  # True from Netron debugger, when testing, need to pass as string (ie, 'C:\path\to\files')
 
     assert(os.path.isfile(pb_file_path) is True)
 
-    print("==== test outputToTXT ====")
-    outputToTXT(output_file_path, pb_file_path)
-    print("==== test outputToTXT ====")
+    print("==== test dumpToTXT ====")
+    dumpToTXT(output_file_path, pb_file_path)
+    print("==== test dumpToTXT ====")
 
     print("{} is done.".format(os.path.basename(__file__)))
 
