@@ -785,14 +785,6 @@ view.View = class {
         }
 
         if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
-
-            /* TODO TODO
-            NOTE
-                - https://www.pyinstaller.org/
-            TODO
-                - test generation
-            */
-
             var outputFilePath = file;
             var pbFilePath = this._host.getFileName();
 

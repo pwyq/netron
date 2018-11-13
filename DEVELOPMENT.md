@@ -55,3 +55,6 @@ cd tools
 1. add python scripts under `${root}/python_scripts`
 2. compile python scripts to executable, using `pyinstaller your_python_scripts.py -y`
 3. use `execFile`
+
+if there is linking issue using pylint in VS Code,
+https://stackoverflow.com/a/50432805/10620764
