@@ -80,11 +80,9 @@ host.ElectronHost = class {
             this._openFile(data.file);
         });
         electron.ipcRenderer.on('export-pic', (event, data) => {
-            console.log("you wanna export?");   // this calls after you pressed export
             this._view.export(data.file);
         });
         electron.ipcRenderer.on('export-json', (event, data) => {
-            console.log("you wanna export22222222?");
             this._view.export(data.file);
         });
         electron.ipcRenderer.on('cut', (event, data) => {
@@ -127,7 +125,6 @@ host.ElectronHost = class {
         if (openFileButton) {
             openFileButton.style.opacity = 1;
             openFileButton.addEventListener('click', (e) => {
-                console.FREElog("you clicked here 10");
                 electron.ipcRenderer.send('open-file-dialog', {});
             });
         }
