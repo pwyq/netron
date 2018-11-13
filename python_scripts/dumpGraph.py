@@ -7,6 +7,7 @@ import tensorflow as tf
 
 from sys import platform as _platform
 from google.protobuf import json_format
+from contextlib import redirect_stdout
 from tensorflow.python.tools import freeze_graph as fg
 
 
@@ -83,6 +84,16 @@ def printOperationInfo(aGraph, aOpName):
     print("====================")
 
 
+def dumpAllNodeInfo(output_file, pb_file):
+    # TXT only
+    os.umask(0)
+    with open(os.open(output_file, os.O_CREAT | os.O_WRONLY, 0o777), 'w') as f1:
+        graph_def = loadGraphDef(pb_file)
+        with redirect_stdout(f1):
+            for node in graph_def.node:
+                print(node)
+
+
 def dumpToTXT(output_file, pb_file):
     os.umask(0)
     with open(os.open(output_file, os.O_CREAT | os.O_WRONLY, 0o777), 'w') as f:
@@ -102,8 +113,6 @@ def dumpToJSON(output_file, pb_file):
     os.umask(0)
     with open(os.open(output_file, os.O_CREAT | os.O_WRONLY, 0o777), 'w') as f1:
         graph_def = loadGraphDef(pb_file)
-        # for node in graph_def.node:
-        #     print(node)
         json_string = json_format.MessageToJson(graph_def)
         f1.write(json_string)
 
@@ -133,6 +142,7 @@ if __name__ == '__main__':
         dumpToTXT(output_file_path, pb_file_path)
     elif sys.argv[3] == "json":
         dumpToJSON(output_file_path, pb_file_path)
+    # dumpAllNodeInfo(output_file_path, pb_file_path)
 
     print("{} is done.".format(os.path.basename(__file__)))
 
