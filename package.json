@@ -5,7 +5,7 @@
         "email": "lutzroeder@users.noreply.github.com",
         "url": "lutzroeder.com"
     },
-    "version": "2.5.0",
+    "version": "2.5.1",
     "description": "Viewer neural network models",
     "license": "MIT",
     "repository": "lutzroeder/netron",
@@ -19,7 +19,7 @@
         "ajv": "^6.5.5",
         "d3": "latest",
         "dagre": "latest",
-        "electron-updater": "^3.2.0",
+        "electron-updater": "^4.0.0",
         "flatbuffers": "latest",
         "google": "^2.1.0",
         "handlebars": "latest",
