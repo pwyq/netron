@@ -14,3 +14,4 @@ helper/netron-dev-tmp/*.txt
 python_scripts/build/*
 python_scripts/dist/*
 python_scripts/*.spec
+.*
