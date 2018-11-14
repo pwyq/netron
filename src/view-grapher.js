@@ -276,7 +276,11 @@ grapher.NodeElement = class {
                 itemGroupElement.setAttribute('id', item.identifier);
             }
             if (handler) {
-                itemGroupElement.addEventListener('click', handler);
+                // itemGroupElement.addEventListener('click', handler);
+                // TODO TODO, maybe at dropdown menu listener here?
+                // add `mousedown` event? then 
+                // itemGroupElement.addEventListener('contextmenu', handler);
+                itemGroupElement.addEventListener('mousedown', handler);
             }
             if (title) {
                 var titleElement = this.createElement('title');
@@ -317,7 +321,8 @@ grapher.NodeElement = class {
             attributeGroupElement.setAttribute('class', 'node-attribute');
             rootElement.appendChild(attributeGroupElement);
             if (this._attributeHandler) {
-                attributeGroupElement.addEventListener('click', this._attributeHandler);
+                // attributeGroupElement.addEventListener('click', this._attributeHandler);
+                attributeGroupElement.addEventListener('mousedown', this._attributeHandler);
             }
             attributesPathElement = this.createElement('path');
             attributeGroupElement.appendChild(attributesPathElement);
