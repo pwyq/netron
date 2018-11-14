@@ -18,6 +18,7 @@ class Application {
 
         electron.app.setAppUserModelId('com.lutzroeder.netron');
 
+        // By Yanqing, Comment out because we need to use child process to run python scripts
         // if (!electron.app.requestSingleInstanceLock()) {
         //     electron.app.quit();
         // }

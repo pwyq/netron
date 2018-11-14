@@ -39,7 +39,10 @@ grapher.Renderer = class {
                 if (node.id) {
                     element.setAttribute('id', node.id);
                 }
+                // TODO: add dropdown-menu here? the other add dropdown-menu to all node-item...
+                // TODO TODO: use class name to set css
                 element.setAttribute('class', node.hasOwnProperty('class') ? ('node ' + node.class) : 'node');
+                element.setAttribute('class', node.hasOwnProperty('class') ? ('dropdown-menu' + node.class) : 'node dropdown-menu');
                 element.style.setProperty('opacity', 0);
                 var container = this.createElement('g');
                 container.appendChild(node.label);
@@ -257,6 +260,8 @@ grapher.NodeElement = class {
             var yPadding = 4;
             var xPadding = 7;
             var itemGroupElement = this.createElement('g');
+            // TODO: maybe add drop-down menu here? // NO, this will add dropdown-menu to add node-item (ie the subsections of a ndoe)
+            // var itemGroupClassList = [ 'node-item', 'dropdown-menu' ];
             var itemGroupClassList = [ 'node-item' ];
             rootElement.appendChild(itemGroupElement);
             var pathElement = this.createElement('path');

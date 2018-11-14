@@ -125,6 +125,7 @@ host.ElectronHost = class {
         if (openFileButton) {
             openFileButton.style.opacity = 1;
             openFileButton.addEventListener('click', (e) => {
+                // https://electronjs.org/docs/api/ipc-main#sending-messages
                 electron.ipcRenderer.send('open-file-dialog', {});
             });
         }

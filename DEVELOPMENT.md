@@ -44,6 +44,7 @@ Install `Debugger for Chrome` to use this DEBUG configuration.
         - `pip install virtualenvwrapper-win`
 - `pip install google`
 - `pip3 install pyinstaller`
+<!-- - `npm install jsdom` -->
 
 ```bash
 cd tools
@@ -61,3 +62,14 @@ https://stackoverflow.com/a/50432805/10620764
 
 clean up `python_scripts/build/{updated python scripts}` and `python_scripts/dist/{updated python scripts}`
 pyinstaller warning `lib not found` can be ignore (I don't find it affect anything so far)
+
+add usage for major files:
+
+- [view.js]
+- [view-grapher.js]
+- [view-electron.js]
+- [view-browser.js]
+    - This can be ignored if you don't focus on webpage representation format.
+
+# TODO
+- only add stuff to local client, haven't changed `view-browser.js` (webpage client) 

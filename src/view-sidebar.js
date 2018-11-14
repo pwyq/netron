@@ -75,6 +75,7 @@ class Sidebar {
 class NodeSidebar {
 
     constructor(node, host) {
+        // TODO: clean up
         // var keys = Object.keys(node);
         // console.log("node properties = " + keys);
         // var tmp1 = Object.keys(node._graph);
@@ -128,7 +129,7 @@ class NodeSidebar {
             // console.log("device = " + device);
             this.addProperty('device', new ValueTextView(node.device));
         }
-
+        // TODO: clean up
         // ===========================================
         // if (node.hardwareTarget) {
         //     this.addProperty('hardwareTarget', new ValueTextView(node.hardwareTarget));

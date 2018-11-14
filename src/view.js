@@ -22,6 +22,17 @@ var tflite = tflite || require('./tflite');
 var d3 = d3 || require('d3');
 var dagre = dagre || require('dagre');
 
+// jQuery stuff
+// var jsdom = require("jsdom");
+// const { JSDOM } = jsdom;
+// const { window } = new JSDOM();
+// const { document } = (new JSDOM('')).window;
+// global.document = document;
+
+// var $ = jQuery = require('jquery')(window);
+// var $ = jQuery = require('jquery')(window);
+
+
 view.View = class {
 
     constructor(host) {
@@ -29,6 +40,7 @@ view.View = class {
         this._model = null;
         this._selection = [];
         this._sidebar = new Sidebar();
+        this._dropdown = new DropdownMenu();
         this._host.initialize(this);
         this._showDetails = true;
         this._showNames = false;
@@ -384,7 +396,8 @@ view.View = class {
                             var text = view.showNames && node.name ? node.name : (node.primitive ? node.primitive : node.operator);
                             var title = view.showNames && node.name ? node.operator : node.name;
                             formatter.addItem(text, null, styles, title, (event) => {
-                                view.nodeElementClickHandler(event.button, node, null, "test 5");
+                                var params = [node, null, id, "test 5"];
+                                view.nodeElementClickHandler(event.button, params);
                             });
                         }
                     }
@@ -431,7 +444,8 @@ view.View = class {
                                 if (input.visible) {
                                     var types = input.connections.map(connection => connection.type || '').join('\n');
                                     formatter.addItem(input.name, inputId, [ inputClass ], types, (event) => {
-                                        this.nodeElementClickHandler(event.button, node, input, "test 4");
+                                        var params = [node, input, id, "test 4"];
+                                        this.nodeElementClickHandler(event.button, params);
                                     });
                                 }
                             }
@@ -455,12 +469,14 @@ view.View = class {
                     if (this._showDetails) {
                         if (hiddenInputs) {
                             formatter.addItem('...', null, [ 'node-item-input' ], '', (event) => {
-                                this.nodeElementClickHandler(event.button, node, null, "test 3");
+                                var params = [node, null, id, "test 3"];
+                                this.nodeElementClickHandler(event.button, params);
                             });
                         }
                         if (hiddenInitializers) {
                             formatter.addItem('...', null, [ 'node-item-constant' ], '', (event) => {
-                                this.nodeElementClickHandler(event.button, node, null, "test 2");
+                                var params = [node, null, id, "test 2"];
+                                this.nodeElementClickHandler(event.button, params);
                             });
                         }
                     }
@@ -489,7 +505,8 @@ view.View = class {
                         var attributes = node.attributes; 
                         if (attributes && !primitive) {
                             formatter.setAttributeHandler((event) => {
-                                this.nodeElementClickHandler(event.button, node, null, "test 1");
+                                var params = [node, null, id, "test 1"];
+                                this.nodeElementClickHandler(event.button, params);
                             });
                             attributes.forEach((attribute) => {
                                 if (attribute.visible) {
@@ -696,7 +713,12 @@ view.View = class {
         }
     }
 
-    nodeElementClickHandler(button, node, input, strs) {
+    nodeElementClickHandler(button, params) {
+        // params = [node, input, id, strs];
+        var node = params[0];
+        var input = params[1];
+        var id = params[2];
+        var strs = params[3];
         // `strs` is for testing
         switch (button) {
             case 0:
@@ -708,12 +730,57 @@ view.View = class {
                 break;
             case 2:
                 console.log(strs + " right click");
+                this.showDropdownMenu(node);
                 break;
             default:
                 console.log(strs + " click default cases");
                 this.showNodeProperties(node, input);
                 break;
         }
+    }
+
+    showDropdownMenu(node) {
+        // TODO: after all set, move to near showNodeProperties
+        // TODO TODO: add drop down menu here
+        // get node ID?,
+        // var name = node.name;
+        // var nodeID = '';
+        // if (name) {
+        //     var nodeID = 'node-' + name;
+        // }
+        // else {
+        //     var nodeID = 'node-' + id.toString();
+        // }
+        // var block = document.getElementById(nodeID);
+        // var dropdownList = document.createElement
+        var nodeID = (node.name) ? ('node-' + name) : ('node-' + id.toString());
+        console.log("You clicked: " + nodeID);
+        // we need submenu dropdown
+        // https://www.w3schools.com/bootstrap/bootstrap_ref_js_dropdown.asp
+        // https://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_ref_js_dropdown_multilevel_css&stacked=h
+        // http://jsfiddle.net/zbZ4Q/
+        var dropdownMenu = document.createElement('div');
+        dropdownMenu.className = 'hide';
+        dropdownMenu.id = 'rmenu';
+        
+        var dropdownItemList = document.createElement('ul');
+        dropdownItemList.id = 'ddItemList';
+
+        var dropdownItem1 = document.createElement('li');
+        dropdownItem1.innerText = 'Hardware Target';
+
+        var dropdownItem2 = document.createElement('li');
+        dropdownItem2.innerText = 'Quantization Type';
+
+        document.getElementById('ddItemList').appendChild(dropdownItem1);
+        document.getElementById('ddItemList').appendChild(dropdownItem2);
+        
+        document.getElementById('rmenu').appendChild(dropdownItemList);
+        
+        document.getElementById('dropdown-menu').appendChild(dropdownMenu);
+
+        // var view = new NodeDropdownMenu(node, nodeID, this._host);
+        // this._dropdown.open(view.elements);
     }
 
     logNodeInfo(node) {
