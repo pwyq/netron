@@ -365,26 +365,7 @@ view.View = class {
                 }
     
                 nodes.forEach((node) => {
-                    // console.log(typeof(node))
-                    // console.log(Object(node))
-                    // var keys = Object.keys(node)
-                    // console.log(keys)
-                    // console.log(Object.keys(node._graph))
-                    // console.log(Object.keys(node._graph._model))
-                    // console.log(Object.keys(node._graph._metaGraph))
-                    // console.log(Object.keys(node._graph._version))
-                    // console.log(Object.keys(node._graph._metadata))
-                    // console.log(Object.keys(node._graph._name))
-                    // console.log(Object.keys(node._graph._operators))
-                    // console.log(Object.keys(node._graph._inputMap))
-                    // console.log(Object.keys(node._graph._nodeMap))
-                    // console.log(Object.keys(node._graph._namespaces))
-                    // console.log(Object.keys(node._graph._nodeOutputCountMap))
-                    // console.log(Object.keys(node._graph._initializerMap))
-                    // console.log(Object.keys(node._node))
-                    // console.log(Object.keys(node._attributes))
-                    this.logNodeInfo(node);
-                    console.log("\n")
+                    this.logNodeInfo(node); // TODO: delete this
                     var formatter = new grapher.NodeElement();
 
                     if (node.function) {
@@ -716,6 +697,7 @@ view.View = class {
     }
 
     nodeElementClickHandler(button, node, input, strs) {
+        // `strs` is for testing
         switch (button) {
             case 0:
                 console.log(strs + " left click");
@@ -736,6 +718,7 @@ view.View = class {
 
     logNodeInfo(node) {
         try {
+            console.log("\n")
             // all this properties can be found in tf.js
             console.log("name = " + node.name);
             // console.log("primitive = " + node.primitive);
@@ -751,6 +734,24 @@ view.View = class {
             console.log("device = " + node.device);
             console.log("inputs = " + node.inputs);
             console.log("output = " + node.outputs);
+            // console.log(typeof(node))
+            // console.log(Object(node))
+            // var keys = Object.keys(node)
+            // console.log(keys)
+            // console.log(Object.keys(node._graph))
+            // console.log(Object.keys(node._graph._model))
+            // console.log(Object.keys(node._graph._metaGraph))
+            // console.log(Object.keys(node._graph._version))
+            // console.log(Object.keys(node._graph._metadata))
+            // console.log(Object.keys(node._graph._name))
+            // console.log(Object.keys(node._graph._operators))
+            // console.log(Object.keys(node._graph._inputMap))
+            // console.log(Object.keys(node._graph._nodeMap))
+            // console.log(Object.keys(node._graph._namespaces))
+            // console.log(Object.keys(node._graph._nodeOutputCountMap))
+            // console.log(Object.keys(node._graph._initializerMap))
+            // console.log(Object.keys(node._node))
+            // console.log(Object.keys(node._attributes))
         }
         catch (err) {
             console.log(err);
