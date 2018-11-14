@@ -135,7 +135,7 @@ host.ElectronHost = class {
         document.addEventListener('drop', (e) => {
             e.preventDefault();
         });
-        document.body.addEventListener('drop', (e) => { 
+        document.body.addEventListener('drop', (e) => {
             e.preventDefault();
             var files = [];
             for (var i = 0; i < e.dataTransfer.files.length; i++) {

@@ -84,23 +84,13 @@ class NodeSidebar {
         // console.log("node._node = " + tmp2);
         // console.log("node._attributes = " + tmp3);
 
-        
-        
-        
-        // TODO: note attributes are not yet pushed at here. So nothing will show up here
-        // var tmp4 = Object.keys(node._node.attributes);
-        // console.log("attributes = " + tmp4);
-        // for (var i = 0; i < node._node.attributes.length; i++) {
-            //     console.log("attributes[" + i + "] = " + node._node.attributes[i]);
-            // }
-            
-            this._host = host;
-            this._node = node;
-            this._elements = [];
-            this._attributes = [];
-            this._inputs = [];
-            this._outputs = [];
-            this._customAttributes = [];
+        this._host = host;
+        this._node = node;
+        this._elements = [];
+        this._attributes = [];
+        this._inputs = [];
+        this._outputs = [];
+        this._customAttributes = [];
 
         var operatorElement = document.createElement('div');
         operatorElement.className = 'sidebar-view-title';

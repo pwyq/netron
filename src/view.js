@@ -34,8 +34,9 @@ view.View = class {
         this._showNames = false;
         this._searchText = '';
         document.documentElement.style.overflow = 'hidden';
-        document.body.scroll = 'no';        
+        document.body.scroll = 'no';
         document.getElementById('model-properties-button').addEventListener('click', (e) => {
+            // console.log("yyyyyyyyyyyyyy");
             this.showModelProperties();
         });
         document.getElementById('zoom-in-button').addEventListener('click', (e) => {
@@ -44,6 +45,18 @@ view.View = class {
         document.getElementById('zoom-out-button').addEventListener('click', (e) => {
             this.zoomOut();
         });
+        // document.getElementsByTagName('g').addEventListener('click', (e) => {
+        //     console.log('hhhhhhhhhhhhhhhhhhhhhhei');
+        // });
+        // document.getElementsByClassName('node').addEventListener('click', (e) => {
+            // console.log("hhhhhhhhhhhhh");
+        // });
+        // document.getElementById('[id^="node-"]').addEventListener('click', (e) => {
+        //     console.log("HHHHHUA Q!!!!!");
+        // });
+        // document.getElementById('').addEventListener('mousewheel', (e) => {
+        //     this.preventZoom(e);
+        // });
         document.getElementById('toolbar').addEventListener('mousewheel', (e) => {
             this.preventZoom(e);
         });
@@ -365,7 +378,26 @@ view.View = class {
                 }
     
                 nodes.forEach((node) => {
-    
+                    // console.log(typeof(node))
+                    // console.log(Object(node))
+                    // var keys = Object.keys(node)
+                    // console.log(keys)
+                    // console.log(Object.keys(node._graph))
+                    // console.log(Object.keys(node._graph._model))
+                    // console.log(Object.keys(node._graph._metaGraph))
+                    // console.log(Object.keys(node._graph._version))
+                    // console.log(Object.keys(node._graph._metadata))
+                    // console.log(Object.keys(node._graph._name))
+                    // console.log(Object.keys(node._graph._operators))
+                    // console.log(Object.keys(node._graph._inputMap))
+                    // console.log(Object.keys(node._graph._nodeMap))
+                    // console.log(Object.keys(node._graph._namespaces))
+                    // console.log(Object.keys(node._graph._nodeOutputCountMap))
+                    // console.log(Object.keys(node._graph._initializerMap))
+                    // console.log(Object.keys(node._node))
+                    // console.log(Object.keys(node._attributes))
+                    this.logNodeInfo(node);
+                    console.log("\n")
                     var formatter = new grapher.NodeElement();
 
                     if (node.function) {
@@ -432,7 +464,7 @@ view.View = class {
                                     var types = input.connections.map(connection => connection.type || '').join('\n');
                                     formatter.addItem(input.name, inputId, [ inputClass ], types, () => {
                                         this.showNodeProperties(node, input);
-                                    });    
+                                    });
                                 }
                             }
             
@@ -448,7 +480,7 @@ view.View = class {
                                         name: input.name
                                     });
                                 }
-                            });    
+                            });
                         }
                     });
             
@@ -456,12 +488,12 @@ view.View = class {
                         if (hiddenInputs) {
                             formatter.addItem('...', null, [ 'node-item-input' ], '', () => {
                                 this.showNodeProperties(node, null);
-                            });    
+                            });
                         }
                         if (hiddenInitializers) {
                             formatter.addItem('...', null, [ 'node-item-constant' ], '', () => {
                                 this.showNodeProperties(node, null);
-                            });    
+                            });
                         }
                     }
             
@@ -510,6 +542,7 @@ view.View = class {
                     }
     
                     var name = node.name;
+                    // TODO: note here he set each nodes, maybe use getElementsByID
                     if (name) {
                         g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + name });
                     }
@@ -695,6 +728,29 @@ view.View = class {
         }
     }
 
+    logNodeInfo(node) {
+        try {
+            // all this properties can be found in tf.js
+            console.log("name = " + node.name);
+            // console.log("primitive = " + node.primitive);
+            console.log("operator = " + node.operator);
+            // console.log("inner = " + node.inner);
+            // console.log("dependencies = " + node.dependencies);
+            // console.log("attributes = " + node.attributes);
+            console.log("attributes = " + Object.keys(node.attributes));
+            console.log("group = " + node.group);
+            console.log("documentation = " + Object.keys(node.documentation));
+            console.log("domain = " + node.domain);
+            console.log("description = " + node.description);
+            console.log("device = " + node.device);
+            console.log("inputs = " + node.inputs);
+            console.log("output = " + node.outputs);
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
     applyStyleSheet(element, name) {
         var rules = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
@@ -797,7 +853,7 @@ view.View = class {
                 // https://github.com/electron-userland/electron-builder/issues/751
                 var exe_path = path.join(process.resourcesPath, "python_scripts/dist/dumpGraph/dumpGraph.exe")
             }
-            
+
             if (extension == 'txt') {
                 try {
                     var parameters = [outputFilePath, pbFilePath, 'txt'];
