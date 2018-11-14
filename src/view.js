@@ -403,31 +403,8 @@ view.View = class {
                             var text = view.showNames && node.name ? node.name : (node.primitive ? node.primitive : node.operator);
                             var title = view.showNames && node.name ? node.operator : node.name;
                             formatter.addItem(text, null, styles, title, (event) => {
-                                // switch (event.button) {
-                                //     case 0:
-                                //         console.log(strs + " left click");
-                                //         this.showNodeProperties(node, input);
-                                //         break;
-                                //     case 1:
-                                //         console.log(strs + " middle click");
-                                //         break;
-                                //     case 2:
-                                //         console.log(strs + " right click");
-                                //         break;
-                                //     default:
-                                //         console.log(strs + " default cases");
-                                //         this.showNodeProperties(node, input);
-                                //         break;
-                                // }
                                 view.nodeElementClickHandler(event.button, node, null, "test 5");
-                                // this.nodeElementClickHandler(event.button, node, null, "test 5");
-                                // view.showNodeProperties(node, null);
-                                // console.log("test 5");  // output when you clicked the upper left label, like `concatv2` `maxpool`
                             });
-                            // formatter.addItem(text, null, styles, title, () => { 
-                            //     view.showNodeProperties(node, null);
-                            //     console.log("test 5");  // output when you clicked the upper left label, like `concatv2` `maxpool`
-                            // });
                         }
                     }
     
@@ -474,13 +451,7 @@ view.View = class {
                                     var types = input.connections.map(connection => connection.type || '').join('\n');
                                     formatter.addItem(input.name, inputId, [ inputClass ], types, (event) => {
                                         this.nodeElementClickHandler(event.button, node, input, "test 4");
-                                        // this.showNodeProperties(node, input);
-                                        // console.log("test 4");  // output when you clicked the upper middle box, and the upper right box
                                     });
-                                    // formatter.addItem(input.name, inputId, [ inputClass ], types, () => {
-                                    //     this.showNodeProperties(node, input);
-                                    //     console.log("test 4");  // output when you clicked the upper middle box, and the upper right box
-                                    // });
                                 }
                             }
             
@@ -504,24 +475,12 @@ view.View = class {
                         if (hiddenInputs) {
                             formatter.addItem('...', null, [ 'node-item-input' ], '', (event) => {
                                 this.nodeElementClickHandler(event.button, node, null, "test 3");
-                                // this.showNodeProperties(node, null);
-                                // console.log("test 3");
                             });
-                            // formatter.addItem('...', null, [ 'node-item-input' ], '', () => {
-                            //     this.showNodeProperties(node, null);
-                            //     console.log("test 3");
-                            // });
                         }
                         if (hiddenInitializers) {
                             formatter.addItem('...', null, [ 'node-item-constant' ], '', (event) => {
                                 this.nodeElementClickHandler(event.button, node, null, "test 2");
-                                // this.showNodeProperties(node, null);
-                                // console.log("test 2");
                             });
-                            // formatter.addItem('...', null, [ 'node-item-constant' ], '', () => {
-                            //     this.showNodeProperties(node, null);
-                            //     console.log("test 2");
-                            // });
                         }
                     }
             
@@ -550,28 +509,7 @@ view.View = class {
                         if (attributes && !primitive) {
                             formatter.setAttributeHandler((event) => {
                                 this.nodeElementClickHandler(event.button, node, null, "test 1");
-                                // switch (event.button) {
-                                //     case 0:
-                                //         console.log("test 1 left click");
-                                //         this.showNodeProperties(node, null);
-                                //         break;
-                                //     case 1:
-                                //         console.log("test 1 middle click");
-                                //         break;
-                                //     case 2:
-                                //         console.log("test 1 right click");
-                                //         break;
-                                //     default:
-                                //         console.log("test 1 default cases");
-                                //         break;
-                                // }
-                                // this.showNodeProperties(node, null);
-                                // console.log("test 1");  // output when you clicked the detail box
                             });
-                            // formatter.setAttributeHandler(() => { 
-                            //     this.showNodeProperties(node, null);
-                            //     console.log("test 1");  // output when you clicked the detail box
-                            // });
                             attributes.forEach((attribute) => {
                                 if (attribute.visible) {
                                     var attributeValue = '';
@@ -790,7 +728,7 @@ view.View = class {
                 console.log(strs + " right click");
                 break;
             default:
-                console.log(strs + " default cases");
+                console.log(strs + " click default cases");
                 this.showNodeProperties(node, input);
                 break;
         }
