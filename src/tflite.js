@@ -33,6 +33,7 @@ tflite.ModelFactory = class {
             catch (error) {
                 host.exception(error, false);
                 callback(new tflite.Error(error.message), null);
+                return;
             }
     
             tflite.OperatorMetadata.open(host, (err, metadata) => {
@@ -499,6 +500,11 @@ tflite.Tensor = class {
                 {
                     case 'uint8':
                         results.push(context.data.getUint8(context.index));
+                        context.index += 1;
+                        context.count++;
+                        break;
+                    case 'int8':
+                        results.push(context.data.getInt8(context.index));
                         context.index += 1;
                         context.count++;
                         break;
