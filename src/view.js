@@ -22,17 +22,6 @@ var tflite = tflite || require('./tflite');
 var d3 = d3 || require('d3');
 var dagre = dagre || require('dagre');
 
-// jQuery stuff
-// var jsdom = require("jsdom");
-// const { JSDOM } = jsdom;
-// const { window } = new JSDOM();
-// const { document } = (new JSDOM('')).window;
-// global.document = document;
-
-// var $ = jQuery = require('jquery')(window);
-// var $ = jQuery = require('jquery')(window);
-
-
 view.View = class {
 
     constructor(host) {
@@ -40,7 +29,6 @@ view.View = class {
         this._model = null;
         this._selection = [];
         this._sidebar = new Sidebar();
-        this._dropdown = new DropdownMenu();
         this._host.initialize(this);
         this._showDetails = true;
         this._showNames = false;
@@ -377,7 +365,7 @@ view.View = class {
                 }
     
                 nodes.forEach((node) => {
-                    this.logNodeInfo(node); // TODO: delete this
+                    // this.logNodeInfo(node); // TODO: delete this
                     var formatter = new grapher.NodeElement();
 
                     if (node.function) {
@@ -713,6 +701,7 @@ view.View = class {
         }
     }
 
+
     nodeElementClickHandler(button, params) {
         // params = [node, input, id, strs];
         var node = params[0];
@@ -720,6 +709,14 @@ view.View = class {
         var id = params[2];
         var strs = params[3];
         // `strs` is for testing
+        var name = node.name;
+        if (name) {
+            var nodeID = 'node-' + name;
+        }
+        else {
+            var nodeID = 'node-' + id.toString();
+        }
+        console.log("You clicked: " + nodeID);
         switch (button) {
             case 0:
                 console.log(strs + " left click");
@@ -730,7 +727,7 @@ view.View = class {
                 break;
             case 2:
                 console.log(strs + " right click");
-                this.showDropdownMenu(node);
+                this.showDropdownMenu(node, nodeID);
                 break;
             default:
                 console.log(strs + " click default cases");
@@ -739,49 +736,50 @@ view.View = class {
         }
     }
 
-    showDropdownMenu(node) {
-        // TODO: after all set, move to near showNodeProperties
-        // TODO TODO: add drop down menu here
-        // get node ID?,
-        // var name = node.name;
-        // var nodeID = '';
-        // if (name) {
-        //     var nodeID = 'node-' + name;
-        // }
-        // else {
-        //     var nodeID = 'node-' + id.toString();
-        // }
-        // var block = document.getElementById(nodeID);
-        // var dropdownList = document.createElement
-        var nodeID = (node.name) ? ('node-' + name) : ('node-' + id.toString());
-        console.log("You clicked: " + nodeID);
+    showDropdownMenu(node, nodeID) {
         // we need submenu dropdown
         // https://www.w3schools.com/bootstrap/bootstrap_ref_js_dropdown.asp
         // https://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_ref_js_dropdown_multilevel_css&stacked=h
         // http://jsfiddle.net/zbZ4Q/
-        var dropdownMenu = document.createElement('div');
-        dropdownMenu.className = 'hide';
-        dropdownMenu.id = 'rmenu';
+
+        console.log("showDropdownMenu!\n");
+
+        // var dropdownMenu = document.createElement('div');
+        // dropdownMenu.className = 'hide';
+        // dropdownMenu.id = 'rmenu';
         
-        var dropdownItemList = document.createElement('ul');
-        dropdownItemList.id = 'ddItemList';
+        // var dropdownItemList = document.createElement('ul');
+        // dropdownItemList.id = 'ddItemList';
 
-        var dropdownItem1 = document.createElement('li');
-        dropdownItem1.innerText = 'Hardware Target';
+        // var dropdownItem1 = document.createElement('li');
+        // dropdownItem1.innerText = 'Hardware Target';
 
-        var dropdownItem2 = document.createElement('li');
-        dropdownItem2.innerText = 'Quantization Type';
+        // var dropdownItem2 = document.createElement('li');
+        // dropdownItem2.innerText = 'Quantization Type';
 
-        document.getElementById('ddItemList').appendChild(dropdownItem1);
-        document.getElementById('ddItemList').appendChild(dropdownItem2);
-        
-        document.getElementById('rmenu').appendChild(dropdownItemList);
-        
-        document.getElementById('dropdown-menu').appendChild(dropdownMenu);
+        // try {
+        //     document.getElementById(nodeID).appendChild(dropdownMenu);
+        //     document.getElementById('rmenu').appendChild(dropdownItemList);
+        //     document.getElementById('ddItemList').appendChild(dropdownItem1);
+        //     document.getElementById('ddItemList').appendChild(dropdownItem2);
+        // }
+        // catch (err) {
+        //     console.log("111 " + err);
+        // }
 
-        // var view = new NodeDropdownMenu(node, nodeID, this._host);
-        // this._dropdown.open(view.elements);
+        // try {
+        //     setTimeout(() => {
+        //         var graph = this._model.graphs.length > 0 ? this._model.graphs[0] : null;
+        //         this.updateGraph(this._model, graph, (err, this._model) => {
+        //             callback(err, this._model);
+        //         });
+        //     }, 20);  
+        // }
+        // catch (err) {
+        //     console.log("222" + err);
+        // }
     }
+
 
     logNodeInfo(node) {
         try {

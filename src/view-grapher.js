@@ -42,7 +42,7 @@ grapher.Renderer = class {
                 // TODO: add dropdown-menu here? the other add dropdown-menu to all node-item...
                 // TODO TODO: use class name to set css
                 element.setAttribute('class', node.hasOwnProperty('class') ? ('node ' + node.class) : 'node');
-                element.setAttribute('class', node.hasOwnProperty('class') ? ('dropdown-menu' + node.class) : 'node dropdown-menu');
+                // element.setAttribute('class', node.hasOwnProperty('class') ? ('dropdown-menu' + node.class) : 'node dropdown-menu');
                 element.style.setProperty('opacity', 0);
                 var container = this.createElement('g');
                 container.appendChild(node.label);
