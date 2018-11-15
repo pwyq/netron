@@ -731,6 +731,24 @@
     "link":   "https://github.com/caffe2/models"
   },
   {
+    "target": "keras/cats_and_dogs_small_1.h5",
+    "source": "https://raw.githubusercontent.com/wwells/CUNY_DATA_698/master/DL_Coursework/DLR/cats_and_dogs_small_1.h5",
+    "format": "Keras v2.1.5",
+    "link":   "https://github.com/wwells/CUNY_DATA_698/tree/master/DL_Coursework/DLR"
+  },
+  {
+    "target": "keras/cats_and_dogs_small_2.h5",
+    "source": "https://raw.githubusercontent.com/kylehamilton/deep-learning-with-r-notebooks/master/cats_and_dogs_small_2.h5",
+    "format": "Keras v2.0.9",
+    "link":   "https://github.com/kylehamilton/deep-learning-with-r-notebooks"
+  },
+  {
+    "target": "keras/CNN_SN_flaw1_v1.h5",
+    "source": "https://github.com/lutzroeder/netron/files/2452413/CNN_SN_flaw1_v1.h5.zip[CNN_SN_flaw1_v1.h5]",
+    "format": "Keras v2.2.3",
+    "link":   "https://github.com/lutzroeder/netron/issues/157"
+  },
+  {
     "target": "keras/DenseNet121.h5",
     "link":   "https://keras.io/applications",
     "script": [ "${root}/tools/keras", "sync install zoo" ],
@@ -753,6 +771,12 @@
     "source": "https://github.com/lutzroeder/netron/files/2565761/mimo.h5.zip[mimo.h5]",
     "format": "Keras v2.2.0",
     "link":   "https://github.com/lutzroeder/netron/issues/138"
+  },
+  {
+    "target": "keras/mobilenet.h5",
+    "source": "https://raw.githubusercontent.com/aio-libs/aiohttp-demos/master/demos/imagetagger/tests/data/mobilenet.h5",
+    "format": "Keras v2.2.2",
+    "link":   "https://github.com/aio-libs/aiohttp-demos/tree/master/demos/imagetagger/tests/data"
   },
   {
     "target": "keras/MobileNetV2.h5",
