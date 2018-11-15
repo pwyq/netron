@@ -102,17 +102,14 @@ class NodeSidebar {
         }
 
         if (node.name) {
-            // console.log("name = " + name);
             this.addProperty('name', new ValueTextView(node.name));
         }
 
         if (node.domain) {
-            // console.log("domain = " + domain);
             this.addProperty('domain', new ValueTextView(node.domain));
         }
 
         if (node.description) {
-            // console.log("description = " + description);
             this.addProperty('description', new ValueTextView(node.description));
         }
 
@@ -122,8 +119,6 @@ class NodeSidebar {
         
         var attributes = node.attributes;
         if (attributes && attributes.length > 0) {
-            // console.log("attributes = " + attributes);
-            // console.log("attributes.length = " + attributes.length);
             this.addHeader('Attributes');
             attributes.forEach((attribute) => {
                 this.addAttribute(attribute.name, attribute);
@@ -216,7 +211,7 @@ class NodeSidebar {
         }
     }
 }
-// /*
+
 class customAttributes {
     constructor(node) {
         this._name = node.name;
@@ -268,12 +263,6 @@ class NodeCustomAttributeSidebar {
             this.addHeader('Custom Attributes');
             attrList.forEach((attribute) => {
                 this.addCustomAttribute(this._name, attribute);
-
-                // var customAttrView = new NodeCustomAttributeView(this._name, attribute);
-                // this._attributeView.push(customAttrView);
-                // var item = new NameValueView(attribute.key, customAttrView);
-                // this._attributes.push(item);
-                // this._elements.push(item.element);
             });
         }
 
@@ -281,33 +270,14 @@ class NodeCustomAttributeSidebar {
         divider.setAttribute('style', 'margin-bottom: 20px');
         this._elements.push(divider);
 
-        // console.log("laggggggggggggggggggggggggg1");
-        // console.log(this._attributeView);
-        // for (var i = 0; i < this._attributeView.length; i++) {
-        //     console.log(this._attributeView[i]);
-        // }
-        // console.log("laggggggggggggggggggggggggg2");
-
         if (this._attributeView && this._attributeView.length > 0) {
+            // Listen to callback from custom attributes that user selected, and redirect to view
             this._attributeView.forEach((item) => {
                 item.on('custom-attr-selected', (sender, cb)=> {
-                    console.log("This is sidebar, I heard something");
-                    console.log(cb);
-                    console.log("OK, i'm gonna redirect this to view");
                     this._raise('custom-attr-sidebar', cb);
                 });
             });
         }
-
-        // try {
-        //     attributes.on('custom-attr-selected', (sender, test)=> {
-        //         console.log("[NodeCustomAttributeSidebar] callback item = " + test);
-        //         // this._raise('node-custom-attr-sidebar', item);
-        //     });
-        // }
-        // catch (err) {
-        //     console.log(err);
-        // }
     }
 
     get elements() {
@@ -374,12 +344,7 @@ class NodeCustomAttributeView {
 
         this._dropdownListElement = document.createElement('ol');
         this._dropdownListElement.addEventListener('click', (e) => {
-            // var targetVal = e.target.value;
-            // var targetId = e.target.id;
-            // console.log('[dropdownList] you clicked ' + targetId + ', value = ' + targetVal);
-            // this.updateValue(targetId);
             this.updateValue(e.target.id);
-            // console.log(Object.keys(e.target));
             this._raise('custom-attr-selected', e.target.id);
         });
         this._element.appendChild(this._dropdownListElement);
@@ -438,8 +403,6 @@ class NodeCustomAttributeView {
     }
     
     _raise(event, data) {
-        // console.log("400, event = " + event);
-        // console.log("400, data = " + data);
         if (this._events && this._events[event]) {
             this._events[event].forEach((callback) => {
                 callback(this, data);
