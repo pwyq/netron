@@ -1,0 +1,32 @@
+{ 
+  "name": "Sara",
+  "age": 23,
+  "gender": "Female",
+  "department": "History",
+  "car": "Honda"
+}
+
+
+{
+	"graph1":
+	{
+		"node1":
+		{
+			"hw": "hw1",
+			"qt": "qt1"
+		},
+		"node2":
+		{
+			"hw": "hw1",
+			"qt": "qt1"
+		}
+	},
+	"graph2":
+	{
+		"node3":
+		{
+			"hw": "hw5",
+			"qt": "qt9"
+		}
+	}
+}

@@ -1,5 +1,7 @@
 /*jshint esversion: 6 */
 
+// const fs = require('fs');
+
 var view = view || {};
 
 var base = base || require('./base');
@@ -751,9 +753,65 @@ view.View = class {
             var view = new NodeCustomAttributeSidebar(node, this._host);
             view.on('custom-attr-sidebar', (sender, cb) => {
                 console.log("[showDropdownMenu]: " + cb);
+                try {
+
+                    this.saveCustomAttributes(cb);
+                }
+                catch (err) {
+                    console.log(err);
+                }
             }); 
             this._sidebar.open(view.elements, 'Node Custom Attributes');
         }
+    }
+    
+    saveCustomAttributes(item) {
+        if (this._host.getIsDev()) {
+            var inputPath = path.join(__dirname, '../custom_json', 'custom-attributes.json');
+            var outputPath = path.join(__dirname, '../custom_json', 'student-2.json');
+        }
+        else {
+            var inputPath = path.join(process.resourcesPath, 'custom_json', 'custom-attributes.json');
+            var outputPath = path.join(process.resourcesPath, 'custom_json', "student-2.json");
+        }
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
+        var fileName = inputPath;
+        var file = require(fileName);
+
+        var strs = item.split('-');
+        var nodeId = strs[2];
+        var customAttr = strs[1];
+        var customVal = strs[3];
+
+        var rawData = fs.readFileSync(inputPath);
+        var data = JSON.parse(rawData);
+        console.log("data = " + data);
+
+        var test = require('./json-manipulate');
+        var a = test.getObjects(data, 'name', '');
+        console.log(a);
+        console.log(Object.keys(a));
+
+
+        // fs.writeFile(fileName, JSON)
+
+
+
+        // let rawdata = fs.readFileSync(inputPath);  
+        // let student = JSON.parse(rawdata);  
+        // console.log(student);
+
+        // let student2 = {  
+        //     name: 'Mike',
+        //     age: 23, 
+        //     gender: 'Male',
+        //     department: 'English',
+        //     car: 'Honda' 
+        // };
+        
+        // let data = JSON.stringify(student2, null, 2);    // https://stackabuse.com/reading-and-writing-json-files-with-node-js/
+
+        // fs.writeFileSync(outputPath, data);  
     }
 
     logNodeInfo(node) {

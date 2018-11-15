@@ -4,10 +4,15 @@ productName: Netron
 
 files:
   - 'src/**/*'
+  # - 'custom_json/**/*'
 
 extraResources:
   - from: "python_scripts"
     to: "python_scripts"
+    filter:
+      - "**/*"
+  - from: "custom_json"
+    to: "custom_json"
     filter:
       - "**/*"
 
