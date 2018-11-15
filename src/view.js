@@ -515,7 +515,6 @@ view.View = class {
                     }
     
                     var name = node.name;
-                    // TODO: note here he set each nodes, maybe use getElementsByID
                     if (name) {
                         g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + name });
                     }
@@ -701,14 +700,12 @@ view.View = class {
         }
     }
 
-
     nodeElementClickHandler(button, params) {
         // params = [node, input, id, strs];
         var node = params[0];
         var input = params[1];
         var id = params[2];
-        var strs = params[3];
-        // `strs` is for testing
+        var strs = params[3];   // `strs` is for debugging
         var name = node.name;
         if (name) {
             var nodeID = 'node-' + name;
@@ -737,49 +734,11 @@ view.View = class {
     }
 
     showDropdownMenu(node, nodeID) {
-        // we need submenu dropdown
-        // https://www.w3schools.com/bootstrap/bootstrap_ref_js_dropdown.asp
-        // https://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_ref_js_dropdown_multilevel_css&stacked=h
-        // http://jsfiddle.net/zbZ4Q/
-
-        console.log("showDropdownMenu!\n");
-
-        // var dropdownMenu = document.createElement('div');
-        // dropdownMenu.className = 'hide';
-        // dropdownMenu.id = 'rmenu';
-        
-        // var dropdownItemList = document.createElement('ul');
-        // dropdownItemList.id = 'ddItemList';
-
-        // var dropdownItem1 = document.createElement('li');
-        // dropdownItem1.innerText = 'Hardware Target';
-
-        // var dropdownItem2 = document.createElement('li');
-        // dropdownItem2.innerText = 'Quantization Type';
-
-        // try {
-        //     document.getElementById(nodeID).appendChild(dropdownMenu);
-        //     document.getElementById('rmenu').appendChild(dropdownItemList);
-        //     document.getElementById('ddItemList').appendChild(dropdownItem1);
-        //     document.getElementById('ddItemList').appendChild(dropdownItem2);
-        // }
-        // catch (err) {
-        //     console.log("111 " + err);
-        // }
-
-        // try {
-        //     setTimeout(() => {
-        //         var graph = this._model.graphs.length > 0 ? this._model.graphs[0] : null;
-        //         this.updateGraph(this._model, graph, (err, this._model) => {
-        //             callback(err, this._model);
-        //         });
-        //     }, 20);  
-        // }
-        // catch (err) {
-        //     console.log("222" + err);
-        // }
+        if (node) {
+            var view = new NodeCustomAttributeSidebar(node, this._host);
+            this._sidebar.open(view.elements, 'Node Custom Attributes');
+        }
     }
-
 
     logNodeInfo(node) {
         try {
@@ -938,6 +897,19 @@ view.View = class {
                         console.log(output);
                     });
                     // TODO: send notification when export is done
+                    /*
+                                var owner = electron.BrowserWindow.getFocusedWindow();
+            var messageBoxOptions = {
+                icon: path.join(__dirname, 'icon.png'),
+                title: ' ',
+                message: 'A new version of ' + electron.app.getName() + ' is available.',
+                detail: 'Click \'Download and Install\' to download the update and automatically install it on exit.',
+                buttons: ['Download and Install', 'Remind Me Later'],
+                defaultId: 0,
+                cancelId: 1
+            };
+            var result = electron.dialog.showMessageBox(owner, messageBoxOptions);
+                     */
                 }
                 catch (err) {
                     console.log("==== ERROR ====:\n " + err);
@@ -999,7 +971,7 @@ view.View = class {
             if (input) {
                 view.toggleInput(input.name);
             }
-            this._sidebar.open(view.elements, 'Node Properties');
+            this._sidebar.open(view.elements, 'Node Properties (constant)');
         }
     }
 

@@ -44,7 +44,7 @@ Install `Debugger for Chrome` to use this DEBUG configuration.
         - `pip install virtualenvwrapper-win`
 - `pip install google`
 - `pip3 install pyinstaller`
-<!-- - `npm install jsdom` -->
+- `npm install --save data-store`
 
 ```bash
 cd tools

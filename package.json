@@ -19,6 +19,7 @@
         "ajv": "^6.5.5",
         "d3": "latest",
         "dagre": "latest",
+        "data-store": "^3.1.0",
         "electron-updater": "^4.0.0",
         "flatbuffers": "latest",
         "google": "^2.1.0",
@@ -28,7 +29,8 @@
         "pako": "latest",
         "protobufjs": "lutzroeder/protobuf.js#pbtxt",
         "python-shell": "^1.0.6",
-        "universal-analytics": "latest"
+        "universal-analytics": "latest",
+        "yarn": "^1.12.3"
     },
     "devDependencies": {
         "electron": "latest",

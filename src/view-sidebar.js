@@ -1,9 +1,10 @@
 /*jshint esversion: 6 */
 
 var Handlebars = Handlebars || require('handlebars');
+const HARDWARE_TARGETS = ['CPU', 'GPU', 'APEX', 'HW1', 'HW2'];
+const QUANTIZATION_TYPES = ['Fix-Point', 'Float-Point', 'Quant1', 'Quant2'];
 
 class Sidebar {
-    
     constructor() {
         this._closeSidebarHandler = (e) => {
             this.close();
@@ -48,7 +49,7 @@ class Sidebar {
             else {
                 contentElement.appendChild(content);
             }
-            sidebarElement.style.width = width ? width : '500px';    
+            sidebarElement.style.width = width ? width : '300px';    
             if (width && width.endsWith('%')) {
                 contentElement.style.width = '100%';
             }
@@ -73,25 +74,13 @@ class Sidebar {
 }
 
 class NodeSidebar {
-
     constructor(node, host) {
-        // TODO: clean up
-        // var keys = Object.keys(node);
-        // console.log("node properties = " + keys);
-        // var tmp1 = Object.keys(node._graph);
-        // var tmp2 = Object.keys(node._node);
-        // var tmp3 = Object.keys(node._attributes);
-        // console.log("node._graph = " + tmp1);
-        // console.log("node._node = " + tmp2);
-        // console.log("node._attributes = " + tmp3);
-
         this._host = host;
         this._node = node;
         this._elements = [];
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
-        this._customAttributes = [];
 
         var operatorElement = document.createElement('div');
         operatorElement.className = 'sidebar-view-title';
@@ -126,36 +115,16 @@ class NodeSidebar {
         }
 
         if (node.device) {
-            // console.log("device = " + device);
             this.addProperty('device', new ValueTextView(node.device));
         }
-        // TODO: clean up
-        // ===========================================
-        // if (node.hardwareTarget) {
-        //     this.addProperty('hardwareTarget', new ValueTextView(node.hardwareTarget));
-        // }
-        // else {
-        //     console.log(node + "doesn't have hardware target");
-        // }
-
-        // if (node.quantizationType) {
-        //     this.addProperty('')
-        // }
-        // ===========================================
         
         var attributes = node.attributes;
         if (attributes && attributes.length > 0) {
+            console.log("attributes = " + attributes);
+            console.log("attributes.length = " + attributes.length);
             this.addHeader('Attributes');
             attributes.forEach((attribute) => {
                 this.addAttribute(attribute.name, attribute);
-                // console.log(Object.keys(attribute._value));
-                
-                // console.log("attribute.name = " + attribute.name + ", attribute = " + attribute);
-                // attribute.name = ksize, attribute = [object Object]
-                // attribute.name = padding, attribute = [object Object]
-                // attribute.name = T, attribute = [object Object]
-                // attribute.name = strides, attribute = [object Object]
-                // attribute.name = data_format, attribute = [object Object]
             });
         }
 
@@ -174,36 +143,12 @@ class NodeSidebar {
                 this.addOutput(output.name, output);
             });
         }
-        // ===========================================
-        // var customAttributes = node.customAttributes;
-        // if (customAttributes && customAttributes.length > 0) {
-        //     this.addHeader('Custom Attributes');
-        //     customAttributes.forEach((customAttribute) => {
-        //         this.addCustom(customAttribute.name, customAttribute);
-        //     });
-        // }
-        // ===========================================
 
         var divider = document.createElement('div');
         divider.setAttribute('style', 'margin-bottom: 20px');
         this._elements.push(divider);
 
-        // this.printNodeInfo(this._node);
     }
-
-    // printNodeInfo(node) {
-    //     nodeName = this._node.name
-    //     nodeOp = this._node.op
-    //     nodeInput = this._node.input
-    //     nodeOutput = this._node.output
-    //     nodeAttr = this._node.attr
-
-    //     console.log("User selcted node: "+nodeName)
-    //     console.log("node Operation = " + nodeOp)
-    //     console.log("node Input = " + nodeInput)
-    //     console.log("node Output = " + nodeOutput)
-    //     console.log("node Attribute = " + nodeAttr)
-    // }
 
     get elements() {
         return this._elements;
@@ -221,7 +166,6 @@ class NodeSidebar {
         this._elements.push(item.element);
     }
 
-    // TODO: IMPORTANT
     addAttribute(name, attribute) {
         var item = new NameValueView(name, new NodeAttributeView(attribute));
         this._attributes.push(item);
@@ -247,13 +191,6 @@ class NodeSidebar {
             this._elements.push(item.element);
         }
     }
-    // ===========================================
-    // addCustom(name, customAttribute) {
-    //     var customItem = new NameValueView(name, new NodeCustomAttributeView(customAttribute));
-    //     this._customAttributes.push(customItem);
-    //     this._customElements.push(customItem.customElement);
-    // }
-    // ===========================================
 
     toggleInput(name) {
         this._inputs.forEach((input) => {
@@ -274,6 +211,232 @@ class NodeSidebar {
             this._events[event].forEach((callback) => {
                 callback(this, data);
             });
+        }
+    }
+}
+// /*
+class customAttributes {
+    constructor(node) {
+        this._name = node.name;
+        this._attributes = [];
+        // this._hardwareTarget = '';
+        // this._quantizationType = '';
+        // console.log("\n\nhehehehehe name = " + this._name);
+
+        this.addAttribute('Hardware_Target', '');
+        this.addAttribute('Quantization_Type', '');
+    }
+
+    addAttribute(_key, _value) {
+        this._attributes.push({
+            key: _key,
+            value: _value,
+        });
+    }
+
+    get nodeName() {
+        return this._name;
+    }
+
+    get attributeList() {
+        return this._attributes;
+    }
+
+    // // to use:
+    // // customAttributes.hardwareTarget = 'GPU';
+    // set setHardwareTarget(hw) {
+    //     if (HARDWARE_TARGETS.indexOf(hw) > -1) {
+    //         // in the array
+    //         this._hardwareTarget = hw;
+    //     }
+    // }
+
+    // set setQuantizationType(quantType) {
+    //     if (QUANTIZATION_TYPES.indexOf(quantType) > -1) {
+    //         this._quantizationType = quantType;
+    //     }
+    // }
+
+    // get getHardwareTarget() {
+    //     if (this._hardwareTarget == '') {
+    //         return undefined;
+    //     }
+    //     else {
+    //         return this._hardwareTarget;
+    //     }
+    // }
+
+    // get getQuantizationType() {
+    //     if (this._quantizationType == '') {
+    //         return undefined;
+    //     }
+    //     else {
+    //         return this._quantizationType;
+    //     }
+    // }
+}
+
+
+class NodeCustomAttributeSidebar {
+    constructor(node, host) {
+        this._host = host;
+        this._node = node;
+        this._name = node.name;
+        this._elements = [];
+        this._attributes = [];
+
+        var operatorElement = document.createElement('div');
+        operatorElement.className = 'sidebar-view-title';
+        operatorElement.innerText = node.operator;
+        this._elements.push(operatorElement);
+
+        if (this._name) {
+            this.addProperty('name', new ValueTextView(this._name));
+        }
+
+        var attributes = new customAttributes(this._node);
+        var attrList = attributes.attributeList;
+        if (attributes && attrList.length > 0) {
+            this.addHeader('Custom Attributes');
+            attrList.forEach((attribute) => {
+                // this.addCustomAttribute(attribute.key, attribute.value);
+                this.addCustomAttribute(this._name, attribute);
+            });
+        }
+
+        var divider = document.createElement('div');
+        divider.setAttribute('style', 'margin-bottom: 20px');
+        this._elements.push(divider);
+    }
+
+    get elements() {
+        return this._elements;
+    }
+
+    addHeader(title) {
+        var headerElement = document.createElement('div');
+        headerElement.className = 'sidebar-view-header';
+        headerElement.innerText = title;
+        this._elements.push(headerElement);
+    }
+
+    addProperty(name, value) {
+        var item = new NameValueView(name, value);
+        this._elements.push(item.element);
+    }
+
+    addCustomAttribute(name, attribute) {
+        var item = new NameValueView(attribute.key, new NodeCustomAttributeView(name, attribute));
+        this._attributes.push(item);
+        this._elements.push(item.element);
+    }
+
+    on(event, callback) {
+        this._events = this._events || {};
+        this._events[event] = this._events[event] || [];
+        this._events[event].push(callback);
+    }
+
+    _raise(event, data) {
+        if (this._events && this._events[event]) {
+            this._events[event].forEach((callback) => {
+                callback(this, data);
+            });
+        }
+    }
+}
+
+class NodeCustomAttributeView {
+    constructor(name, attribute) {
+        this._name = name;
+        this._attribute = attribute;
+        this._element = document.createElement('div');
+        this._element.className = 'sidebar-view-item-value';
+
+        try {
+            this._items = document.createElement('select');
+            var attrFullList = this.getConstAttributeList(this._attribute.key);
+            for (var i = 0; i < attrFullList.length; i++) {
+                var listItem = document.createElement('option');
+                var listItemValue = attrFullList[i];
+                listItem.setAttribute("value", listItemValue.toString());
+                var iter = i + 1;
+                listItem.innerHTML = iter.toString() + ': <code><b>' + attrFullList[i] + '</b></code>';
+                this._items.appendChild(listItem);   
+            }
+            this._element.appendChild(this._items);
+        }
+        catch (err) {
+            console.log(err);
+        }
+
+        // this._expander = document.createElement('div');
+        // this._expander.className = 'sidebar-view-item-value-expander';
+        // this._expander.innerText = '+';
+        // this._expander.addEventListener('click', (e) => {
+        //     this.toggle();
+        //     // this.dropdown();
+        // });
+        // this._element.appendChild(this._expander);
+
+        var value = (this._attribute.value == '') ? 'undefined' : this._attribute.value;
+        var valueLine = document.createElement('div');
+        valueLine.className = 'sidebar-view-item-value-line';
+        valueLine.innerHTML = (value ? value : '&nbsp;');
+        this._element.appendChild(valueLine);
+    }
+
+    get elements() {
+        return [ this._element ];
+    }
+
+    getConstAttributeList(key) {
+        var res = [];
+        switch (key) {
+            case 'Hardware_Target':
+                res = HARDWARE_TARGETS;
+                break;
+            case 'Quantization_Type':
+                res = QUANTIZATION_TYPES;
+                break;
+            default:
+                res = undefined;
+        }
+        return res;
+    }
+
+    dropdown() {
+        // https://jsfiddle.net/tboggia/4u5dmnzh/1/
+        // var items = document.createElement('select');
+        var attrFullList = this.getConstAttributeList(this._attribute.key);
+        for (var i = 0; i < attrFullList.length; i++) {
+            var item = document.createElement('option');
+            item.setAttribute(value, attrFullList[i]);
+            var iter = i + 1;
+            item.innerHTML = iter.toString() + ': <code><b>' + attrFullList[i] + '</b></code>';
+            this._items.appendChild(item);   
+        }
+        this._element.appendChild(this._items);
+    }
+
+    toggle() {
+        if (this._expander.innerText == '+') {
+            this._expander.innerText = '-';
+
+            var attrFullList = this.getConstAttributeList(this._attribute.key);
+            for (var i = 0; i < attrFullList.length; i++) { 
+                var attrLine = document.createElement('div');
+                attrLine.className = 'sidebar-view-item-value-line-border attr-choose';
+                var iter = i + 1;
+                attrLine.innerHTML = iter.toString() + ': <code><b>' + attrFullList[i] + '</b></code>';
+                this._element.appendChild(attrLine);
+            }
+        }
+        else {
+            this._expander.innerText = '+';
+            while (this._element.childElementCount > 2) {
+                this._element.removeChild(this._element.lastChild);
+            }
         }
     }
 }
@@ -342,7 +505,6 @@ class ValueTextView {
 
 class NodeAttributeView {
 
-    // TODO: IMPORTANT
     constructor(attribute) {
         this._attribute = attribute;
         this._element = document.createElement('div');
@@ -356,7 +518,6 @@ class NodeAttributeView {
                 console.log("you clicked here 6");  // the plus button for revealing attributes
                 this.toggle();
             });
-            // TODO: need to add a dropdown value here for user to select hardware target or quantization type
             this._element.appendChild(this._expander);
         }
         var value = '';
@@ -379,7 +540,6 @@ class NodeAttributeView {
         return [ this._element ];
     }
 
-    // TODO: add a line to add hw target
     toggle() {
         if (this._expander.innerText == '+') {
             this._expander.innerText = '-';
@@ -1083,4 +1243,3 @@ class FindSidebar {
     }
 
 }
-
