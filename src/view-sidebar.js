@@ -1,8 +1,10 @@
 /*jshint esversion: 6 */
 
 var Handlebars = Handlebars || require('handlebars');
-const HARDWARE_TARGETS = ['CPU', 'GPU', 'APEX', 'HW1', 'HW2'];
-const QUANTIZATION_TYPES = ['Fix-Point', 'Float-Point', 'Quant1', 'Quant2'];
+
+// [a-zA-Z0-9]+[_]+[^-*(){}!@#$%&]
+const HARDWARE_TARGETS = ['None', 'CPU', 'GPU', 'APEX', 'HW1', 'HW2'];
+const QUANTIZATION_TYPES = ['None', 'Fix_Point', 'Float_Point', 'Quant1', 'Quant2'];
 
 class Sidebar {
     constructor() {
@@ -49,7 +51,7 @@ class Sidebar {
             else {
                 contentElement.appendChild(content);
             }
-            sidebarElement.style.width = width ? width : '300px';    
+            sidebarElement.style.width = width ? width : '500px';    
             if (width && width.endsWith('%')) {
                 contentElement.style.width = '100%';
             }
@@ -353,37 +355,113 @@ class NodeCustomAttributeView {
         this._element = document.createElement('div');
         this._element.className = 'sidebar-view-item-value';
 
-        try {
-            this._items = document.createElement('select');
-            var attrFullList = this.getConstAttributeList(this._attribute.key);
-            for (var i = 0; i < attrFullList.length; i++) {
-                var listItem = document.createElement('option');
-                var listItemValue = attrFullList[i];
-                listItem.setAttribute("value", listItemValue.toString());
-                var iter = i + 1;
-                listItem.innerHTML = iter.toString() + ': <code><b>' + attrFullList[i] + '</b></code>';
-                this._items.appendChild(listItem);   
-            }
-            this._element.appendChild(this._items);
-        }
-        catch (err) {
-            console.log(err);
-        }
+        // try {
+/*
+        this._itemsElement = document.createElement('select');
+        var itemsID = 'dropdown-' + this._attribute.key + '-' + this._name;
+        this._itemsElement.setAttribute('id', itemsID);
+        this._itemsElement.setAttribute('style', 'width: 100%');
 
-        // this._expander = document.createElement('div');
-        // this._expander.className = 'sidebar-view-item-value-expander';
-        // this._expander.innerText = '+';
-        // this._expander.addEventListener('click', (e) => {
-        //     this.toggle();
-        //     // this.dropdown();
+        var attrFullList = this.getConstAttributeList(this._attribute.key);
+        for (var i = 0; i < attrFullList.length; i++) {
+            var listItem = document.createElement('option');
+            var listItemValue = attrFullList[i];
+            listItem.setAttribute("value", listItemValue.toString());
+            var iter = i + 1;
+            listItem.innerHTML = iter.toString() + ': <code><b>' + attrFullList[i] + '</b></code>';
+            this._itemsElement.appendChild(listItem);   
+        }
+        this._element.appendChild(this._itemsElement);
+        // }
+        // catch (err) {
+        //     console.log(err);
+        // }
+*/
+        this._expander = document.createElement('div');
+        this._expander.className = 'sidebar-view-item-value-expander';
+        this._expander.innerText = '+';
+        this._expander.addEventListener('click', (e) => {
+            this.toggle();
+            // this.dropdown();
+            // var targetId = e.target.id;
+            // console.log('[this._expander] you clicked ' + targetId);
+        });
+        this._element.appendChild(this._expander);
+
+        this._value = (this._attribute.value == '') ? 'undefined' : this._attribute.value;
+        this.valueLine = document.createElement('div');
+        this.valueLine.className = 'sidebar-view-item-value-line';
+        var valueID = 'value-' + this._attribute.key + this._name;
+        this.valueLine.setAttribute('id', valueID);
+        this.valueLine.innerHTML = (this._value ? this._value : '&nbsp;');
+        this._element.appendChild(this.valueLine);
+        // try {
+
+        //     var changedText = document.getElementById(valueID);
+        //     function listSelect() {
+        //         changedText.innerHTML = this.value;
+        //     }
+        //     document.getElementById(itemsID).onchange = listSelect;
+        // }
+        // catch (err) {
+        //     console.log(err);
+        // }
+
+        // this._selectedElement = document.createElement('div');   // why ol
+        // this._selectedElement.addEventListener('click', (e)=> {
+        //     console.log("\n");
+        //     console.log(e);
+        //     var targetId = e.target.id;
+        //     console.log('you clicked ' + targetId);
         // });
-        // this._element.appendChild(this._expander);
+        // this._element.appendChild(this._selectedElement);
 
-        var value = (this._attribute.value == '') ? 'undefined' : this._attribute.value;
-        var valueLine = document.createElement('div');
-        valueLine.className = 'sidebar-view-item-value-line';
-        valueLine.innerHTML = (value ? value : '&nbsp;');
-        this._element.appendChild(valueLine);
+
+        // this._element.addEventListener('click', (e)=> {
+        //     console.log("\n");
+        //     // console.log(e);
+        //     var targetId = e.target.id;
+        //     console.log('you clicked ' + targetId);
+        // });
+
+        this._dropdownListElement = document.createElement('ol');
+        this._dropdownListElement.addEventListener('click', (e) => {
+            var targetId = e.target.id;
+            console.log('[dropdownList] you clicked ' + targetId);
+            this.updateValue(targetId);
+            this._raise('custom-attr-selected', e);
+        });
+        this._element.appendChild(this._dropdownListElement);
+    }
+
+    updateValue(id) {
+        // var tmpElements = id.split('-');
+        // console.log(tmpElements);
+        // var customAttr = tmpElements[1];
+        // var selectedNodeId = tmpElements[2];
+        // var selectedVal = tmpElements[3];
+        // console.log(tmpElements[0]);
+        // console.log(tmpElements[1]);
+        // console.log(tmpElements[2]);
+        // console.log(tmpElements[3]);
+        
+        // this._value.innerHTML = selectedVal;
+        // try {
+        this.valueLine.innerHTML = '';
+        // this.valueLine.innerHTML = tmpElements[3];
+        this.valueLine.innerHTML = id.split('-')[3];
+        this.toggle();
+        // try {
+
+            // this._raise('custom-attr-selected', id);
+        // }
+        // catch (err) {
+        //     console.log(err);
+        // }
+        // }
+        // catch (err) {
+        //     console.log(err);
+        // }
     }
 
     get elements() {
@@ -404,7 +482,7 @@ class NodeCustomAttributeView {
         }
         return res;
     }
-
+/*
     dropdown() {
         // https://jsfiddle.net/tboggia/4u5dmnzh/1/
         // var items = document.createElement('select');
@@ -418,25 +496,88 @@ class NodeCustomAttributeView {
         }
         this._element.appendChild(this._items);
     }
-
+*/
     toggle() {
         if (this._expander.innerText == '+') {
             this._expander.innerText = '-';
 
             var attrFullList = this.getConstAttributeList(this._attribute.key);
             for (var i = 0; i < attrFullList.length; i++) { 
-                var attrLine = document.createElement('div');
+                // var attrLine = document.createElement('div');
+                var attrLine = document.createElement('li');
                 attrLine.className = 'sidebar-view-item-value-line-border attr-choose';
-                var iter = i + 1;
-                attrLine.innerHTML = iter.toString() + ': <code><b>' + attrFullList[i] + '</b></code>';
-                this._element.appendChild(attrLine);
+                var attrId = 'dpl-' + this._attribute.key + '-' + this._name + '-' + attrFullList[i]; 
+                attrLine.setAttribute('id', attrId);
+                attrLine.innerHTML = '<code><b>' + attrFullList[i] + '</b></code>';
+                // this._element.appendChild(attrLine);
+                this._dropdownListElement.appendChild(attrLine);
             }
         }
         else {
             this._expander.innerText = '+';
-            while (this._element.childElementCount > 2) {
-                this._element.removeChild(this._element.lastChild);
+            // while (this._element.childElementCount > 2) {
+            while (this._dropdownListElement.childElementCount) {
+            // this._element.removeChild(this._element.lastChild);
+                // try {
+                this._dropdownListElement.removeChild(this._dropdownListElement.lastChild);
+                // }
+                // catch (err) {
+                //     console.log("err = " + this._dropdownListElement.lastChild);
+                // }
             }
+        }
+    }
+    on(event, callback) {
+        this._events = this._events || {};
+        this._events[event] = this._events[event] || [];
+        this._events[event].push(callback);
+    }
+    
+/*
+    select(e) {
+        var selection = [];
+        var id = e.target.id;
+
+        var nodesElement = this._graphElement.getElementById('nodes');
+        var nodeElement = nodesElement.firstChild;
+        while (nodeElement) { 
+            if (nodeElement.id == id) {
+                selection.push(nodeElement);
+            }
+            nodeElement = nodeElement.nextSibling;
+        }
+
+        var edgePathsElement = this._graphElement.getElementById('edge-paths');
+        var edgePathElement = edgePathsElement.firstChild; 
+        while (edgePathElement) {
+            if (edgePathElement.id == id) {
+                selection.push(edgePathElement);
+            }
+            edgePathElement = edgePathElement.nextSibling;
+        }
+
+        var initializerElement = this._graphElement.getElementById(id);
+        if (initializerElement) {
+            while (initializerElement.parentElement) {
+                initializerElement = initializerElement.parentElement;
+                if (initializerElement.id && initializerElement.id.startsWith('node-')) {
+                    selection.push(initializerElement);
+                    break;
+                }
+            }
+        }
+
+        if (selection.length > 0) {
+            this._raise('select', selection);
+        }
+    }
+    
+*/
+    _raise(event, data) {
+        if (this._events && this._events[event]) {
+            this._events[event].forEach((callback) => {
+                callback(this, data);
+            });
         }
     }
 }
@@ -1107,11 +1248,22 @@ class FindSidebar {
         });
         this._resultElement = document.createElement('ol');
         this._resultElement.addEventListener('click', (e) => {
-            console.log("you clicked here 4");
+            // console.log("find e = " + e);
+            // console.log("you clicked here findsidebar");
+            var targetId = e.target.id;
+            console.log('[FindSidebar] you clicked ' + targetId);
             this.select(e);
         });
+        try {
+            this._resultElement.setAttribute('background-color', '#e60000');
+        }
+        catch (err) {
+            console.log(err);
+        }
         this._contentElement.appendChild(this._searchElement);
         this._contentElement.appendChild(this._resultElement);
+
+        // this._selectedObjectId = ''
     }
 
     on(event, callback) {
@@ -1121,6 +1273,11 @@ class FindSidebar {
     }
 
     _raise(event, data) {
+        // console.log(data);
+        // console.log(typeof(data));
+        // console.log(Object.keys(data));
+        // console.log(data[0].id)
+        // this._selectedObjectId = data[0].id.toString();
         if (this._events && this._events[event]) {
             this._events[event].forEach((callback) => {
                 callback(this, data);
@@ -1242,4 +1399,7 @@ class FindSidebar {
         return this._contentElement;
     }
 
+    // get selectedObjectId() {
+    //     return this._selectedObjectId;
+    // }
 }

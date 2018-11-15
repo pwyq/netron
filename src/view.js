@@ -129,11 +129,24 @@ view.View = class {
                 this._searchText = text;
             });
             view.on('select', (sender, selection) => {
+                // console.log("selection = " + selection);
+                // console.log(Object.keys(selection));
+                // console.log(Object.keys(sender));
+                console.log('[find()] sender = ' + sender);
+                console.log('[find()] You selected ' + selection[0].id);
                 this._sidebar.close();
                 this.select(selection);
             });
             this._sidebar.open(view.content, 'Find');  
-            view.focus(this._searchText);  
+            view.focus(this._searchText);
+            // console.log(this._searchText)
+            // try {
+
+            //     // console.log("you selected" + view.selectedObjectId);
+            // }
+            // catch (err) {
+            //     console.log(err);
+            // }
         }
     }
 
@@ -713,7 +726,7 @@ view.View = class {
         else {
             var nodeID = 'node-' + id.toString();
         }
-        console.log("You clicked: " + nodeID);
+        console.log("[nodeElementClickHandler] You clicked: " + nodeID);
         switch (button) {
             case 0:
                 console.log(strs + " left click");
@@ -736,6 +749,38 @@ view.View = class {
     showDropdownMenu(node, nodeID) {
         if (node) {
             var view = new NodeCustomAttributeSidebar(node, this._host);
+            // view.on('select', (sender, selection) => {
+            //     // console.log("selection = " + selection);
+            //     // console.log(Object.keys(selection));
+            //     console.log('You selected ' + selection[0].id);
+            //     this._sidebar.close();
+            //     this.select(selection);
+            // });
+            console.log("asdfasdfasdfasdf");
+            view.on('custom-attr-selected', (sender, item) => {
+                try {
+                    var returnID = item[0].id;
+                    console.log(Object.keys(sender));
+                    console.log('[showDropdownMenu()] sender = ' + sender);
+                    var strs = returnID.split('-');
+                    var customAttrSeletecd = strs[1];
+                    var nodeId = strs[2];
+                    var customAttrVal = strs[3];
+                    // console.log('[showDropdownMenu()] You selected ' + returnID[0].id);
+                    console.log('-----------------------');
+                    console.log("You changed: ");
+                    console.log("Node = " + nodeId);
+                    console.log("Custom Attribute = " + customAttrSeletecd);
+                    console.log("Attribute Value = " + customAttrVal);
+                    console.log('-----------------------');
+                    // this._sidebar.close();
+                    // this.select(selection);
+                }
+                catch (err) {
+                    console.log(err);
+                }
+            });
+            console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
             this._sidebar.open(view.elements, 'Node Custom Attributes');
         }
     }
