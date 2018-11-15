@@ -749,13 +749,6 @@ view.View = class {
     showDropdownMenu(node, nodeID) {
         if (node) {
             var view = new NodeCustomAttributeSidebar(node, this._host);
-            // view.on('select', (sender, selection) => {
-            //     // console.log("selection = " + selection);
-            //     // console.log(Object.keys(selection));
-            //     console.log('You selected ' + selection[0].id);
-            //     this._sidebar.close();
-            //     this.select(selection);
-            // });
             console.log("asdfasdfasdfasdf");
             view.on('custom-attr-selected', (sender, item) => {
                 try {

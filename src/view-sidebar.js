@@ -221,9 +221,6 @@ class customAttributes {
     constructor(node) {
         this._name = node.name;
         this._attributes = [];
-        // this._hardwareTarget = '';
-        // this._quantizationType = '';
-        // console.log("\n\nhehehehehe name = " + this._name);
 
         this.addAttribute('Hardware_Target', '');
         this.addAttribute('Quantization_Type', '');
@@ -243,39 +240,6 @@ class customAttributes {
     get attributeList() {
         return this._attributes;
     }
-
-    // // to use:
-    // // customAttributes.hardwareTarget = 'GPU';
-    // set setHardwareTarget(hw) {
-    //     if (HARDWARE_TARGETS.indexOf(hw) > -1) {
-    //         // in the array
-    //         this._hardwareTarget = hw;
-    //     }
-    // }
-
-    // set setQuantizationType(quantType) {
-    //     if (QUANTIZATION_TYPES.indexOf(quantType) > -1) {
-    //         this._quantizationType = quantType;
-    //     }
-    // }
-
-    // get getHardwareTarget() {
-    //     if (this._hardwareTarget == '') {
-    //         return undefined;
-    //     }
-    //     else {
-    //         return this._hardwareTarget;
-    //     }
-    // }
-
-    // get getQuantizationType() {
-    //     if (this._quantizationType == '') {
-    //         return undefined;
-    //     }
-    //     else {
-    //         return this._quantizationType;
-    //     }
-    // }
 }
 
 
@@ -301,7 +265,6 @@ class NodeCustomAttributeSidebar {
         if (attributes && attrList.length > 0) {
             this.addHeader('Custom Attributes');
             attrList.forEach((attribute) => {
-                // this.addCustomAttribute(attribute.key, attribute.value);
                 this.addCustomAttribute(this._name, attribute);
             });
         }
@@ -355,36 +318,11 @@ class NodeCustomAttributeView {
         this._element = document.createElement('div');
         this._element.className = 'sidebar-view-item-value';
 
-        // try {
-/*
-        this._itemsElement = document.createElement('select');
-        var itemsID = 'dropdown-' + this._attribute.key + '-' + this._name;
-        this._itemsElement.setAttribute('id', itemsID);
-        this._itemsElement.setAttribute('style', 'width: 100%');
-
-        var attrFullList = this.getConstAttributeList(this._attribute.key);
-        for (var i = 0; i < attrFullList.length; i++) {
-            var listItem = document.createElement('option');
-            var listItemValue = attrFullList[i];
-            listItem.setAttribute("value", listItemValue.toString());
-            var iter = i + 1;
-            listItem.innerHTML = iter.toString() + ': <code><b>' + attrFullList[i] + '</b></code>';
-            this._itemsElement.appendChild(listItem);   
-        }
-        this._element.appendChild(this._itemsElement);
-        // }
-        // catch (err) {
-        //     console.log(err);
-        // }
-*/
         this._expander = document.createElement('div');
         this._expander.className = 'sidebar-view-item-value-expander';
         this._expander.innerText = '+';
         this._expander.addEventListener('click', (e) => {
             this.toggle();
-            // this.dropdown();
-            // var targetId = e.target.id;
-            // console.log('[this._expander] you clicked ' + targetId);
         });
         this._element.appendChild(this._expander);
 
@@ -395,34 +333,6 @@ class NodeCustomAttributeView {
         this.valueLine.setAttribute('id', valueID);
         this.valueLine.innerHTML = (this._value ? this._value : '&nbsp;');
         this._element.appendChild(this.valueLine);
-        // try {
-
-        //     var changedText = document.getElementById(valueID);
-        //     function listSelect() {
-        //         changedText.innerHTML = this.value;
-        //     }
-        //     document.getElementById(itemsID).onchange = listSelect;
-        // }
-        // catch (err) {
-        //     console.log(err);
-        // }
-
-        // this._selectedElement = document.createElement('div');   // why ol
-        // this._selectedElement.addEventListener('click', (e)=> {
-        //     console.log("\n");
-        //     console.log(e);
-        //     var targetId = e.target.id;
-        //     console.log('you clicked ' + targetId);
-        // });
-        // this._element.appendChild(this._selectedElement);
-
-
-        // this._element.addEventListener('click', (e)=> {
-        //     console.log("\n");
-        //     // console.log(e);
-        //     var targetId = e.target.id;
-        //     console.log('you clicked ' + targetId);
-        // });
 
         this._dropdownListElement = document.createElement('ol');
         this._dropdownListElement.addEventListener('click', (e) => {
@@ -435,33 +345,9 @@ class NodeCustomAttributeView {
     }
 
     updateValue(id) {
-        // var tmpElements = id.split('-');
-        // console.log(tmpElements);
-        // var customAttr = tmpElements[1];
-        // var selectedNodeId = tmpElements[2];
-        // var selectedVal = tmpElements[3];
-        // console.log(tmpElements[0]);
-        // console.log(tmpElements[1]);
-        // console.log(tmpElements[2]);
-        // console.log(tmpElements[3]);
-        
-        // this._value.innerHTML = selectedVal;
-        // try {
         this.valueLine.innerHTML = '';
-        // this.valueLine.innerHTML = tmpElements[3];
         this.valueLine.innerHTML = id.split('-')[3];
         this.toggle();
-        // try {
-
-            // this._raise('custom-attr-selected', id);
-        // }
-        // catch (err) {
-        //     console.log(err);
-        // }
-        // }
-        // catch (err) {
-        //     console.log(err);
-        // }
     }
 
     get elements() {
@@ -482,48 +368,25 @@ class NodeCustomAttributeView {
         }
         return res;
     }
-/*
-    dropdown() {
-        // https://jsfiddle.net/tboggia/4u5dmnzh/1/
-        // var items = document.createElement('select');
-        var attrFullList = this.getConstAttributeList(this._attribute.key);
-        for (var i = 0; i < attrFullList.length; i++) {
-            var item = document.createElement('option');
-            item.setAttribute(value, attrFullList[i]);
-            var iter = i + 1;
-            item.innerHTML = iter.toString() + ': <code><b>' + attrFullList[i] + '</b></code>';
-            this._items.appendChild(item);   
-        }
-        this._element.appendChild(this._items);
-    }
-*/
+
     toggle() {
         if (this._expander.innerText == '+') {
             this._expander.innerText = '-';
 
             var attrFullList = this.getConstAttributeList(this._attribute.key);
             for (var i = 0; i < attrFullList.length; i++) { 
-                // var attrLine = document.createElement('div');
                 var attrLine = document.createElement('li');
                 attrLine.className = 'sidebar-view-item-value-line-border attr-choose';
                 var attrId = 'dpl-' + this._attribute.key + '-' + this._name + '-' + attrFullList[i]; 
                 attrLine.setAttribute('id', attrId);
                 attrLine.innerHTML = '<code><b>' + attrFullList[i] + '</b></code>';
-                // this._element.appendChild(attrLine);
                 this._dropdownListElement.appendChild(attrLine);
             }
         }
         else {
             this._expander.innerText = '+';
-            // while (this._element.childElementCount > 2) {
             while (this._dropdownListElement.childElementCount) {
-            // this._element.removeChild(this._element.lastChild);
-                // try {
                 this._dropdownListElement.removeChild(this._dropdownListElement.lastChild);
-                // }
-                // catch (err) {
-                //     console.log("err = " + this._dropdownListElement.lastChild);
-                // }
             }
         }
     }
@@ -533,46 +396,6 @@ class NodeCustomAttributeView {
         this._events[event].push(callback);
     }
     
-/*
-    select(e) {
-        var selection = [];
-        var id = e.target.id;
-
-        var nodesElement = this._graphElement.getElementById('nodes');
-        var nodeElement = nodesElement.firstChild;
-        while (nodeElement) { 
-            if (nodeElement.id == id) {
-                selection.push(nodeElement);
-            }
-            nodeElement = nodeElement.nextSibling;
-        }
-
-        var edgePathsElement = this._graphElement.getElementById('edge-paths');
-        var edgePathElement = edgePathsElement.firstChild; 
-        while (edgePathElement) {
-            if (edgePathElement.id == id) {
-                selection.push(edgePathElement);
-            }
-            edgePathElement = edgePathElement.nextSibling;
-        }
-
-        var initializerElement = this._graphElement.getElementById(id);
-        if (initializerElement) {
-            while (initializerElement.parentElement) {
-                initializerElement = initializerElement.parentElement;
-                if (initializerElement.id && initializerElement.id.startsWith('node-')) {
-                    selection.push(initializerElement);
-                    break;
-                }
-            }
-        }
-
-        if (selection.length > 0) {
-            this._raise('select', selection);
-        }
-    }
-    
-*/
     _raise(event, data) {
         if (this._events && this._events[event]) {
             this._events[event].forEach((callback) => {
@@ -768,7 +591,6 @@ class ConnectionView {
             this._expander.className = 'sidebar-view-item-value-expander';
             this._expander.innerText = '+';
             this._expander.addEventListener('click', (e) => {
-                console.log("you clicked here 7");  // the plus button for revealing input tensor
                 this.toggle();
             });
             this._element.appendChild(this._expander);
@@ -796,7 +618,6 @@ class ConnectionView {
         return this._element;
     }
 
-    // TODO: IMPORTANT
     toggle() {
         if (this._expander) {
             if (this._expander.innerText == '+') {
@@ -1231,7 +1052,6 @@ In domain <tt>{{{domain}}}</tt> since version <tt>{{{since_version}}}</tt> at su
 }
 
 class FindSidebar {
-
     constructor(graphElement, graph) {
         this._graphElement = graphElement;
         this._graph = graph;
@@ -1248,22 +1068,12 @@ class FindSidebar {
         });
         this._resultElement = document.createElement('ol');
         this._resultElement.addEventListener('click', (e) => {
-            // console.log("find e = " + e);
-            // console.log("you clicked here findsidebar");
             var targetId = e.target.id;
             console.log('[FindSidebar] you clicked ' + targetId);
             this.select(e);
         });
-        try {
-            this._resultElement.setAttribute('background-color', '#e60000');
-        }
-        catch (err) {
-            console.log(err);
-        }
         this._contentElement.appendChild(this._searchElement);
         this._contentElement.appendChild(this._resultElement);
-
-        // this._selectedObjectId = ''
     }
 
     on(event, callback) {
@@ -1273,11 +1083,6 @@ class FindSidebar {
     }
 
     _raise(event, data) {
-        // console.log(data);
-        // console.log(typeof(data));
-        // console.log(Object.keys(data));
-        // console.log(data[0].id)
-        // this._selectedObjectId = data[0].id.toString();
         if (this._events && this._events[event]) {
             this._events[event].forEach((callback) => {
                 callback(this, data);
@@ -1399,7 +1204,4 @@ class FindSidebar {
         return this._contentElement;
     }
 
-    // get selectedObjectId() {
-    //     return this._selectedObjectId;
-    // }
 }
