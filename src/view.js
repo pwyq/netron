@@ -749,31 +749,40 @@ view.View = class {
     showDropdownMenu(node, nodeID) {
         if (node) {
             var view = new NodeCustomAttributeSidebar(node, this._host);
-            console.log("asdfasdfasdfasdf");
-            view.on('custom-attr-selected', (sender, item) => {
-                try {
-                    var returnID = item[0].id;
-                    console.log(Object.keys(sender));
-                    console.log('[showDropdownMenu()] sender = ' + sender);
-                    var strs = returnID.split('-');
-                    var customAttrSeletecd = strs[1];
-                    var nodeId = strs[2];
-                    var customAttrVal = strs[3];
-                    // console.log('[showDropdownMenu()] You selected ' + returnID[0].id);
-                    console.log('-----------------------');
-                    console.log("You changed: ");
-                    console.log("Node = " + nodeId);
-                    console.log("Custom Attribute = " + customAttrSeletecd);
-                    console.log("Attribute Value = " + customAttrVal);
-                    console.log('-----------------------');
-                    // this._sidebar.close();
-                    // this.select(selection);
-                }
-                catch (err) {
-                    console.log(err);
-                }
-            });
-            console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+            view.on('custom-attr-sidebar', (sender, cb) => {
+                console.log("hey, this is view, I heard sth");
+                console.log("view: " + cb);
+            }); 
+            // console.log("------------------vvv");
+            // view.on('custom-attr-selected', (sender, item) => {
+                // console.log(item);
+            // });
+            // console.log("------------------^^^");
+            // console.log("asdfasdfasdfasdf");
+            // view.on('custom-attr-selected', (sender, item) => {
+            //     try {
+            //         var returnID = item[0].id;
+            //         console.log(Object.keys(sender));
+            //         console.log('[showDropdownMenu()] sender = ' + sender);
+            //         var strs = returnID.split('-');
+            //         var customAttrSeletecd = strs[1];
+            //         var nodeId = strs[2];
+            //         var customAttrVal = strs[3];
+            //         // console.log('[showDropdownMenu()] You selected ' + returnID[0].id);
+            //         console.log('-----------------------');
+            //         console.log("You changed: ");
+            //         console.log("Node = " + nodeId);
+            //         console.log("Custom Attribute = " + customAttrSeletecd);
+            //         console.log("Attribute Value = " + customAttrVal);
+            //         console.log('-----------------------');
+            //         // this._sidebar.close();
+            //         // this.select(selection);
+            //     }
+            //     catch (err) {
+            //         console.log(err);
+            //     }
+            // });
+            // console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
             this._sidebar.open(view.elements, 'Node Custom Attributes');
         }
     }
