@@ -1,7 +1,5 @@
 /*jshint esversion: 6 */
 
-const jq = require('jsonq');
-
 var view = view || {};
 
 var base = base || require('./base');
@@ -765,6 +763,7 @@ view.View = class {
     }
     
     saveCustomAttributes(item) {
+        // Make the output json file same name with the input graph
         if (this._host.getIsDev()) {
             var inputPath = path.join(__dirname, '../custom_json', 'custom-attributes.json');
             // var outputPath = path.join(__dirname, '../custom_json', 'student-2.json');
@@ -773,52 +772,6 @@ view.View = class {
             var inputPath = path.join(process.resourcesPath, 'custom_json', 'custom-attributes.json');
             // var outputPath = path.join(process.resourcesPath, 'custom_json', "student-2.json");
         }
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
-        // var fileName = inputPath;
-        // // var file = require(fileName);
-        
-        // var strs = item.split('-');
-        // var nodeId = strs[2];
-        // var customAttr = strs[1];
-        // var customVal = strs[3];
-
-        // console.log(strs);
-
-        // var rawData = fs.readFileSync(inputPath);
-        // var tmpData = JSON.parse(rawData);
-        // var data = jq(tmpData); // http://ignitersworld.com/lab/jsonQ.html
-
-        // var name = data.find('graph1');
-        // console.log(name.value()); 
-
-        // var pbFileName = path.parse(path.basename(this._host.getFileName())).name;
-        // if (data.find(pbFileName).length != 0) {
-        //     // not exist
-        // }
-        // else {
-        //     var targetGraph = new Object();
-        //     targetGraph.push(pbFileName);
-        //     data.append(targetGraph);
-        // }
-
-        // console.log(data.value());
-
-        // if (data.find(nodeId).length != 0) {
-        //     // update
-        // }
-        // else {
-        //     var newNode = new Object();
-        //     newNode.id = nodeId;
-        //     var newNodeAttr = new Object();
-        //     newNodeAttr[customAttr] = customVal;
-        //     data.find(pbFileName).append(newNode);
-        //     data.find(newNode.id).append(newNodeAttr);
-        // }
-
-        // console.log(data.value());
-        
-        // let res = JSON.stringify(data, null, 2);    // https://stackabuse.com/reading-and-writing-json-files-with-node-js/
-        // fs.writeFileSync(outputPath, res);  
     }
 
     logNodeInfo(node) {

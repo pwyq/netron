@@ -9,10 +9,10 @@ package-lock.json
 *.pyc
 
 # extra
-helper/netron-dev-tmp/*.txt
 *.pb
 python_scripts/build/*
 python_scripts/dist/*
 python_scripts/*.spec
 .*
 .vscode/settings.json
+custom_json/*
