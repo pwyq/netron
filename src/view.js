@@ -22,6 +22,9 @@ var tflite = tflite || require('./tflite');
 var d3 = d3 || require('d3');
 var dagre = dagre || require('dagre');
 
+var assert = require('assert');
+const jMan = require('./json-manipulate');
+
 view.View = class {
 
     constructor(host) {
@@ -747,12 +750,20 @@ view.View = class {
     }
 
     showDropdownMenu(node, nodeID) {
+        var pbFileName = path.parse(path.basename(this._host.getFileName())).name;
+        var outputFileName = pbFileName + '_custom_attributes.json';
+        if (this._host.getIsDev()) {
+            var filePath = path.join(__dirname, '../custom_json', outputFileName);
+        }
+        else {
+            var filePath = path.join(process.resourcesPath, 'custom_json', outputFileName);
+        }
         if (node) {
-            var view = new NodeCustomAttributeSidebar(node, this._host);
+            var view = new NodeCustomAttributeSidebar(node, this._host, pbFileName, filePath);
             view.on('custom-attr-sidebar', (sender, cb) => {
                 // console.log("[showDropdownMenu]: " + cb);
                 try {
-                    this.saveCustomAttributes(cb);
+                    this.saveCustomAttributes(cb, pbFileName, filePath);
                 }
                 catch (err) {
                     console.log(err);
@@ -762,16 +773,30 @@ view.View = class {
         }
     }
     
-    saveCustomAttributes(item) {
-        // Make the output json file same name with the input graph
-        if (this._host.getIsDev()) {
-            var inputPath = path.join(__dirname, '../custom_json', 'custom-attributes.json');
-            // var outputPath = path.join(__dirname, '../custom_json', 'student-2.json');
+    saveCustomAttributes(item, pbFileName, filePath) {
+        var strs = item.split('-');	
+        var nodeId = strs[2];	
+        var customAttr = strs[1];	
+        var customVal = strs[3];
+        if (jMan.isGraphEmpty(filePath)) {
+            var graphObj = jMan.createGraph(pbFileName);
         }
         else {
-            var inputPath = path.join(process.resourcesPath, 'custom_json', 'custom-attributes.json');
-            // var outputPath = path.join(process.resourcesPath, 'custom_json', "student-2.json");
+            var raw = fs.readFileSync(filePath);
+            var graphObj = JSON.parse(raw);
         }
+        // console.log(graphObj)
+        var customAttrObj = {};
+        customAttrObj[customAttr] = customVal;
+        if (!jMan.addNewNode(graphObj, pbFileName, nodeId, customAttrObj)) {
+            if (!jMan.addAttribute(graphObj, pbFileName, nodeId, customAttrObj)) {
+                assert(jMan.updateAttribute(graphObj, pbFileName, nodeId, customAttrObj) === true);
+            }
+        }
+
+        var json  = JSON.stringify(graphObj, null , 2);
+        fs.writeFileSync(filePath, json);
+        console.log('bbbbbbbbbbbbbbbbbbbbb')
     }
 
     logNodeInfo(node) {

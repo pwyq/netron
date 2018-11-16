@@ -73,3 +73,8 @@ add usage for major files:
 
 # TODO
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
+- id issue. some graph nodes don't have id, but use time as id instead
+- group items
+- test if custom attr works in product
+- add custom attr to the main box (the white one)
+- customAttr obj value (no use), maybe delete that?

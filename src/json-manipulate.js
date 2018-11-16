@@ -17,7 +17,7 @@ var _createGraph = function createGraph(graphName) {
   
   var _isNodeExist = function isNodeExist(data, graphName, nodeName) {
     var isExist = false;
-    var _node = findNode(data, graphName, nodeName);
+    var _node = _findNode(data, graphName, nodeName);
     if (_node.length === 1) {  // ensure identical nodes exist
       isExist = true;
     }
@@ -33,7 +33,8 @@ var _createGraph = function createGraph(graphName) {
   }
   
   var _addNewNode = function addNewNode(data, graphName, nodeName, attributes) {
-    if (!isNodeExist(data, graphName, nodeName)) {
+    var isAdded = false;
+    if (!_isNodeExist(data, graphName, nodeName)) {
       var newNode = {
         id: nodeName,
         attrs: {}
@@ -44,7 +45,9 @@ var _createGraph = function createGraph(graphName) {
         newNode.attrs[keys[i]] = attributes[keys[i]];
       }
       data[graphName].push(newNode);
+      isAdded = true;
     }
+    return isAdded;
   }
   
   var _isObjectEmpty = function isObjectEmpty(obj) {
@@ -57,8 +60,8 @@ var _createGraph = function createGraph(graphName) {
   
   var _updateAttribute = function updateAttribute(data, graphName, nodeName, newAttr) {
     var isUpdated = false;
-    var _node = findNode(data, graphName, nodeName);
-    if (!isObjectEmpty(_node)) {
+    var _node = _findNode(data, graphName, nodeName);
+    if (!_isObjectEmpty(_node)) {
       var node = _node[0];
       var keys = Object.keys(newAttr);
       if (node.attrs.hasOwnProperty(keys[0])) {
@@ -71,8 +74,8 @@ var _createGraph = function createGraph(graphName) {
   
   var _addAttribute = function addAttribute(data, graphName, nodeName, newAttr) {
     var isAdded = false;
-    var _node = findNode(data, graphName, nodeName);
-    if (!isObjectEmpty(_node)) {
+    var _node = _findNode(data, graphName, nodeName);
+    if (!_isObjectEmpty(_node)) {
       var node = _node[0];
       var keys = Object.keys(newAttr);
       if (!node.attrs.hasOwnProperty(keys[0])) {
