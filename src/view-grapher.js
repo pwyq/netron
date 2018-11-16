@@ -219,12 +219,14 @@ grapher.NodeElement = class {
         }
         if (identifier) {
             item.identifier = identifier;
+            // console.log(identifier);
         }
         if (classes) {
             item.classes = classes;
         }
         if (title) {
             item.title = title;
+            // console.log(title);
         }
         if (handler) {
             item.handler = handler;
@@ -279,6 +281,7 @@ grapher.NodeElement = class {
                 itemGroupElement.addEventListener('mousedown', handler);
             }
             if (title) {
+                // console.log(title);
                 var titleElement = this.createElement('title');
                 titleElement.textContent = title;
                 itemGroupElement.appendChild(titleElement);
@@ -352,6 +355,7 @@ grapher.NodeElement = class {
             });
             attributesHeight += 4;
         }
+        // TODO, add custom attributes here (node without names may not work...)
 
         if (maxWidth > itemWidth) {
             var d = (maxWidth - itemWidth) / this._items.length;

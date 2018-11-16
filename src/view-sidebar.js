@@ -52,7 +52,7 @@ class Sidebar {
             else {
                 contentElement.appendChild(content);
             }
-            sidebarElement.style.width = width ? width : '300px';    
+            sidebarElement.style.width = width ? width : '500px';    
             if (width && width.endsWith('%')) {
                 contentElement.style.width = '100%';
             }
@@ -126,6 +126,7 @@ class NodeSidebar {
             });
         }
 
+        
         var inputs = node.inputs;
         if (inputs && inputs.length > 0) {
             this.addHeader('Inputs');
@@ -139,6 +140,22 @@ class NodeSidebar {
             this.addHeader('Outputs');
             outputs.forEach((output) => {
                 this.addOutput(output.name, output);
+                // try {
+                //     for (let [key, value] of Object.entries(output)) {
+                //         console.log(key, value);
+                //         for (var i = 0; i < value.length; i++) {
+                //             console.log(value[i]);
+                //             if (typeof(value[i]) == 'object') {
+                //                 for (let [k, v] of Object.entries(value[i])) {
+                //                     console.log(k, v);
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+                // catch (err) {
+                //     console.log(err);
+                // }
             });
         }
 
@@ -171,6 +188,8 @@ class NodeSidebar {
     }
 
     addInput(name, input) {
+        // console.log(name);
+        // console.log(input);
         if (input.connections.length > 0) {
             var view = new ArgumentView(input, this._host);
             view.on('export-tensor', (sender, tensor) => {
@@ -240,10 +259,10 @@ class customAttributes {
 
 
 class NodeCustomAttributeSidebar {
-    constructor(node, host, fileName, filePath) {
+    constructor(node, nodeID, host, fileName, filePath) {
         this._host = host;
         this._node = node;
-        this._name = node.name;
+        this._name = (node.name) ? (node.name) : nodeID;    // nodeID is for those nodes which without name;
         this._fileName = fileName;
         this._filePath = filePath;
         this._elements = [];
@@ -524,6 +543,9 @@ class NodeAttributeView {
         }
         if (value && value.length > 1000) {
             value = value.substring(0, 1000) + '...';
+        }
+        if (value == 'conv1/7x7_s2') {
+            console.log('stopppppppppppppppppppppppp');
         }
         var valueLine = document.createElement('div');
         valueLine.className = 'sidebar-view-item-value-line';
@@ -1198,6 +1220,7 @@ class FindSidebar {
             });
 
             var name = node.name;
+            // console.log(name);
             if (name && name.toLowerCase().indexOf(text) != -1 && !nodeMatches[name]) {
                 var item = document.createElement('li');
                 item.innerText = '\u25A2 ' + node.name;
@@ -1209,6 +1232,7 @@ class FindSidebar {
             initializers.forEach((initializer) => {
                 var item = document.createElement('li');
                 item.innerText = '\u25A0 ' + initializer.name;
+                // console.log(initializer.name);
                 item.id = 'initializer-' + initializer.name;
                 this._resultElement.appendChild(item);
             });

@@ -132,24 +132,13 @@ view.View = class {
                 this._searchText = text;
             });
             view.on('select', (sender, selection) => {
-                // console.log("selection = " + selection);
-                // console.log(Object.keys(selection));
-                // console.log(Object.keys(sender));
-                console.log('[find()] sender = ' + sender);
-                console.log('[find()] You selected ' + selection[0].id);
+                // console.log('[find()] sender = ' + sender);
+                // console.log('[find()] You selected ' + selection[0].id);
                 this._sidebar.close();
                 this.select(selection);
             });
             this._sidebar.open(view.content, 'Find');  
             view.focus(this._searchText);
-            // console.log(this._searchText)
-            // try {
-
-            //     // console.log("you selected" + view.selectedObjectId);
-            // }
-            // catch (err) {
-            //     console.log(err);
-            // }
         }
     }
 
@@ -381,7 +370,6 @@ view.View = class {
                 }
     
                 nodes.forEach((node) => {
-                    // this.logNodeInfo(node); // TODO: delete this
                     var formatter = new grapher.NodeElement();
 
                     if (node.function) {
@@ -400,7 +388,11 @@ view.View = class {
                             var text = view.showNames && node.name ? node.name : (node.primitive ? node.primitive : node.operator);
                             var title = view.showNames && node.name ? node.operator : node.name;
                             formatter.addItem(text, null, styles, title, (event) => {
-                                var params = [node, null, id, "test 5"];
+                                var tempID = ''
+                                if (!node.name) {
+                                    tempID = this.getTempID(node);
+                                }
+                                var params = [node, null, tempID, "test 1"];
                                 view.nodeElementClickHandler(event.button, params);
                             });
                         }
@@ -448,7 +440,11 @@ view.View = class {
                                 if (input.visible) {
                                     var types = input.connections.map(connection => connection.type || '').join('\n');
                                     formatter.addItem(input.name, inputId, [ inputClass ], types, (event) => {
-                                        var params = [node, input, id, "test 4"];
+                                        var tempID = ''
+                                        if (!node.name) {
+                                            tempID = this.getTempID(node);
+                                        }
+                                        var params = [node, null, tempID, "test 4"];
                                         this.nodeElementClickHandler(event.button, params);
                                     });
                                 }
@@ -473,13 +469,21 @@ view.View = class {
                     if (this._showDetails) {
                         if (hiddenInputs) {
                             formatter.addItem('...', null, [ 'node-item-input' ], '', (event) => {
-                                var params = [node, null, id, "test 3"];
+                                var tempID = ''
+                                if (!node.name) {
+                                    tempID = this.getTempID(node);
+                                }
+                                var params = [node, null, tempID, "test 3"];
                                 this.nodeElementClickHandler(event.button, params);
                             });
                         }
                         if (hiddenInitializers) {
                             formatter.addItem('...', null, [ 'node-item-constant' ], '', (event) => {
-                                var params = [node, null, id, "test 2"];
+                                var tempID = ''
+                                if (!node.name) {
+                                    tempID = this.getTempID(node);
+                                }
+                                var params = [node, null, tempID, "test 2"];
                                 this.nodeElementClickHandler(event.button, params);
                             });
                         }
@@ -509,7 +513,11 @@ view.View = class {
                         var attributes = node.attributes; 
                         if (attributes && !primitive) {
                             formatter.setAttributeHandler((event) => {
-                                var params = [node, null, id, "test 1"];
+                                var tempID = ''
+                                if (!node.name) {
+                                    tempID = this.getTempID(node);
+                                }
+                                var params = [node, null, tempID, "test 1"];
                                 this.nodeElementClickHandler(event.button, params);
                             });
                             attributes.forEach((attribute) => {
@@ -716,6 +724,23 @@ view.View = class {
         }
     }
 
+    getTempID(node) {
+        var _id = '';
+        for (let [_key, _value] of Object.entries(node.outputs[0])) {
+            for (var i = 0; i < _value.length; i++) {
+                if (typeof(_value[i]) == 'object') {
+                    for (let [k, v] of Object.entries(_value[i])) {
+                        if (k == 'id' || k == '_id') {
+                            _id = v;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return _id;
+    }
+
     nodeElementClickHandler(button, params) {
         // params = [node, input, id, strs];
         var node = params[0];
@@ -740,7 +765,7 @@ view.View = class {
                 break;
             case 2:
                 console.log(strs + " right click");
-                this.showDropdownMenu(node, nodeID);
+                this.showDropdownMenu(node, id);
                 break;
             default:
                 console.log(strs + " click default cases");
@@ -759,7 +784,7 @@ view.View = class {
             var filePath = path.join(process.resourcesPath, 'custom_json', outputFileName);
         }
         if (node) {
-            var view = new NodeCustomAttributeSidebar(node, this._host, pbFileName, filePath);
+            var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, pbFileName, filePath);
             view.on('custom-attr-sidebar', (sender, cb) => {
                 this.saveCustomAttributes(cb, pbFileName, filePath);
             }); 
@@ -992,7 +1017,6 @@ view.View = class {
             view.on('export-tensor', (sender, tensor) => {
                 this._host.require('./numpy', (err, numpy) => {
                     if (!err) {
-                        // TODO: note here it allows user to export the tensor content to npy file via an upper right button.
                         var defaultPath = tensor.name ? tensor.name.split('/').join('_').split(':').join('_').split('.').join('_') : 'tensor';
                         this._host.save('NumPy Array', 'npy', defaultPath, (file) => {
                             try {
