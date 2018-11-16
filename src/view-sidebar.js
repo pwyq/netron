@@ -96,7 +96,7 @@ class NodeSidebar {
             documentationButton.className = 'sidebar-view-title-button';
             documentationButton.innerText = '?';
             documentationButton.addEventListener('click', (e) => {
-                console.log("you clicked here 5");  // the ? mark button for documentation
+                // console.log("you clicked here 5");  // the ? mark button for documentation
                 this._raise('show-documentation', null);
             });
             operatorElement.appendChild(documentationButton);
@@ -140,22 +140,6 @@ class NodeSidebar {
             this.addHeader('Outputs');
             outputs.forEach((output) => {
                 this.addOutput(output.name, output);
-                // try {
-                //     for (let [key, value] of Object.entries(output)) {
-                //         console.log(key, value);
-                //         for (var i = 0; i < value.length; i++) {
-                //             console.log(value[i]);
-                //             if (typeof(value[i]) == 'object') {
-                //                 for (let [k, v] of Object.entries(value[i])) {
-                //                     console.log(k, v);
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
-                // catch (err) {
-                //     console.log(err);
-                // }
             });
         }
 
@@ -188,8 +172,6 @@ class NodeSidebar {
     }
 
     addInput(name, input) {
-        // console.log(name);
-        // console.log(input);
         if (input.connections.length > 0) {
             var view = new ArgumentView(input, this._host);
             view.on('export-tensor', (sender, tensor) => {
@@ -262,7 +244,7 @@ class NodeCustomAttributeSidebar {
     constructor(node, nodeID, host, fileName, filePath) {
         this._host = host;
         this._node = node;
-        this._name = (node.name) ? (node.name) : nodeID;    // nodeID is for those nodes which without name;
+        this._name = (node.name) ? (node.name) : nodeID;    // nodeID is for no-name nodes
         this._fileName = fileName;
         this._filePath = filePath;
         this._elements = [];
@@ -529,7 +511,7 @@ class NodeAttributeView {
             this._expander.className = 'sidebar-view-item-value-expander';
             this._expander.innerText = '+';
             this._expander.addEventListener('click', (e) => {
-                console.log("you clicked here 6");  // the plus button for revealing attributes
+                // console.log("you clicked here 6");  // the plus button for revealing attributes
                 this.toggle();
             });
             this._element.appendChild(this._expander);
@@ -543,9 +525,6 @@ class NodeAttributeView {
         }
         if (value && value.length > 1000) {
             value = value.substring(0, 1000) + '...';
-        }
-        if (value == 'conv1/7x7_s2') {
-            console.log('stopppppppppppppppppppppppp');
         }
         var valueLine = document.createElement('div');
         valueLine.className = 'sidebar-view-item-value-line';
@@ -742,7 +721,6 @@ class ConnectionView {
                         this._saveButton.className = 'sidebar-view-item-value-expander';
                         this._saveButton.innerHTML = '&#x1F4BE;';
                         this._saveButton.addEventListener('click', (e) => {
-                            console.log("you clicked here 8");
                             this._raise('export-tensor', initializer);
                         });
                         this._element.appendChild(this._saveButton);
@@ -848,7 +826,6 @@ class ModelSidebar {
                 graphButton.id = graph.name;
                 graphButton.innerText = '\u21a9';
                 graphButton.addEventListener('click', (e) => {
-                    console.log("you clicked here 1");
                     this._raise('update-active-graph', e.target.id);
                 });
                 graphTitleElement.appendChild(graphButton);
@@ -950,7 +927,6 @@ class GraphOperatorListView {
         this._expander.className = 'sidebar-view-item-value-expander';
         this._expander.innerText = '+';
         this._expander.addEventListener('click', (e) => {
-            console.log("you clicked here 2");
             this.toggle();
         });
 
@@ -1073,7 +1049,6 @@ In domain <tt>{{{domain}}}</tt> since version <tt>{{{since_version}}}</tt> at su
         var document = parser.parseFromString(html, 'text/html');
         var element = document.firstChild;
         element.addEventListener('click', (e) => {
-            console.log("you clicked here 3");
             if (e.target && e.target.href) {
                 var link = e.target.href;
                 if (link.startsWith('http://') || link.startsWith('https://')) {
@@ -1122,7 +1097,6 @@ class FindSidebar {
         this._resultElement = document.createElement('ol');
         this._resultElement.addEventListener('click', (e) => {
             var targetId = e.target.id;
-            console.log('[FindSidebar] you clicked ' + targetId);
             this.select(e);
         });
         this._contentElement.appendChild(this._searchElement);
@@ -1220,7 +1194,6 @@ class FindSidebar {
             });
 
             var name = node.name;
-            // console.log(name);
             if (name && name.toLowerCase().indexOf(text) != -1 && !nodeMatches[name]) {
                 var item = document.createElement('li');
                 item.innerText = '\u25A2 ' + node.name;
@@ -1232,7 +1205,6 @@ class FindSidebar {
             initializers.forEach((initializer) => {
                 var item = document.createElement('li');
                 item.innerText = '\u25A0 ' + initializer.name;
-                // console.log(initializer.name);
                 item.id = 'initializer-' + initializer.name;
                 this._resultElement.appendChild(item);
             });

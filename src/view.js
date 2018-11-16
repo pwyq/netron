@@ -132,8 +132,6 @@ view.View = class {
                 this._searchText = text;
             });
             view.on('select', (sender, selection) => {
-                // console.log('[find()] sender = ' + sender);
-                // console.log('[find()] You selected ' + selection[0].id);
                 this._sidebar.close();
                 this.select(selection);
             });
@@ -768,7 +766,6 @@ view.View = class {
                 this.showDropdownMenu(node, id);
                 break;
             default:
-                console.log(strs + " click default cases");
                 this.showNodeProperties(node, input);
                 break;
         }

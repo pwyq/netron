@@ -76,6 +76,9 @@ add usage for major files:
 - group items
 - add custom attr to the main box (the white one)
 - customAttr obj value (no use), maybe delete that?
+- dumpGraph.py todo
+    - test white-space path
+    - test on linux/macOS
 
 # Done
 - test if custom attr works in product

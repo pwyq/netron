@@ -183,7 +183,6 @@ class Application {
     }
 
     _exportJSON() {
-        // console.log("_exportJSON()");
         var view = this._views.activeView;
         if (view && view.path) {
             var defaultPath = 'Untitled';
@@ -212,7 +211,6 @@ class Application {
     }
 
     _exportPic() {
-        // console.log("_exportPic()");
         var view = this._views.activeView;
         if (view && view.path) {
             var defaultPath = 'Untitled';
