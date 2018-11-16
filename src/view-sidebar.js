@@ -224,6 +224,7 @@ class customAttributes {
     }
 
     addAttribute(_key, _value) {
+        // value is not in use
         this._attributes.push({
             key: _key,
             value: _value,

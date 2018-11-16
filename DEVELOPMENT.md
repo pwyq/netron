@@ -71,11 +71,15 @@ add usage for major files:
 - [view-browser.js]
     - This can be ignored if you don't focus on webpage representation format.
 
+# Note
+1. Ask user to use no white-space paths
+2. there should be no `-` in node name/id etc.
+3. Only tested on Windows OS
+
 # TODO
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
 - group items
 - add custom attr to the main box (the white one)
-- customAttr obj value (no use), maybe delete that?
 - dumpGraph.py todo
     - test white-space path
     - test on linux/macOS
@@ -83,3 +87,4 @@ add usage for major files:
 # Done
 - test if custom attr works in product
 - id issue. some graph nodes don't have id, but use time as id instead
+- customAttr obj value (no use), maybe delete that? (i add comment)
