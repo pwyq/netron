@@ -1,0 +1,10 @@
+{
+  "node1": {
+    "hw": "hw_one",
+    "qt": "qt_two"
+  },
+  "node2": {
+    "hw": "hw_two",
+    "qt": "qt_nnn"
+  }
+}

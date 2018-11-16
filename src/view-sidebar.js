@@ -51,7 +51,7 @@ class Sidebar {
             else {
                 contentElement.appendChild(content);
             }
-            sidebarElement.style.width = width ? width : '500px';    
+            sidebarElement.style.width = width ? width : '300px';    
             if (width && width.endsWith('%')) {
                 contentElement.style.width = '100%';
             }

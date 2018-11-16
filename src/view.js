@@ -1,6 +1,6 @@
 /*jshint esversion: 6 */
 
-// const fs = require('fs');
+const jq = require('jsonq');
 
 var view = view || {};
 
@@ -752,9 +752,8 @@ view.View = class {
         if (node) {
             var view = new NodeCustomAttributeSidebar(node, this._host);
             view.on('custom-attr-sidebar', (sender, cb) => {
-                console.log("[showDropdownMenu]: " + cb);
+                // console.log("[showDropdownMenu]: " + cb);
                 try {
-
                     this.saveCustomAttributes(cb);
                 }
                 catch (err) {
@@ -768,50 +767,58 @@ view.View = class {
     saveCustomAttributes(item) {
         if (this._host.getIsDev()) {
             var inputPath = path.join(__dirname, '../custom_json', 'custom-attributes.json');
-            var outputPath = path.join(__dirname, '../custom_json', 'student-2.json');
+            // var outputPath = path.join(__dirname, '../custom_json', 'student-2.json');
         }
         else {
             var inputPath = path.join(process.resourcesPath, 'custom_json', 'custom-attributes.json');
-            var outputPath = path.join(process.resourcesPath, 'custom_json', "student-2.json");
+            // var outputPath = path.join(process.resourcesPath, 'custom_json', "student-2.json");
         }
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
-        var fileName = inputPath;
-        var file = require(fileName);
-
-        var strs = item.split('-');
-        var nodeId = strs[2];
-        var customAttr = strs[1];
-        var customVal = strs[3];
-
-        var rawData = fs.readFileSync(inputPath);
-        var data = JSON.parse(rawData);
-        console.log("data = " + data);
-
-        var test = require('./json-manipulate');
-        var a = test.getObjects(data, 'name', '');
-        console.log(a);
-        console.log(Object.keys(a));
-
-
-        // fs.writeFile(fileName, JSON)
-
-
-
-        // let rawdata = fs.readFileSync(inputPath);  
-        // let student = JSON.parse(rawdata);  
-        // console.log(student);
-
-        // let student2 = {  
-        //     name: 'Mike',
-        //     age: 23, 
-        //     gender: 'Male',
-        //     department: 'English',
-        //     car: 'Honda' 
-        // };
+        // var fileName = inputPath;
+        // // var file = require(fileName);
         
-        // let data = JSON.stringify(student2, null, 2);    // https://stackabuse.com/reading-and-writing-json-files-with-node-js/
+        // var strs = item.split('-');
+        // var nodeId = strs[2];
+        // var customAttr = strs[1];
+        // var customVal = strs[3];
 
-        // fs.writeFileSync(outputPath, data);  
+        // console.log(strs);
+
+        // var rawData = fs.readFileSync(inputPath);
+        // var tmpData = JSON.parse(rawData);
+        // var data = jq(tmpData); // http://ignitersworld.com/lab/jsonQ.html
+
+        // var name = data.find('graph1');
+        // console.log(name.value()); 
+
+        // var pbFileName = path.parse(path.basename(this._host.getFileName())).name;
+        // if (data.find(pbFileName).length != 0) {
+        //     // not exist
+        // }
+        // else {
+        //     var targetGraph = new Object();
+        //     targetGraph.push(pbFileName);
+        //     data.append(targetGraph);
+        // }
+
+        // console.log(data.value());
+
+        // if (data.find(nodeId).length != 0) {
+        //     // update
+        // }
+        // else {
+        //     var newNode = new Object();
+        //     newNode.id = nodeId;
+        //     var newNodeAttr = new Object();
+        //     newNodeAttr[customAttr] = customVal;
+        //     data.find(pbFileName).append(newNode);
+        //     data.find(newNode.id).append(newNodeAttr);
+        // }
+
+        // console.log(data.value());
+        
+        // let res = JSON.stringify(data, null, 2);    // https://stackabuse.com/reading-and-writing-json-files-with-node-js/
+        // fs.writeFileSync(outputPath, res);  
     }
 
     logNodeInfo(node) {
@@ -971,19 +978,6 @@ view.View = class {
                         console.log(output);
                     });
                     // TODO: send notification when export is done
-                    /*
-                                var owner = electron.BrowserWindow.getFocusedWindow();
-            var messageBoxOptions = {
-                icon: path.join(__dirname, 'icon.png'),
-                title: ' ',
-                message: 'A new version of ' + electron.app.getName() + ' is available.',
-                detail: 'Click \'Download and Install\' to download the update and automatically install it on exit.',
-                buttons: ['Download and Install', 'Remind Me Later'],
-                defaultId: 0,
-                cancelId: 1
-            };
-            var result = electron.dialog.showMessageBox(owner, messageBoxOptions);
-                     */
                 }
                 catch (err) {
                     console.log("==== ERROR ====:\n " + err);

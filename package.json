@@ -23,6 +23,7 @@
         "flatbuffers": "latest",
         "google": "^2.1.0",
         "handlebars": "latest",
+        "jsonq": "^1.2.0",
         "marked": "latest",
         "npm-font-open-sans": "latest",
         "pako": "latest",
