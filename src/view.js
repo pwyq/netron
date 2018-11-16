@@ -761,13 +761,7 @@ view.View = class {
         if (node) {
             var view = new NodeCustomAttributeSidebar(node, this._host, pbFileName, filePath);
             view.on('custom-attr-sidebar', (sender, cb) => {
-                // console.log("[showDropdownMenu]: " + cb);
-                try {
-                    this.saveCustomAttributes(cb, pbFileName, filePath);
-                }
-                catch (err) {
-                    console.log(err);
-                }
+                this.saveCustomAttributes(cb, pbFileName, filePath);
             }); 
             this._sidebar.open(view.elements, 'Node Custom Attributes');
         }
@@ -785,7 +779,6 @@ view.View = class {
             var raw = fs.readFileSync(filePath);
             var graphObj = JSON.parse(raw);
         }
-        // console.log(graphObj)
         var customAttrObj = {};
         customAttrObj[customAttr] = customVal;
         if (!jMan.addNewNode(graphObj, pbFileName, nodeId, customAttrObj)) {
@@ -796,7 +789,6 @@ view.View = class {
 
         var json  = JSON.stringify(graphObj, null , 2);
         fs.writeFileSync(filePath, json);
-        console.log('bbbbbbbbbbbbbbbbbbbbb')
     }
 
     logNodeInfo(node) {
