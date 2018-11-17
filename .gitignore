@@ -15,4 +15,4 @@ python_scripts/dist/*
 python_scripts/*.spec
 .*
 .vscode/settings.json
-custom_json/*
+custom_json/*.json
