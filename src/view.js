@@ -53,9 +53,19 @@ view.View = class {
         document.getElementById('sidebar').addEventListener('mousewheel', (e) => {
             this.preventZoom(e);
         });
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', (event) => {
             this.clearSelection();
         });
+
+        this.addMultiListener(document, 'keydown keyup click', function(event) {
+            if (event.ctrlKey && event.which == 1) {
+                console.log("ctrl key + right-click");
+            }
+        });
+    }
+
+    addMultiListener(element, eventNames, listener) {
+        eventNames.split(' ').forEach(e => element.addEventListener(e, listener, false));
     }
     
     show(page) {

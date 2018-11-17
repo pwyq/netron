@@ -355,7 +355,7 @@ grapher.NodeElement = class {
             });
             attributesHeight += 4;
         }
-        // TODO, add custom attributes here (node without names may not work...)
+        // TODO, add custom attributes here (models with no-name nodes may not work...)
 
         if (maxWidth > itemWidth) {
             var d = (maxWidth - itemWidth) / this._items.length;
