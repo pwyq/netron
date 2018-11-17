@@ -120,6 +120,9 @@ host.ElectronHost = class {
         electron.ipcRenderer.on('find', (event, data) => {
             this._view.find();
         });
+        electron.ipcRenderer.on('group-node-mode', (event, data) => {
+            this._view.groupNodeMode();
+        });
 
         var openFileButton = document.getElementById('open-file-button');
         if (openFileButton) {

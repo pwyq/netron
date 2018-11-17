@@ -57,11 +57,13 @@ view.View = class {
             this.clearSelection();
         });
 
-        this.addMultiListener(document, 'keydown keyup click', function(event) {
-            if (event.ctrlKey && event.which == 1) {
-                console.log("ctrl key + right-click");
-            }
-        });
+        // this.addMultiListener(document, 'keydown keyup click', function(event) {
+        //     // were planning to use ctrl+right-click to implement the group element,
+        //     // but holding key for too long is not user-friendly... so abandon this plan
+        //     if (event.ctrlKey && event.which == 1) {
+        //         console.log("ctrl key + right-click");
+        //     }
+        // });
     }
 
     addMultiListener(element, eventNames, listener) {
@@ -134,6 +136,7 @@ view.View = class {
     }
 
     find() {
+        // console.log("[1] sidebar status: " + this._sidebar.isClose);
         if (this._activeGraph) {
             this.clearSelection();
             var graphElement = document.getElementById('graph');
@@ -147,6 +150,29 @@ view.View = class {
             });
             this._sidebar.open(view.content, 'Find');  
             view.focus(this._searchText);
+        }
+        // console.log("[2] sidebar status: " + this._sidebar.isClose);
+    }
+
+    groupNodeMode() {
+        if (this._activeGraph) {
+            console.log("[1] sidebar status: " + this._sidebar.isClose);
+            // var pbFileName = path.parse(path.basename(this._host.getFileName())).name;
+            // var outputFileName = pbFileName + '_custom_attributes.json';
+            // if (this._host.getIsDev()) {
+            //     var filePath = path.join(__dirname, '../custom_json', outputFileName);
+            // }
+            // else {
+            //     var filePath = path.join(process.resourcesPath, 'custom_json', outputFileName);
+            // }
+
+            // var view = new GroupNodeSidebar(node, nodeID, this._host, pbFileName, filePath);
+            var view = new GroupNodeSidebar('', '', this._host, '', '');
+            // view.on('custom-attr-sidebar', (sender, cb) => {
+            //     this.saveCustomAttributes(cb, pbFileName, filePath);
+            // }); 
+            this._sidebar.open(view.elements, 'Group Nodes Mode');
+            console.log("[1] sidebar status: " + this._sidebar.isClose);
         }
     }
 
@@ -396,11 +422,11 @@ view.View = class {
                             var text = view.showNames && node.name ? node.name : (node.primitive ? node.primitive : node.operator);
                             var title = view.showNames && node.name ? node.operator : node.name;
                             formatter.addItem(text, null, styles, title, (event) => {
-                                var tempID = ''
+                                var tempID = '';
                                 if (!node.name) {
                                     tempID = this.getTempID(node);
                                 }
-                                var params = [node, null, tempID, "test 1"];
+                                var params = [node, null, tempID, "test 5"];
                                 view.nodeElementClickHandler(event.button, params);
                             });
                         }
@@ -448,11 +474,11 @@ view.View = class {
                                 if (input.visible) {
                                     var types = input.connections.map(connection => connection.type || '').join('\n');
                                     formatter.addItem(input.name, inputId, [ inputClass ], types, (event) => {
-                                        var tempID = ''
+                                        var tempID = '';
                                         if (!node.name) {
                                             tempID = this.getTempID(node);
                                         }
-                                        var params = [node, null, tempID, "test 4"];
+                                        var params = [node, input, tempID, "test 4"];
                                         this.nodeElementClickHandler(event.button, params);
                                     });
                                 }
@@ -477,7 +503,7 @@ view.View = class {
                     if (this._showDetails) {
                         if (hiddenInputs) {
                             formatter.addItem('...', null, [ 'node-item-input' ], '', (event) => {
-                                var tempID = ''
+                                var tempID = '';
                                 if (!node.name) {
                                     tempID = this.getTempID(node);
                                 }
@@ -487,7 +513,7 @@ view.View = class {
                         }
                         if (hiddenInitializers) {
                             formatter.addItem('...', null, [ 'node-item-constant' ], '', (event) => {
-                                var tempID = ''
+                                var tempID = '';
                                 if (!node.name) {
                                     tempID = this.getTempID(node);
                                 }
@@ -521,7 +547,7 @@ view.View = class {
                         var attributes = node.attributes; 
                         if (attributes && !primitive) {
                             formatter.setAttributeHandler((event) => {
-                                var tempID = ''
+                                var tempID = '';
                                 if (!node.name) {
                                     tempID = this.getTempID(node);
                                 }

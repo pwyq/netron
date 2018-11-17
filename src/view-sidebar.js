@@ -9,6 +9,8 @@ const QUANTIZATION_TYPES = ['None', 'Fix_Point', 'Float_Point', 'Quant1', 'Quant
 
 class Sidebar {
     constructor() {
+        this._isClosed = true;
+
         this._closeSidebarHandler = (e) => {
             this.close();
         };
@@ -59,7 +61,9 @@ class Sidebar {
             else {
                 contentElement.style.width = 'calc(' + sidebarElement.style.width + ' - 40px)';
             }
+            this._isClosed = false;
         }
+        // console.log("opened sidebar");
     }
     
     close() {
@@ -72,7 +76,13 @@ class Sidebar {
             closeButtonElement.removeEventListener('click', this._closeSidebarHandler);
             closeButtonElement.style.color = '#f8f8f8';
             sidebarElement.style.width = '0';
+            this._isClosed = true;
         }
+        // console.log("closed sidebar");
+    }
+
+    get isClose() {
+        return this._isClosed;
     }
 }
 
@@ -239,7 +249,6 @@ class customAttributes {
         return this._attributes;
     }
 }
-
 
 class NodeCustomAttributeSidebar {
     constructor(node, nodeID, host, fileName, filePath) {
@@ -1232,4 +1241,87 @@ class FindSidebar {
         return this._contentElement;
     }
 
+}
+
+class GroupNodeSidebar {
+    constructor(node, nodeID, host, fileName, filePath) {
+        this._host = host;
+        this._node = node;
+        this._name = (node.name) ? (node.name) : nodeID;    // nodeID is for no-name nodes
+        this._fileName = fileName;
+        this._filePath = filePath;
+        this._elements = [];
+        this._attributes = [];
+
+        this._attributeView = [];   // for listening
+
+        var operatorElement = document.createElement('div');
+        operatorElement.className = 'sidebar-view-title';
+        operatorElement.innerText = 'lalalalala';
+        this._elements.push(operatorElement);
+
+        // if (this._name) {
+        //     this.addProperty('name', new ValueTextView(this._name));
+        // }
+
+        // var attributes = new customAttributes(this._node);
+        // var attrList = attributes.attributeList;
+        // if (attributes && attrList.length > 0) {
+        //     this.addHeader('Custom Attributes');
+        //     attrList.forEach((attribute) => {
+        //         this.addCustomAttribute(this._name, attribute, this._fileName, this._filePath);
+        //     });
+        // }
+
+        var divider = document.createElement('div');
+        divider.setAttribute('style', 'margin-bottom: 20px');
+        this._elements.push(divider);
+
+        // if (this._attributeView && this._attributeView.length > 0) {
+        //     // Listen to callback from custom attributes that user selected, and redirect to view
+        //     this._attributeView.forEach((item) => {
+        //         item.on('custom-attr-selected', (sender, cb)=> {
+        //             this._raise('custom-attr-sidebar', cb);
+        //         });
+        //     });
+        // }
+    }
+
+    get elements() {
+        return this._elements;
+    }
+
+    // addHeader(title) {
+    //     var headerElement = document.createElement('div');
+    //     headerElement.className = 'sidebar-view-header';
+    //     headerElement.innerText = title;
+    //     this._elements.push(headerElement);
+    // }
+
+    // addProperty(name, value) {
+    //     var item = new NameValueView(name, value);
+    //     this._elements.push(item.element);
+    // }
+
+    // addCustomAttribute(name, attribute, fileName, filePath) {
+    //     var customAttrView = new NodeCustomAttributeView(name, attribute, fileName, filePath);
+    //     this._attributeView.push(customAttrView);
+    //     var item = new NameValueView(attribute.key, customAttrView);
+    //     this._attributes.push(item);
+    //     this._elements.push(item.element);
+    // }
+
+    on(event, callback) {
+        this._events = this._events || {};
+        this._events[event] = this._events[event] || [];
+        this._events[event].push(callback);
+    }
+
+    _raise(event, data) {
+        if (this._events && this._events[event]) {
+            this._events[event].forEach((callback) => {
+                callback(this, data);
+            });
+        }
+    }
 }

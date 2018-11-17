@@ -431,9 +431,15 @@ class Application {
                 { type: 'separator' },
                 {
                     id: 'edit.find',
-                    label: '&Find...',
+                    label: '&Find Node',
                     accelerator: 'CmdOrCtrl+F',
                     click: () => this.execute('find', null),
+                },
+                {
+                    id: 'edit.group-node-mode',
+                    label: '&Group Nodes Mode',
+                    accelerator: 'CmdOrCtrl+G',
+                    click: () => this.execute('group-node-mode', null)
                 }
             ]
         });
@@ -561,6 +567,9 @@ class Application {
             enabled: (context) => { return context.view && context.view.path ? true : false; }
         };
         commandTable['edit.find'] = {
+            enabled: (context) => { return context.view && context.view.path ? true : false; }
+        };
+        commandTable['edit.group-node-mode'] = {
             enabled: (context) => { return context.view && context.view.path ? true : false; }
         };
         commandTable['view.show-details'] = {
