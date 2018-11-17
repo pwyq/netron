@@ -32,6 +32,7 @@ view.View = class {
         this._model = null;
         this._selection = [];
         this._sidebar = new Sidebar();
+        this._leftSidebar = new LeftSidebar();
         this._host.initialize(this);
         this._showDetails = true;
         this._showNames = false;
@@ -47,16 +48,18 @@ view.View = class {
         document.getElementById('zoom-out-button').addEventListener('click', (e) => {
             this.zoomOut();
         });
-        document.getElementById('toolbar').addEventListener('mousewheel', (e) => {
-            this.preventZoom(e);
-        });
-        document.getElementById('sidebar').addEventListener('mousewheel', (e) => {
-            this.preventZoom(e);
+
+        var elementsArray = document.querySelectorAll('toolbar, sidebar, left-sidebar');
+        elementsArray.forEach(function(elem) {
+            elem.addEventListener("mousewheel", function(e) {
+                this.preventZoom(e);
+            });
         });
         document.addEventListener('keydown', (event) => {
             this.clearSelection();
         });
 
+        // FOLLOWING is example of detecting keyboard event + click event
         // this.addMultiListener(document, 'keydown keyup click', function(event) {
         //     // were planning to use ctrl+right-click to implement the group element,
         //     // but holding key for too long is not user-friendly... so abandon this plan
@@ -136,7 +139,6 @@ view.View = class {
     }
 
     find() {
-        // console.log("[1] sidebar status: " + this._sidebar.isClose);
         if (this._activeGraph) {
             this.clearSelection();
             var graphElement = document.getElementById('graph');
@@ -151,32 +153,14 @@ view.View = class {
             this._sidebar.open(view.content, 'Find');  
             view.focus(this._searchText);
         }
-        // console.log("[2] sidebar status: " + this._sidebar.isClose);
     }
 
     groupNodeMode() {
         if (this._activeGraph) {
-            console.log("[1] sidebar isClose: " + this._sidebar.isClose);
-            console.log("[1] sidebar isGroupNodesMode: " + this._sidebar.isGroupNodesMode);
-            // var pbFileName = path.parse(path.basename(this._host.getFileName())).name;
-            // var outputFileName = pbFileName + '_custom_attributes.json';
-            // if (this._host.getIsDev()) {
-            //     var filePath = path.join(__dirname, '../custom_json', outputFileName);
-            // }
-            // else {
-            //     var filePath = path.join(process.resourcesPath, 'custom_json', outputFileName);
-            // }
-
-            // var view = new GroupNodeSidebar(node, nodeID, this._host, pbFileName, filePath);
+            // console.log("==== OPEN GROUP NODES MODE! ====");
             var view = new GroupNodeSidebar('', '', this._host, '', '');
-            // view.on('custom-attr-sidebar', (sender, cb) => {
-            //     this.saveCustomAttributes(cb, pbFileName, filePath);
-            // }); 
-            this._sidebar.open(view.elements, 'Group Nodes Mode');
-            console.log("[1] sidebar isClose: " + this._sidebar.isClose);
-            console.log("[1] sidebar isGroupNodesMode: " + this._sidebar.isGroupNodesMode);
+            this._leftSidebar.open(view.elements, 'Group Nodes Mode');
         }
-        // alert("tttttttttttttttttttt");
     }
 
     toggleDetails() {
@@ -254,7 +238,7 @@ view.View = class {
             });
             x = x / selection.length;
             y = y / selection.length;
-            this._zoom.transform(d3.select(graphElement), d3.zoomIdentity.translate((graphRect.width / 2) - x, (graphRect.height / 2) - y));        
+            this._zoom.transform(d3.select(graphElement), d3.zoomIdentity.translate((graphRect.width / 2) - x, (graphRect.height / 2) - y));
         }
     }
 
@@ -850,48 +834,6 @@ view.View = class {
 
         var json  = JSON.stringify(graphObj, null , 2);
         fs.writeFileSync(filePath, json);
-    }
-
-    logNodeInfo(node) {
-        try {
-            console.log("\n")
-            // all this properties can be found in tf.js
-            console.log("name = " + node.name);
-            // console.log("primitive = " + node.primitive);
-            console.log("operator = " + node.operator);
-            // console.log("inner = " + node.inner);
-            // console.log("dependencies = " + node.dependencies);
-            // console.log("attributes = " + node.attributes);
-            console.log("attributes = " + Object.keys(node.attributes));
-            console.log("group = " + node.group);
-            console.log("documentation = " + Object.keys(node.documentation));
-            console.log("domain = " + node.domain);
-            console.log("description = " + node.description);
-            console.log("device = " + node.device);
-            console.log("inputs = " + node.inputs);
-            console.log("output = " + node.outputs);
-            // console.log(typeof(node))
-            // console.log(Object(node))
-            // var keys = Object.keys(node)
-            // console.log(keys)
-            // console.log(Object.keys(node._graph))
-            // console.log(Object.keys(node._graph._model))
-            // console.log(Object.keys(node._graph._metaGraph))
-            // console.log(Object.keys(node._graph._version))
-            // console.log(Object.keys(node._graph._metadata))
-            // console.log(Object.keys(node._graph._name))
-            // console.log(Object.keys(node._graph._operators))
-            // console.log(Object.keys(node._graph._inputMap))
-            // console.log(Object.keys(node._graph._nodeMap))
-            // console.log(Object.keys(node._graph._namespaces))
-            // console.log(Object.keys(node._graph._nodeOutputCountMap))
-            // console.log(Object.keys(node._graph._initializerMap))
-            // console.log(Object.keys(node._node))
-            // console.log(Object.keys(node._attributes))
-        }
-        catch (err) {
-            console.log(err);
-        }
     }
 
     applyStyleSheet(element, name) {

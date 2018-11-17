@@ -75,7 +75,6 @@ host.BrowserHost = class {
         var openFileDialog = document.getElementById('open-file-dialog');
         if (openFileButton && openFileDialog) {
             openFileButton.addEventListener('click', (e) => {
-                console.log("you clicked here 9");
                 openFileDialog.value = '';
                 openFileDialog.click();
             });

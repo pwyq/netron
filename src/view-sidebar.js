@@ -8,10 +8,10 @@ const HARDWARE_TARGETS = ['None', 'CPU', 'GPU', 'APEX', 'HW1', 'HW2'];
 const QUANTIZATION_TYPES = ['None', 'Fix_Point', 'Float_Point', 'Quant1', 'Quant2'];
 
 class Sidebar {
+    /*
+     * Right Sidebar
+     */
     constructor() {
-        this._isClosed = true;
-        this._isGroupNodesMode = false;
-
         this._closeSidebarHandler = (e) => {
             this.close();
         };
@@ -64,10 +64,6 @@ class Sidebar {
             }
             this._isClosed = false;
         }
-        if (title == 'Group Nodes Mode') {
-            this._isGroupNodesMode = true;
-        }
-        // console.log("opened sidebar");
     }
     
     close() {
@@ -82,18 +78,6 @@ class Sidebar {
             sidebarElement.style.width = '0';
             this._isClosed = true;
         }
-        if (this._isGroupNodesMode) {
-            this._isGroupNodesMode = false;
-        }
-        // console.log("closed sidebar");
-    }
-
-    get isClose() {
-        return this._isClosed;
-    }
-
-    get isGroupNodesMode() {
-        return this._isGroupNodesMode;
     }
 }
 
@@ -1254,6 +1238,97 @@ class FindSidebar {
 
 }
 
+class LeftSidebar {
+    constructor() {
+        // this._isClosed = true;
+        // this._isGroupNodesMode = false;
+
+        this._closeSidebarHandler = (e) => {
+            this.close();
+        };
+        // this._closeSidebarKeyDownHandler = (e) => {
+        //     if (e.keyCode == 27) {
+        //         e.preventDefault();
+        //         this.close();
+        //     }
+        // };
+        this._resizeSidebarHandler = (e) => {
+            var contentElement = document.getElementById('left-sidebar-content');
+            if (contentElement) {
+                contentElement.style.height = window.innerHeight - 60;
+            }
+        };
+    }
+
+    open(content, title, width) {
+        var sidebarElement = document.getElementById('left-sidebar');
+        var titleElement = document.getElementById('left-sidebar-title');
+        var contentElement = document.getElementById('left-sidebar-content');
+        var closeButtonElement = document.getElementById('left-sidebar-closebutton');
+        if (sidebarElement && contentElement && closeButtonElement && titleElement) {
+            titleElement.innerHTML = title ? title.toUpperCase() : '';
+            window.addEventListener('resize', this._resizeSidebarHandler);
+            // document.addEventListener('keydown', this._closeSidebarKeyDownHandler);
+            closeButtonElement.addEventListener('click', this._closeSidebarHandler);
+            closeButtonElement.style.color = '#818181';
+            contentElement.style.height = window.innerHeight - 60;
+            while (contentElement.firstChild) {
+                contentElement.removeChild(contentElement.firstChild);
+            }
+            if (typeof content == 'string') {
+                contentElement.innerHTML = content;
+            }
+            else if (content instanceof Array) {
+                content.forEach((element) => {
+                    contentElement.appendChild(element);
+                });
+            }
+            else {
+                contentElement.appendChild(content);
+            }
+            sidebarElement.style.width = width ? width : '500px';    
+            if (width && width.endsWith('%')) {
+                contentElement.style.width = '100%';
+            }
+            else {
+                contentElement.style.width = 'calc(' + sidebarElement.style.width + ' - 40px)';
+            }
+            this._isClosed = false;
+        }
+        // if (title == 'Group Nodes Mode') {
+        //     this._isGroupNodesMode = true;
+        // }
+    }
+    
+    close() {
+        var sidebarElement = document.getElementById('left-sidebar');
+        var contentElement = document.getElementById('left-sidebar-content');
+        var closeButtonElement = document.getElementById('left-sidebar-closebutton');
+        if (sidebarElement && contentElement && closeButtonElement) {
+            // document.removeEventListener('keydown', this._closeSidebarKeyDownHandler);
+            sidebarElement.removeEventListener('resize', this._resizeSidebarHandler);
+            closeButtonElement.removeEventListener('click', this._closeSidebarHandler);
+            closeButtonElement.style.color = '#f8f8f8';
+            sidebarElement.style.width = '0';
+            this._isClosed = true;
+        }
+        // if (this._isGroupNodesMode) {
+        //     this._isGroupNodesMode = false;
+        // }
+    }
+
+    // TODO: if in group nodes mode, allow user to add nodes in single right-click,
+    //  - add a peek-lock to allow user to peak the selected elements without adding it to the panel.
+
+    // get isClose() {
+    //     return this._isClosed;
+    // }
+
+    // get isGroupNodesMode() {
+    //     return this._isGroupNodesMode;
+    // }
+}
+
 class GroupNodeSidebar {
     constructor(node, nodeID, host, fileName, filePath) {
         this._host = host;
@@ -1267,7 +1342,7 @@ class GroupNodeSidebar {
         this._attributeView = [];   // for listening
 
         var operatorElement = document.createElement('div');
-        operatorElement.className = 'sidebar-view-title';
+        operatorElement.className = 'left-sidebar-view-title';
         operatorElement.innerText = 'lalalalala';
         this._elements.push(operatorElement);
 
