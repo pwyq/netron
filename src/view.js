@@ -150,16 +150,47 @@ view.View = class {
                 this._sidebar.close();
                 this.select(selection);
             });
-            this._sidebar.open(view.content, 'Find');  
+            var windowWidth = this.getSidebarWindowWidth();
+            this._sidebar.open(view.content, 'Find', windowWidth);  
             view.focus(this._searchText);
         }
+    }
+
+    getClientWindowResolution() {
+        var w = window,
+        d = document,
+        e = d.documentElement,
+        g = d.getElementsByTagName('body')[0],
+        x = w.innerWidth || e.clientWidth || g.clientWidth,
+        y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+        return [x, y];
+    }
+
+    getSidebarWindowWidth() {
+        var x = this.getClientWindowResolution()[0] * 0.3;
+        if (x > 500) {
+            x = 500;
+        }
+        return x;
     }
 
     groupNodeMode() {
         if (this._activeGraph) {
             // console.log("==== OPEN GROUP NODES MODE! ====");
-            var view = new GroupNodeSidebar('', '', this._host, '', '');
-            this._leftSidebar.open(view.elements, 'Group Nodes Mode');
+            var view = new GroupNodeSidebar(this._host, '', '');
+            var windowWidth = this.getSidebarWindowWidth();
+            // try {                
+            //     // view.on('node-select-by-user', (sender, cb) => {
+            //     //     console.log('[Group Mode]: user selected: ' + cb);
+            //     // });
+            //     view.on('chat1', (sender, cb) => {
+            //         console.log(cb);
+            //     });
+            // }
+            // catch (err) {
+            //     console.log(err);
+            // }
+            this._leftSidebar.open(view.elements, 'Group Nodes Mode', windowWidth);
         }
     }
 
@@ -779,7 +810,7 @@ view.View = class {
         switch (button) {
             case 0:
                 console.log(strs + " left click");
-                this.showNodeProperties(node, input);
+                this.showNodeProperties(node, input, id);
                 break;
             case 1:
                 console.log(strs + " middle click");
@@ -789,7 +820,7 @@ view.View = class {
                 this.showDropdownMenu(node, id);
                 break;
             default:
-                this.showNodeProperties(node, input);
+                this.showNodeProperties(node, input, id);
                 break;
         }
     }
@@ -807,8 +838,9 @@ view.View = class {
             var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, pbFileName, filePath);
             view.on('custom-attr-sidebar', (sender, cb) => {
                 this.saveCustomAttributes(cb, pbFileName, filePath);
-            }); 
-            this._sidebar.open(view.elements, 'Node Custom Attributes');
+            });
+            var windowWidth = this.getSidebarWindowWidth();
+            this._sidebar.open(view.elements, 'Node Custom Attributes', windowWidth);
         }
     }
     
@@ -968,7 +1000,8 @@ view.View = class {
             view.on('update-active-graph', (sender, name) => {
                 this.updateActiveGraph(name);
             });
-            this._sidebar.open(view.elements, 'Model Properties');
+            var windowWidth = this.getSidebarWindowWidth();
+            this._sidebar.open(view.elements, 'Model Properties', windowWidth);
         }
     }
     
@@ -997,7 +1030,8 @@ view.View = class {
             if (input) {
                 view.toggleInput(input.name);
             }
-            this._sidebar.open(view.elements, 'Node Properties (constant)');
+            var windowWidth = this.getSidebarWindowWidth();
+            this._sidebar.open(view.elements, 'Node Properties (constant)', windowWidth);
         }
     }
 
@@ -1008,7 +1042,8 @@ view.View = class {
             view.on('navigate', (sender, e) => {
                 this._host.openURL(e.link);
             });
-            this._sidebar.open(view.elements, 'Documentation');
+            var windowWidth = this.getSidebarWindowWidth();
+            this._sidebar.open(view.elements, 'Documentation', windowWidth);
         }
     }
 

@@ -82,9 +82,10 @@ class Sidebar {
 }
 
 class NodeSidebar {
-    constructor(node, host) {
+    constructor(node, host, tmpID) {
         this._host = host;
         this._node = node;
+        this._tmpID = tmpID;
         this._elements = [];
         this._attributes = [];
         this._inputs = [];
@@ -152,6 +153,16 @@ class NodeSidebar {
         divider.setAttribute('style', 'margin-bottom: 20px');
         this._elements.push(divider);
 
+        // TODO, share node-id/name to group node class
+        // try {
+        //     // if (node) {
+        //     var nodeName = (node.name) ? (node.name) : this._tmpID;
+        //     this._raise('node-select-by-user', nodeName);
+        //     // }
+        // }
+        // catch (err) {
+        //     alert(err);
+        // }
     }
 
     get elements() {
@@ -282,7 +293,7 @@ class NodeCustomAttributeSidebar {
         if (this._attributeView && this._attributeView.length > 0) {
             // Listen to callback from custom attributes that user selected, and redirect to view
             this._attributeView.forEach((item) => {
-                item.on('custom-attr-selected', (sender, cb)=> {
+                item.on('custom-attr-selected', (sender, cb) => {
                     this._raise('custom-attr-sidebar', cb);
                 });
             });
@@ -1246,12 +1257,6 @@ class LeftSidebar {
         this._closeSidebarHandler = (e) => {
             this.close();
         };
-        // this._closeSidebarKeyDownHandler = (e) => {
-        //     if (e.keyCode == 27) {
-        //         e.preventDefault();
-        //         this.close();
-        //     }
-        // };
         this._resizeSidebarHandler = (e) => {
             var contentElement = document.getElementById('left-sidebar-content');
             if (contentElement) {
@@ -1268,7 +1273,6 @@ class LeftSidebar {
         if (sidebarElement && contentElement && closeButtonElement && titleElement) {
             titleElement.innerHTML = title ? title.toUpperCase() : '';
             window.addEventListener('resize', this._resizeSidebarHandler);
-            // document.addEventListener('keydown', this._closeSidebarKeyDownHandler);
             closeButtonElement.addEventListener('click', this._closeSidebarHandler);
             closeButtonElement.style.color = '#818181';
             contentElement.style.height = window.innerHeight - 60;
@@ -1293,7 +1297,7 @@ class LeftSidebar {
             else {
                 contentElement.style.width = 'calc(' + sidebarElement.style.width + ' - 40px)';
             }
-            this._isClosed = false;
+            // this._isClosed = false;
         }
         // if (title == 'Group Nodes Mode') {
         //     this._isGroupNodesMode = true;
@@ -1310,7 +1314,7 @@ class LeftSidebar {
             closeButtonElement.removeEventListener('click', this._closeSidebarHandler);
             closeButtonElement.style.color = '#f8f8f8';
             sidebarElement.style.width = '0';
-            this._isClosed = true;
+            // this._isClosed = true;
         }
         // if (this._isGroupNodesMode) {
         //     this._isGroupNodesMode = false;
@@ -1330,72 +1334,25 @@ class LeftSidebar {
 }
 
 class GroupNodeSidebar {
-    constructor(node, nodeID, host, fileName, filePath) {
+    constructor(host, fileName, filePath) {
         this._host = host;
-        this._node = node;
-        this._name = (node.name) ? (node.name) : nodeID;    // nodeID is for no-name nodes
         this._fileName = fileName;
         this._filePath = filePath;
         this._elements = [];
-        this._attributes = [];
-
-        this._attributeView = [];   // for listening
 
         var operatorElement = document.createElement('div');
         operatorElement.className = 'left-sidebar-view-title';
         operatorElement.innerText = 'lalalalala';
         this._elements.push(operatorElement);
 
-        // if (this._name) {
-        //     this.addProperty('name', new ValueTextView(this._name));
-        // }
-
-        // var attributes = new customAttributes(this._node);
-        // var attrList = attributes.attributeList;
-        // if (attributes && attrList.length > 0) {
-        //     this.addHeader('Custom Attributes');
-        //     attrList.forEach((attribute) => {
-        //         this.addCustomAttribute(this._name, attribute, this._fileName, this._filePath);
-        //     });
-        // }
-
         var divider = document.createElement('div');
         divider.setAttribute('style', 'margin-bottom: 20px');
         this._elements.push(divider);
-
-        // if (this._attributeView && this._attributeView.length > 0) {
-        //     // Listen to callback from custom attributes that user selected, and redirect to view
-        //     this._attributeView.forEach((item) => {
-        //         item.on('custom-attr-selected', (sender, cb)=> {
-        //             this._raise('custom-attr-sidebar', cb);
-        //         });
-        //     });
-        // }
     }
 
     get elements() {
         return this._elements;
     }
-
-    // addHeader(title) {
-    //     var headerElement = document.createElement('div');
-    //     headerElement.className = 'sidebar-view-header';
-    //     headerElement.innerText = title;
-    //     this._elements.push(headerElement);
-    // }
-
-    // addProperty(name, value) {
-    //     var item = new NameValueView(name, value);
-    //     this._elements.push(item.element);
-    // }
-
-    // addCustomAttribute(name, attribute, fileName, filePath) {
-    //     var customAttrView = new NodeCustomAttributeView(name, attribute, fileName, filePath);
-    //     this._attributeView.push(customAttrView);
-    //     var item = new NameValueView(attribute.key, customAttrView);
-    //     this._attributes.push(item);
-    //     this._elements.push(item.element);
-    // }
 
     on(event, callback) {
         this._events = this._events || {};
