@@ -44,7 +44,6 @@ Install `Debugger for Chrome` to use this DEBUG configuration.
         - `pip install virtualenvwrapper-win`
 - `pip install google`
 - `pip3 install pyinstaller`
-- `npm install jsonq`
 
 ```bash
 cd tools
@@ -75,6 +74,7 @@ add usage for major files:
 1. Ask user to use no white-space paths
 2. there should be no `-` in node name/id etc.
 3. Only tested on Windows OS
+4. For now, must create a `/custom_json` directory in the root directory
 
 # TODO
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
