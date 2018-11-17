@@ -156,7 +156,8 @@ view.View = class {
 
     groupNodeMode() {
         if (this._activeGraph) {
-            console.log("[1] sidebar status: " + this._sidebar.isClose);
+            console.log("[1] sidebar isClose: " + this._sidebar.isClose);
+            console.log("[1] sidebar isGroupNodesMode: " + this._sidebar.isGroupNodesMode);
             // var pbFileName = path.parse(path.basename(this._host.getFileName())).name;
             // var outputFileName = pbFileName + '_custom_attributes.json';
             // if (this._host.getIsDev()) {
@@ -172,8 +173,10 @@ view.View = class {
             //     this.saveCustomAttributes(cb, pbFileName, filePath);
             // }); 
             this._sidebar.open(view.elements, 'Group Nodes Mode');
-            console.log("[1] sidebar status: " + this._sidebar.isClose);
+            console.log("[1] sidebar isClose: " + this._sidebar.isClose);
+            console.log("[1] sidebar isGroupNodesMode: " + this._sidebar.isGroupNodesMode);
         }
+        // alert("tttttttttttttttttttt");
     }
 
     toggleDetails() {
@@ -995,38 +998,24 @@ view.View = class {
             }
 
             if (extension == 'txt') {
-                try {
-                    var parameters = [outputFilePath, pbFilePath, 'txt'];
-                    execFile(exe_path, parameters, function(err, data) {
-                        if (err) {
-                           console.log("ERROR: " + err);
-                           return;
-                        }
-                        var output = data.toString();
-                        console.log(output);
-                    });
-                    // TODO: send notification when export is done
-                }
-                catch (err) {
-                    console.log("==== ERROR ====:\n " + err);
-                }
+                var parameters = [outputFilePath, pbFilePath, 'txt'];
+                execFile(exe_path, parameters, function(err, data) {
+                    if (err) {
+                        alert("ERROR: " + err);
+                        return;
+                    }
+                    alert(data.toString());
+                });
             }
             if (extension == 'json') {
-                try {
-                    var parameters = [outputFilePath, pbFilePath, 'json'];
-                    execFile(exe_path, parameters, function(err, data) {
-                        if (err) {
-                           console.log("ERROR: " + err);
-                           return;
-                        }
-                        var output = data.toString();
-                        console.log(output);
-                    });
-                    // TODO: send notification when export is done
-                }
-                catch (err) {
-                    console.log("==== ERROR ====:\n " + err);
-                }
+                var parameters = [outputFilePath, pbFilePath, 'json'];
+                execFile(exe_path, parameters, function(err, data) {
+                    if (err) {
+                        alert("ERROR: " + err);
+                        return;
+                    }
+                    alert(data.toString());
+                });
             }
         }
     }

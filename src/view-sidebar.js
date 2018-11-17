@@ -10,6 +10,7 @@ const QUANTIZATION_TYPES = ['None', 'Fix_Point', 'Float_Point', 'Quant1', 'Quant
 class Sidebar {
     constructor() {
         this._isClosed = true;
+        this._isGroupNodesMode = false;
 
         this._closeSidebarHandler = (e) => {
             this.close();
@@ -63,6 +64,9 @@ class Sidebar {
             }
             this._isClosed = false;
         }
+        if (title == 'Group Nodes Mode') {
+            this._isGroupNodesMode = true;
+        }
         // console.log("opened sidebar");
     }
     
@@ -78,11 +82,18 @@ class Sidebar {
             sidebarElement.style.width = '0';
             this._isClosed = true;
         }
+        if (this._isGroupNodesMode) {
+            this._isGroupNodesMode = false;
+        }
         // console.log("closed sidebar");
     }
 
     get isClose() {
         return this._isClosed;
+    }
+
+    get isGroupNodesMode() {
+        return this._isGroupNodesMode;
     }
 }
 
