@@ -153,19 +153,28 @@ class NodeSidebar {
         // TODO, share node-id/name to group node class
         // try {
         //     var nodeName = (node.name) ? (node.name) : this._tmpID;
-        //     this._raise('node-select-by-user', nodeName);
+        //     this._raise('nodename-channel', nodeName);
         // }
         // catch (err) {
         //     alert(err);
         // }
-        this.test();
+        // try {
+        //     this._dropdownListElement.addEventListener('click', (e) => {
+        //         this.updateValue(e.target.id);
+        //         this._raise('custom-attr-selected', e.target.id);
+        //     });
+        // }
+        // catch (err) {
+        //     console.log(err);
+        // }
+        // this.test();
     }
 
-    test() {
-        var data = 'aaaaaaaaaaaaaaahhhhhhhhhhhhhhh';
-        console.log("NSB, send! " + data)
-        this._raise('chat1', data);
-    }
+    // test() {
+    //     var data = 'aaaaaaaaaaaaaaahhhhhhhhhhhhhhh';
+    //     console.log("NSB, send! " + data)
+    //     this._raise('chat1', data);
+    // }
 
     get elements() {
         return this._elements;
@@ -1169,7 +1178,7 @@ class FindSidebar {
         }
 
         if (selection.length > 0) {
-            this._raise('select', selection);
+            this._raise('select-channel', selection);
         }
     }
 

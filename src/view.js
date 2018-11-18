@@ -151,7 +151,7 @@ view.View = class {
             view.on('search-text-changed', (sender, text) => {
                 this._searchText = text;
             });
-            view.on('select', (sender, selection) => {
+            view.on('select-channel', (sender, selection) => {
                 this._sidebar.close();
                 this.select(selection);
             });
@@ -451,7 +451,7 @@ view.View = class {
                             formatter.addItem(text, null, styles, title, (event) => {
                                 var tempID = '';
                                 if (!node.name) {
-                                    tempID = this.getTempID(node);
+                                    tempID = view.getTempID(node);
                                 }
                                 var params = [node, null, tempID, "test 5"];
                                 view.nodeElementClickHandler(event.button, params);
