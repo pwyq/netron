@@ -55,7 +55,7 @@ class Sidebar {
             else {
                 contentElement.appendChild(content);
             }
-            sidebarElement.style.width = width ? width : '500px';    
+            sidebarElement.style.width = width ? width : '500px';
             if (width && width.endsWith('%')) {
                 contentElement.style.width = '100%';
             }
@@ -132,7 +132,6 @@ class NodeSidebar {
             });
         }
 
-        
         var inputs = node.inputs;
         if (inputs && inputs.length > 0) {
             this.addHeader('Inputs');
@@ -155,14 +154,17 @@ class NodeSidebar {
 
         // TODO, share node-id/name to group node class
         // try {
-        //     // if (node) {
         //     var nodeName = (node.name) ? (node.name) : this._tmpID;
         //     this._raise('node-select-by-user', nodeName);
-        //     // }
         // }
         // catch (err) {
         //     alert(err);
         // }
+        this.test();
+    }
+
+    test() {
+        this._raise('chat1', 'aaaaaaaaaaaaaaahhhhhhhhhhhhhhh');
     }
 
     get elements() {
@@ -1297,11 +1299,7 @@ class LeftSidebar {
             else {
                 contentElement.style.width = 'calc(' + sidebarElement.style.width + ' - 40px)';
             }
-            // this._isClosed = false;
         }
-        // if (title == 'Group Nodes Mode') {
-        //     this._isGroupNodesMode = true;
-        // }
     }
     
     close() {
@@ -1340,14 +1338,28 @@ class GroupNodeSidebar {
         this._filePath = filePath;
         this._elements = [];
 
-        var operatorElement = document.createElement('div');
-        operatorElement.className = 'left-sidebar-view-title';
-        operatorElement.innerText = 'lalalalala';
-        this._elements.push(operatorElement);
+        var titleElement = document.createElement('div');
+        titleElement.className = 'left-sidebar-view-title';
+        titleElement.innerText = 'lalalalala';
+        this._elements.push(titleElement);
 
         var divider = document.createElement('div');
         divider.setAttribute('style', 'margin-bottom: 20px');
         this._elements.push(divider);
+
+        // try {
+        //     this.on('node-select-by-user', (sender, data) => {
+        //         console.log('[GG] ' + data);
+        //     });
+        // }
+        // catch (err) {
+        //     console.log(err);
+        // }
+        this.test();
+    }
+
+    test () {
+        this._raise('chat1', 'pls o ne gai');
     }
 
     get elements() {

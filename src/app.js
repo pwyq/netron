@@ -308,6 +308,7 @@ class Application {
         electron.dialog.showMessageBox(owner, aboutDialogOptions);
     }
 
+    // TODO: IMPORTANT
     _isDev() {
         return ('ELECTRON_IS_DEV' in process.env) ?
             (parseInt(process.env.ELECTRON_IS_DEV, 10) === 1) :

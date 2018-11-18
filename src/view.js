@@ -59,6 +59,11 @@ view.View = class {
             this.clearSelection();
         });
 
+        // this._on('node-select-by-user', (sender, data) => {
+        //     console.log(sender);
+        //     console.log('[GG] ' + data);
+        // });
+
         // FOLLOWING is example of detecting keyboard event + click event
         // this.addMultiListener(document, 'keydown keyup click', function(event) {
         //     // were planning to use ctrl+right-click to implement the group element,
@@ -151,7 +156,7 @@ view.View = class {
                 this.select(selection);
             });
             var windowWidth = this.getSidebarWindowWidth();
-            this._sidebar.open(view.content, 'Find', windowWidth);  
+            this._sidebar.open(view.content, 'Find', windowWidth.toString());
             view.focus(this._searchText);
         }
     }
@@ -175,23 +180,27 @@ view.View = class {
     }
 
     groupNodeMode() {
+        console.log('-----------------VVVVVVVVVVVVVVVVVV');
         if (this._activeGraph) {
+
             // console.log("==== OPEN GROUP NODES MODE! ====");
             var view = new GroupNodeSidebar(this._host, '', '');
             var windowWidth = this.getSidebarWindowWidth();
-            // try {                
-            //     // view.on('node-select-by-user', (sender, cb) => {
-            //     //     console.log('[Group Mode]: user selected: ' + cb);
-            //     // });
-            //     view.on('chat1', (sender, cb) => {
-            //         console.log(cb);
-            //     });
+
+
+            view.on('chat1', (sender, data) => {
+                console.log(sender);
+                console.log('[GG] ' + data);
+            });
+            // try {
+                this._leftSidebar.open(view.elements, 'Group Nodes Mode', windowWidth.toString());
+                // this._sidebar.open(view.elements, 'Group Nodes Mode', windowWidth);
             // }
             // catch (err) {
-            //     console.log(err);
+                // console.log(err);
             // }
-            this._leftSidebar.open(view.elements, 'Group Nodes Mode', windowWidth);
         }
+        console.log('---------------^^^^^^^^^^^^^^^^^^');
     }
 
     toggleDetails() {
@@ -825,6 +834,20 @@ view.View = class {
         }
     }
 
+    _on(event, callback) {
+        this._events = this._events || {};
+        this._events[event] = this._events[event] || [];
+        this._events[event].push(callback);
+    }
+
+    _raise(event, data) {
+        if (this._events && this._events[event]) {
+            this._events[event].forEach((callback) => {
+                callback(this, data);
+            });
+        }
+    }
+
     showDropdownMenu(node, nodeID) {
         var pbFileName = path.parse(path.basename(this._host.getFileName())).name;
         var outputFileName = pbFileName + '_custom_attributes.json';
@@ -840,7 +863,7 @@ view.View = class {
                 this.saveCustomAttributes(cb, pbFileName, filePath);
             });
             var windowWidth = this.getSidebarWindowWidth();
-            this._sidebar.open(view.elements, 'Node Custom Attributes', windowWidth);
+            this._sidebar.open(view.elements, 'Node Custom Attributes', windowWidth.toString());
         }
     }
     
@@ -1001,7 +1024,7 @@ view.View = class {
                 this.updateActiveGraph(name);
             });
             var windowWidth = this.getSidebarWindowWidth();
-            this._sidebar.open(view.elements, 'Model Properties', windowWidth);
+            this._sidebar.open(view.elements, 'Model Properties', windowWidth.toString());
         }
     }
     
@@ -1031,7 +1054,7 @@ view.View = class {
                 view.toggleInput(input.name);
             }
             var windowWidth = this.getSidebarWindowWidth();
-            this._sidebar.open(view.elements, 'Node Properties (constant)', windowWidth);
+            this._sidebar.open(view.elements, 'Node Properties (constant)', windowWidth.toString());
         }
     }
 
@@ -1043,7 +1066,7 @@ view.View = class {
                 this._host.openURL(e.link);
             });
             var windowWidth = this.getSidebarWindowWidth();
-            this._sidebar.open(view.elements, 'Documentation', windowWidth);
+            this._sidebar.open(view.elements, 'Documentation', windowWidth.toString());
         }
     }
 
