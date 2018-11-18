@@ -815,7 +815,7 @@ view.View = class {
         else {
             var nodeID = 'node-' + id.toString();
         }
-        console.log("[nodeElementClickHandler] You clicked: " + nodeID);
+        console.log("\n[nodeElementClickHandler] You clicked: " + nodeID);
         switch (button) {
             case 0:
                 console.log(strs + " left click");

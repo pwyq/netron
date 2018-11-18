@@ -62,7 +62,6 @@ class Sidebar {
             else {
                 contentElement.style.width = 'calc(' + sidebarElement.style.width + ' - 40px)';
             }
-            this._isClosed = false;
         }
     }
     
@@ -76,7 +75,6 @@ class Sidebar {
             closeButtonElement.removeEventListener('click', this._closeSidebarHandler);
             closeButtonElement.style.color = '#f8f8f8';
             sidebarElement.style.width = '0';
-            this._isClosed = true;
         }
     }
 }
@@ -164,7 +162,9 @@ class NodeSidebar {
     }
 
     test() {
-        this._raise('chat1', 'aaaaaaaaaaaaaaahhhhhhhhhhhhhhh');
+        var data = 'aaaaaaaaaaaaaaahhhhhhhhhhhhhhh';
+        console.log("NSB, send! " + data)
+        this._raise('chat1', data);
     }
 
     get elements() {
@@ -1359,7 +1359,9 @@ class GroupNodeSidebar {
     }
 
     test () {
-        this._raise('chat1', 'pls o ne gai');
+        var data = 'pls o ne gai';
+        console.log('GGG send! ' + data);
+        this._raise('chat1', data);
     }
 
     get elements() {
