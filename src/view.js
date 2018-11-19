@@ -61,6 +61,15 @@ view.View = class {
 
         var events = require('events');
         this._eventEmitter = new events.EventEmitter();
+
+        // FOLLOWING is example of detecting keyboard event + click event	
+        // this.addMultiListener(document, 'keydown keyup click', function(event) {	
+        //     // were planning to use ctrl+right-click to implement the group element,	
+        //     // but holding key for too long is not user-friendly... so abandon this plan	
+        //     if (event.ctrlKey && event.which == 1) {	
+        //         console.log("ctrl key + right-click");	
+        //     }	
+        // });
     }
 
     addMultiListener(element, eventNames, listener) {
@@ -173,9 +182,6 @@ view.View = class {
 
             try {
                 console.log("==== OPEN GROUP NODES MODE! ====");
-                // var graphElement = document.getElementById('graph');
-                // var view = new FindSidebar(graphElement, this._activeGraph);
-    
                 var view = new GroupModeSidebar(this._host);
                 var windowWidth = this.getSidebarWindowWidth();
                 this._eventEmitter.on('share-node-id', (data) => {
@@ -904,6 +910,7 @@ view.View = class {
     }
 
     export(file) {
+        console.log('.......................');
         var extension = '';
         var lastIndex = file.lastIndexOf('.');
         if (lastIndex != -1) {
@@ -970,20 +977,43 @@ view.View = class {
 
         if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
             var outputFilePath = file;
-            var pbFilePath = this._host.getFileName();
+            var inputFilePath = this._host.getFileName();
+            try {
+                var exe = '';
+                var ext = path.extname(inputFilePath);
+                console.log(ext);
+                switch (ext) {
+                    case 'pb':
+                        exe = 'dumpPB/dumpPB.exe';
+                        break;
+                    case 'onnx':
+                        exe = 'dumpONNX/dumpONNX.exe';
+                        break;
+                    default:
+                        break;
+                }
+                console.log(exe);
+                if (exe == '') {
+                    alert('error');
+                    break;
+                }
+            }
+            catch (err) {
+                console.log(err);
+            }
 
             const { spawn } = require('child_process');
             var execFile = require('child_process').execFile;
             if (this._host.getIsDev()) {
-                var exe_path = path.join(__dirname, '../python_scripts/dist/dumpGraph/dumpGraph.exe');
+                var exe_path = path.join(__dirname, '../python_scripts/dist', exe);
             }
             else {
                 // https://github.com/electron-userland/electron-builder/issues/751
-                var exe_path = path.join(process.resourcesPath, "python_scripts/dist/dumpGraph/dumpGraph.exe")
+                var exe_path = path.join(process.resourcesPath, 'python_scripts/dist', exe)
             }
 
             if (extension == 'txt') {
-                var parameters = [outputFilePath, pbFilePath, 'txt'];
+                var parameters = [outputFilePath, inputFilePath, 'txt'];
                 execFile(exe_path, parameters, function(err, data) {
                     if (err) {
                         alert("ERROR: " + err);
@@ -993,7 +1023,7 @@ view.View = class {
                 });
             }
             if (extension == 'json') {
-                var parameters = [outputFilePath, pbFilePath, 'json'];
+                var parameters = [outputFilePath, inputFilePath, 'json'];
                 execFile(exe_path, parameters, function(err, data) {
                     if (err) {
                         alert("ERROR: " + err);

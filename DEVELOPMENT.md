@@ -77,12 +77,14 @@ add usage for major files:
 4. For now, must create a `/custom_json` directory in the root directory
 
 # TODO
+- allow user to add custom attributes??
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
 - group items
 - add custom attr to the main box (the white one)
 - dumpGraph.py todo
     - test white-space path
     - test on linux/macOS
+https://github.com/onnx/onnxmltools
 
 # Done
 - test if custom attr works in product

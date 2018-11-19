@@ -1101,7 +1101,6 @@ class FindSidebar {
 
         this._resultElement = document.createElement('ol');
         this._resultElement.addEventListener('click', (e) => {
-            var targetId = e.target.id;
             this.select(e);
         });
 
@@ -1321,54 +1320,79 @@ class LeftSidebar {
 class GroupModeSidebar {
     constructor(host) {
         this._host = host;
-        this._layers = [];
 
-        var tmp = 'This is a text.\nThis should be on the second line';
         try {
             this._contentElement = document.createElement('div');
-            this._contentElement.setAttribute('class', 'left-sidebar-view-find');
+            this._contentElement.setAttribute('class', 'left-sidebar-view-group');
 
             this._newLayerButtonElement = document.createElement('button');
             this._newLayerButtonElement.setAttribute('id', 'group-new-layer');
-            this._newLayerButtonElement.innerHTML = 'New Layer';
+            this._newLayerButtonElement.innerHTML = 'New Layer';    // Add New Layer
+
+            this._layerID = 1;
             this._newLayerButtonElement.addEventListener('click', (event) => {
-                var name = 'test-layer-1';
-                this.addNewLayer(name);
+                console.log('Button clicked!');
+                var name = 'testlayer_' + this._layerID.toString();
+                this._layerID += 1;
+                var layerID = 'layer-' + name;
+                this.addNewLayer(name, layerID, this._host);
             });
 
-            this._textboxElement = document.createElement('code');
-            this._textboxElement.setAttribute('id', 'group-nodes-textbox');
-            this._textboxElement.setAttribute('style', 'width: 100%');
-            this._textboxElement.innerText = tmp;
+            this._exportButtomElement = document.createElement('button');
+            this._exportButtomElement.setAttribute('id', 'export-group-new-layer');
+            this._exportButtomElement.innerHTML = 'Export'; // Export Group Settings
+
+            this._fullListElement = document.createElement('ol');
+            this._fullListElement.addEventListener('click', (e) => {
+                var targetId = e.target.id;
+                
+                // this.select(e);
+            });
 
             var divider = document.createElement('div');
             divider.setAttribute('style', 'margin-bottom: 20px');
 
-            this._contentElement.appendChild(this._newLayerButtonElement);
+            this._buttonsElement = document.createElement('div');
+            this._buttonsElement.setAttribute('class', 'left-sidebar-buttons');
+            this._buttonsElement.appendChild(this._newLayerButtonElement);
+            this._buttonsElement.appendChild(this._exportButtomElement);
+
+            this._contentElement.appendChild(this._buttonsElement);
             this._contentElement.appendChild(divider);
-            this._contentElement.appendChild(this._textboxElement);
+            this._contentElement.appendChild(this._fullListElement);
         }
         catch (err) {
             console.log(err);
         }
     }
 
-    addNewLayer(name) {
-        var newLayerView = new GroupModeNewLayerView(name);
-        // this._attributeView.push(customAttrView);
-        // var item = new NameValueView(attribute.key, customAttrView);
-        this._layers.push(newLayerView);
-        try {
-            this._contentElement.appendChild(newLayerView.elements);
+    removeLayer(item) {
+        for (var i = 0; i < this._fullListElement.childElementCount; i++) {
+            var targetID = 'object-' + item.toString();
+            var target = this._fullListElement.children[i];
+            if (target.id == targetID) {
+                this._fullListElement.removeChild(target);
+            }
         }
-        catch (err) {
-            console.log(err);
-        }
+    }
+
+    addNewLayer(name, layerID, host) {
+        var item = new GroupModeLayerView(name, layerID, host);
+        item.on('delete-me', (sender, cb) => {
+            if (cb) {
+                this.removeLayer(layerID)
+            }
+        });
+        this._fullListElement.appendChild(item.content);
     }
 
     appendNode(nodeID) {
-        console.log('\tGroup Sidebar ' + nodeID);
-        this._textboxElement.innerText += nodeID
+        // console.log('\tGroup Sidebar ' + nodeID);
+        // this._textboxElement.innerText += nodeID
+        var item = document.createElement('li');
+        item.innerText = '\u25A2 ' + nodeID;
+        item.id = 'node-' + nodeID;
+        this._fullListElement.appendChild(item);
     }
 
     get content() {
@@ -1390,59 +1414,112 @@ class GroupModeSidebar {
     }
 }
 
-class GroupModeNewLayerView {
-    constructor(name) {
-        this._name = 'layer-' + name.toString();
-/*
+class GroupModeLayerView {
+    constructor(name, id, host) {
 
         this._name = name;
-        this._value = value;
+        this._id = id;
+        this._host = host;
 
-        var nameElement = document.createElement('div');
-        nameElement.className = 'sidebar-view-item-name';
+        this._contentElement = document.createElement('ol');
+        this._contentElement.id = 'object-' + this._id;
+        this._contentElement.addEventListener('click', (e) => {
+            var targetId = e.target.id;
+            if (targetId) {
 
-        var nameInputElement = document.createElement('input');
-        nameInputElement.setAttribute('type', 'text');
-        nameInputElement.setAttribute('value', name);
-        nameInputElement.setAttribute('title', name);
-        nameInputElement.setAttribute('readonly', 'true');
-        nameElement.appendChild(nameInputElement);
+                console.log('[layer] ' + targetId);
+            }
+            // this.select(e);
+        });
+        
+        this._layerElement = document.createElement('li');
+        this._layerElement.innerText = 'Layer \u2192 ' + this._name;
+        this._layerElement.id = this._id;
 
-        var valueElement = document.createElement('div');
-        valueElement.className = 'sidebar-view-item-value-list';
-
-        value.elements.forEach((element) => {
-            valueElement.appendChild(element);
+        this._updateNameButton = document.createElement('div');
+        this._updateNameButton.className = 'sidebar-view-item-value-expander';
+        this._updateNameButton.innerHTML = '<b>N</b>';
+        this._updateNameButton.addEventListener('click', (e) => {
+            try {
+                this._contentElement.style.height += 70;
+                // contentElement.style.height = window.innerHeight - 60;
+                console.log('User wanna change name of current layer!');
+                var popupID = this.updateName();
+                var popup = document.getElementById(popupID);
+                popup.classList.toggle("show");
+            }
+            catch (err) {
+                console.log(err);
+            }
         });
 
-        this._element = document.createElement('div');
-        this._element.className = 'sidebar-view-item';
-        this._element.appendChild(nameElement);
-        this._element.appendChild(valueElement);
+        this._expander = document.createElement('div');
+        this._expander.className = 'sidebar-view-item-value-expander';
+        this._expander.innerHTML = '<b>X</b>';
+        this._expander.addEventListener('click', () => {
+            this.deleteSelf();
+        });
 
- */
-        this._elements = [];
-
-        this._layerElement = document.createElement('div');
-        this._layerElement.setAttribute('class', 'left-sidebar-layer');
-        this._layerElement.setAttribute('id', this._name);
-        this._layerElement.innerHTML = this._name;
-
-        var divider = document.createElement('div');
-        divider.setAttribute('style', 'margin-bottom: 20px');
-
-        this._elements.push(this._layerElement);
-        this._elements.push(divider);
-
-        // this._element = document.createElement('div');
-        // this._element.className = 'sidebar-view-item';
-        // this._element.appendChild(this._layerElement);
-        // this._element.appendChild(divider);
+        this._layerElement.appendChild(this._expander);
+        this._layerElement.appendChild(this._updateNameButton);
+        this._contentElement.appendChild(this._layerElement);
     }
 
-    get elements() {
-        // return this._elements;
-        console.log(this._elements);
-        return this._elements;
+    updateName() {
+        var popupElement = document.createElement('div');
+        popupElement.setAttribute('class', 'popup');
+        
+        var textboxElement = document.createElement('span');
+        // var textboxElement = document.createElement('input');
+        textboxElement.setAttribute('class', 'popuptext');
+
+        var inputElement = document.createElement('input');
+        inputElement.setAttribute('type', 'text');
+        inputElement.setAttribute('placeholder', this._name);
+        inputElement.addEventListener('input', (e) => {
+            this._layerElement.innerText = 'Layer \u2192 ' + e.target.value;
+        });
+        inputElement.addEventListener('keyup', (e) => {
+            if (e.keyCode == 13) {
+                textboxElement.classList.toggle("show");
+            }
+            // this._contentElement.style.height -= 70;
+        });
+
+        var popupID = 'popup-' + this._id; 
+        textboxElement.setAttribute('id', popupID);
+        // textboxElement.innerHTML = 'a simple popup aaaaaaaa';
+
+        textboxElement.appendChild(inputElement);
+        popupElement.appendChild(textboxElement);
+        this._contentElement.appendChild(popupElement);
+
+        // console.log(res);
+        return popupID
+    }
+
+    deleteSelf() {
+        while (this._contentElement.childElementCount) {
+            this._contentElement.removeChild(this._contentElement.lastChild);
+        }
+        this._raise('delete-me', true);
+    }
+
+    get content() {
+        return this._contentElement;
+    }
+
+    on(event, callback) {
+        this._events = this._events || {};
+        this._events[event] = this._events[event] || [];
+        this._events[event].push(callback);
+    }
+
+    _raise(event, data) {
+        if (this._events && this._events[event]) {
+            this._events[event].forEach((callback) => {
+                callback(this, data);
+            });
+        }
     }
 }

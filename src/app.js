@@ -194,12 +194,12 @@ class Application {
             var owner = electron.BrowserWindow.getFocusedWindow();
             // following options is shown on the pop up window
             var showSaveDialogOptions = {
-                title: 'Export JSON',
+                title: 'Export Text File',
                 defaultPath: defaultPath,
                 buttonLabel: 'Export',
                 filters: [
-                    { name: 'TXT', extensions: [ 'txt' ] },
-                    { name: 'JSON', extensions: [ 'json' ] }
+                    { name: 'JSON', extensions: [ 'json' ] },
+                    { name: 'TXT', extensions: [ 'txt' ] }
                 ]
             };
             electron.dialog.showSaveDialog(owner, showSaveDialogOptions, (filename) => {
@@ -375,13 +375,13 @@ class Application {
                 { type: 'separator' },
                 { 
                     id: 'file.export',
-                    label: '&Export Picture...',
+                    label: '&Export Picture',
                     accelerator: 'CmdOrCtrl+Shift+E',
                     click: () => this._exportPic(),
                 },
                 {
                     id: 'file.exportJson',
-                    label: '&Export JSON...',
+                    label: '&Export Text File',
                     accelerator: 'CmdOrCtrl+Shift+J',
                     click: () => this._exportJSON(),
                 },
