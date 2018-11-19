@@ -80,10 +80,9 @@ class Sidebar {
 }
 
 class NodeSidebar {
-    constructor(node, host, tmpID) {
+    constructor(node, host) {
         this._host = host;
         this._node = node;
-        this._tmpID = tmpID;
         this._elements = [];
         this._attributes = [];
         this._inputs = [];
@@ -150,31 +149,7 @@ class NodeSidebar {
         divider.setAttribute('style', 'margin-bottom: 20px');
         this._elements.push(divider);
 
-        // TODO, share node-id/name to group node class
-        // try {
-        //     var nodeName = (node.name) ? (node.name) : this._tmpID;
-        //     this._raise('nodename-channel', nodeName);
-        // }
-        // catch (err) {
-        //     alert(err);
-        // }
-        // try {
-        //     this._dropdownListElement.addEventListener('click', (e) => {
-        //         this.updateValue(e.target.id);
-        //         this._raise('custom-attr-selected', e.target.id);
-        //     });
-        // }
-        // catch (err) {
-        //     console.log(err);
-        // }
-        // this.test();
     }
-
-    // test() {
-    //     var data = 'aaaaaaaaaaaaaaahhhhhhhhhhhhhhh';
-    //     console.log("NSB, send! " + data)
-    //     this._raise('chat1', data);
-    // }
 
     get elements() {
         return this._elements;
@@ -449,6 +424,7 @@ class NodeCustomAttributeView {
             }
         }
     }
+
     on(event, callback) {
         this._events = this._events || {};
         this._events[event] = this._events[event] || [];
@@ -1112,6 +1088,7 @@ class FindSidebar {
         this._graph = graph;
         this._contentElement = document.createElement('div');
         this._contentElement.setAttribute('class', 'sidebar-view-find');
+
         this._searchElement = document.createElement('input');
         this._searchElement.setAttribute('id', 'search');
         this._searchElement.setAttribute('type', 'text');
@@ -1121,11 +1098,13 @@ class FindSidebar {
             this.update(e.target.value);
             this._raise('search-text-changed', e.target.value);
         });
+
         this._resultElement = document.createElement('ol');
         this._resultElement.addEventListener('click', (e) => {
             var targetId = e.target.id;
             this.select(e);
         });
+
         this._contentElement.appendChild(this._searchElement);
         this._contentElement.appendChild(this._resultElement);
     }
@@ -1257,7 +1236,6 @@ class FindSidebar {
     get content() {
         return this._contentElement;
     }
-
 }
 
 class LeftSidebar {
@@ -1340,41 +1318,61 @@ class LeftSidebar {
     // }
 }
 
-class GroupNodeSidebar {
-    constructor(host, fileName, filePath) {
+class GroupModeSidebar {
+    constructor(host) {
         this._host = host;
-        this._fileName = fileName;
-        this._filePath = filePath;
-        this._elements = [];
+        this._layers = [];
 
-        var titleElement = document.createElement('div');
-        titleElement.className = 'left-sidebar-view-title';
-        titleElement.innerText = 'lalalalala';
-        this._elements.push(titleElement);
+        var tmp = 'This is a text.\nThis should be on the second line';
+        try {
+            this._contentElement = document.createElement('div');
+            this._contentElement.setAttribute('class', 'left-sidebar-view-find');
 
-        var divider = document.createElement('div');
-        divider.setAttribute('style', 'margin-bottom: 20px');
-        this._elements.push(divider);
+            this._newLayerButtonElement = document.createElement('button');
+            this._newLayerButtonElement.setAttribute('id', 'group-new-layer');
+            this._newLayerButtonElement.innerHTML = 'New Layer';
+            this._newLayerButtonElement.addEventListener('click', (event) => {
+                var name = 'test-layer-1';
+                this.addNewLayer(name);
+            });
 
-        // try {
-        //     this.on('node-select-by-user', (sender, data) => {
-        //         console.log('[GG] ' + data);
-        //     });
-        // }
-        // catch (err) {
-        //     console.log(err);
-        // }
-        this.test();
+            this._textboxElement = document.createElement('code');
+            this._textboxElement.setAttribute('id', 'group-nodes-textbox');
+            this._textboxElement.setAttribute('style', 'width: 100%');
+            this._textboxElement.innerText = tmp;
+
+            var divider = document.createElement('div');
+            divider.setAttribute('style', 'margin-bottom: 20px');
+
+            this._contentElement.appendChild(this._newLayerButtonElement);
+            this._contentElement.appendChild(divider);
+            this._contentElement.appendChild(this._textboxElement);
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
 
-    test () {
-        var data = 'pls o ne gai';
-        console.log('GGG send! ' + data);
-        this._raise('chat1', data);
+    addNewLayer(name) {
+        var newLayerView = new GroupModeNewLayerView(name);
+        // this._attributeView.push(customAttrView);
+        // var item = new NameValueView(attribute.key, customAttrView);
+        this._layers.push(newLayerView);
+        try {
+            this._contentElement.appendChild(newLayerView.elements);
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
 
-    get elements() {
-        return this._elements;
+    appendNode(nodeID) {
+        console.log('\tGroup Sidebar ' + nodeID);
+        this._textboxElement.innerText += nodeID
+    }
+
+    get content() {
+        return this._contentElement;
     }
 
     on(event, callback) {
@@ -1389,5 +1387,62 @@ class GroupNodeSidebar {
                 callback(this, data);
             });
         }
+    }
+}
+
+class GroupModeNewLayerView {
+    constructor(name) {
+        this._name = 'layer-' + name.toString();
+/*
+
+        this._name = name;
+        this._value = value;
+
+        var nameElement = document.createElement('div');
+        nameElement.className = 'sidebar-view-item-name';
+
+        var nameInputElement = document.createElement('input');
+        nameInputElement.setAttribute('type', 'text');
+        nameInputElement.setAttribute('value', name);
+        nameInputElement.setAttribute('title', name);
+        nameInputElement.setAttribute('readonly', 'true');
+        nameElement.appendChild(nameInputElement);
+
+        var valueElement = document.createElement('div');
+        valueElement.className = 'sidebar-view-item-value-list';
+
+        value.elements.forEach((element) => {
+            valueElement.appendChild(element);
+        });
+
+        this._element = document.createElement('div');
+        this._element.className = 'sidebar-view-item';
+        this._element.appendChild(nameElement);
+        this._element.appendChild(valueElement);
+
+ */
+        this._elements = [];
+
+        this._layerElement = document.createElement('div');
+        this._layerElement.setAttribute('class', 'left-sidebar-layer');
+        this._layerElement.setAttribute('id', this._name);
+        this._layerElement.innerHTML = this._name;
+
+        var divider = document.createElement('div');
+        divider.setAttribute('style', 'margin-bottom: 20px');
+
+        this._elements.push(this._layerElement);
+        this._elements.push(divider);
+
+        // this._element = document.createElement('div');
+        // this._element.className = 'sidebar-view-item';
+        // this._element.appendChild(this._layerElement);
+        // this._element.appendChild(divider);
+    }
+
+    get elements() {
+        // return this._elements;
+        console.log(this._elements);
+        return this._elements;
     }
 }

@@ -59,19 +59,8 @@ view.View = class {
             this.clearSelection();
         });
 
-        // this._on('node-select-by-user', (sender, data) => {
-        //     console.log(sender);
-        //     console.log('[GG] ' + data);
-        // });
-
-        // FOLLOWING is example of detecting keyboard event + click event
-        // this.addMultiListener(document, 'keydown keyup click', function(event) {
-        //     // were planning to use ctrl+right-click to implement the group element,
-        //     // but holding key for too long is not user-friendly... so abandon this plan
-        //     if (event.ctrlKey && event.which == 1) {
-        //         console.log("ctrl key + right-click");
-        //     }
-        // });
+        var events = require('events');
+        this._eventEmitter = new events.EventEmitter();
     }
 
     addMultiListener(element, eventNames, listener) {
@@ -180,27 +169,25 @@ view.View = class {
     }
 
     groupNodeMode() {
-        console.log('-----------------VVVVVVVVVVVVVVVVVV');
         if (this._activeGraph) {
 
-            // console.log("==== OPEN GROUP NODES MODE! ====");
-            var view = new GroupNodeSidebar(this._host, '', '');
-            var windowWidth = this.getSidebarWindowWidth();
-
-
-            view.on('chat1', (sender, data) => {
-                console.log(sender);
-                console.log('[GG] ' + data);
-            });
-            // try {
-                this._leftSidebar.open(view.elements, 'Group Nodes Mode', windowWidth.toString());
-                // this._sidebar.open(view.elements, 'Group Nodes Mode', windowWidth);
-            // }
-            // catch (err) {
-                // console.log(err);
-            // }
+            try {
+                console.log("==== OPEN GROUP NODES MODE! ====");
+                // var graphElement = document.getElementById('graph');
+                // var view = new FindSidebar(graphElement, this._activeGraph);
+    
+                var view = new GroupModeSidebar(this._host);
+                var windowWidth = this.getSidebarWindowWidth();
+                this._eventEmitter.on('share-node-id', (data) => {
+                    // console.log('[groupNodeMode]: ' + data);
+                    view.appendNode(data);
+                });
+                this._leftSidebar.open(view.content, 'Group Nodes Mode', windowWidth.toString());
+            }
+            catch (err) {
+                console.log(err);
+            }
         }
-        console.log('---------------^^^^^^^^^^^^^^^^^^');
     }
 
     toggleDetails() {
@@ -816,6 +803,7 @@ view.View = class {
             var nodeID = 'node-' + id.toString();
         }
         console.log("\n[nodeElementClickHandler] You clicked: " + nodeID);
+        this._eventEmitter.emit('share-node-id', nodeID);
         switch (button) {
             case 0:
                 console.log(strs + " left click");
@@ -1028,7 +1016,8 @@ view.View = class {
         }
     }
     
-    showNodeProperties(node, input) {
+    // TOOD, may delete the 3rd arg
+    showNodeProperties(node, input, id) {
         if (node) {
             var view = new NodeSidebar(node, this._host);
             view.on('show-documentation', (sender, e) => {
