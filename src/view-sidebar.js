@@ -1320,6 +1320,9 @@ class LeftSidebar {
 class GroupModeSidebar {
     constructor(host) {
         this._host = host;
+        this._subgraphs = [];
+        // this._selectedSubgraphs = [];
+        this._selectedSubgraphs = null;
 
         try {
             this._contentElement = document.createElement('div');
@@ -1336,6 +1339,7 @@ class GroupModeSidebar {
                 this._subgraphID += 1;
                 var subgraphID = 'subgraph-' + name;
                 this.addNewSubgraph(name, subgraphID, this._host);
+                console.log(this._subgraphs);
             });
 
             this._exportButtomElement = document.createElement('button');
@@ -1344,9 +1348,66 @@ class GroupModeSidebar {
 
             this._fullListElement = document.createElement('ol');
             this._fullListElement.addEventListener('click', (e) => {
-                var targetId = e.target.id;
-                console.log('[group mode sidebar] ' + targetId);
-                // this.select(e);
+                var tmp = e.target.id;
+                console.log('[group mode sidebar] ' + tmp);
+                if (tmp.split('-').shift() == 'list') {    // be careful, targetID is changed here
+                    // console.log('wtf ' + e.target.id);
+                    var idx = this.findObjectIndex(this._subgraphs, e.target.id);
+                    var target = this._subgraphs[idx];
+                    // console.log(this._subgraphs[idx].selected);
+
+                    if (target == this._selectedSubgraphs || this._selectedSubgraphs == null) {
+                        // same graph
+                        console.log('SAME graph');
+                        if (!target.selected) {
+                            target.selected = true;
+                            // this._selectedSubgraphs.push(target);
+                            this._selectedSubgraphs = target;
+                            // e.target.style.background = "#b3b3b3";
+                            // e.target.style.color = "#ffffff";
+                            this.highlightOn(e.target);
+                        }
+                        else {
+                            target.selected = false;
+                            // var i = this.findObjectIndex(this._selectedSubgraphs, target.id);
+                            // this._selectedSubgraphs.splice(i, 1);
+                            // this._selectedSubgraphs.style.background = document.getElementById('sidebar').style.backgroundColor;
+                            // this._selectedSubgraphs.color = document.getElementById('sidebar').style.color;
+                            this._selectedSubgraphs = null;
+                            this.highlightOff(e.target);
+                            // e.target.style.background = document.getElementById('sidebar').style.backgroundColor;
+                            // e.target.style.color = document.getElementById('sidebar').style.color;
+                        }
+                    }
+                    else {
+                        // different graph
+                        console.log('DIFFERENT graph');
+                        console.log(target);
+                        console.log(this._selectedSubgraphs);
+
+                        // if (!target.selected) {
+                            target.selected = true;
+                            
+                            // this._selectedSubgraphs = target;
+                            this.highlightOn(e.target);
+                            //clean odd
+                            // console.log(this._selectedSubgraphs.title);
+                            try {
+
+                                this._selectedSubgraphs.selected = false;
+                                // this.highlightOff(this._selectedSubgraphs.title);
+                                // this.highlightOff(this._selectedSubgraphs.title);
+                                this._selectedSubgraphs.title.style.background = document.getElementById('sidebar').style.backgroundColor;
+                                this._selectedSubgraphs.title.style.color = document.getElementById('sidebar').style.color;
+                                this._selectedSubgraphs = target;
+                            }
+                            catch (err) {
+                                console.log(err);
+                            }
+                        // }
+                    }
+
+                }
             });
 
             var divider = document.createElement('div');
@@ -1366,14 +1427,54 @@ class GroupModeSidebar {
         }
     }
 
-    removeSubgraph(item) {
+    highlightOn(target) {
+        target.style.background = "#b3b3b3";
+        target.style.color = "#ffffff";
+    }
+
+    highlightOff(target) {
+        target.style.background = document.getElementById('sidebar').style.backgroundColor;
+        target.style.color = document.getElementById('sidebar').style.color;
+    }
+
+    findObjectIndex(array, subgraphID) {
+        if (subgraphID == null) {
+            return null;
+        }
+        var targetID = '';
+        if (subgraphID.includes('list-')) {
+            targetID = subgraphID.replace('list-', '');
+        }
+        else if (subgraphID.includes('object-')) {
+            targetID = subgraphID.replace('object-', '');
+        }
+        else {
+            targetID = subgraphID;
+        }
+        // console.log('[FIND] id = ' + targetID);
+
+        for (var i = 0; i < array.length; i++) {
+            if (array[i].id == targetID) {
+                return i;
+            }
+        }
+        // for (var i = 0; i < this._subgraphs.length; i++) {
+        //     if (this._subgraphs[i].id == targetID) {
+        //         return i;
+        //     }
+        // }
+        return null;
+    }
+
+    removeSubgraph(itemID) {
         for (var i = 0; i < this._fullListElement.childElementCount; i++) {
-            var targetID = 'object-' + item.toString();
+            var targetID = 'object-' + itemID.toString();
             var target = this._fullListElement.children[i];
             if (target.id == targetID) {
                 this._fullListElement.removeChild(target);
             }
         }
+        this._subgraphs.splice(this.findObjectIndex(this._subgraphs, itemID), 1);
     }
 
     addNewSubgraph(name, subgraphID, host) {
@@ -1383,16 +1484,42 @@ class GroupModeSidebar {
                 this.removeSubgraph(subgraphID)
             }
         });
+        // var node = document.createElement('li');
+        // node.innerText = '\u25A2 ' + 'nodeID';
+        // node.id = 'node-' + 'nodeID';
+        // var node2 = document.createElement('li');
+        // node2.innerText = '\u25A2 ' + 'nodeID2';
+        // node2.id = 'node-' + 'nodeID2';
+        // item.appendNode(node);
+        // item.appendNode(node2);
+
+
+        this._subgraphs.push(item);
         this._fullListElement.appendChild(item.content);
     }
 
     appendNode(nodeID) {
+        // TODO TODO: check if any graph is selected, if selected append the node.
+        var item1 = document.createElement('li');
+        item1.innerText = '\u25A2 ' + nodeID;
+        item1.id = 'test-' + nodeID;
+        this._selectedSubgraphs.appendNode(item1);
+        // console.log(this._selectedSubgraphs);
+        // for (var i = 0; i < this._selectedSubgraphs.length; i++) {
+        //     var target = this._selectedSubgraphs[i];
+        //     try {
+        //         target.appendNode(item1);
+        //     }
+        //     catch (err) {
+        //         console.log(err);
+        //     }
+        // }
+        // var item2 = document.createElement('li');
+        // item2.innerText = '\u25A2 ' + nodeID;
+        // item2.id = 'fl-' + nodeID;
         // console.log('\tGroup Sidebar ' + nodeID);
         // this._textboxElement.innerText += nodeID
-        var item = document.createElement('li');
-        item.innerText = '\u25A2 ' + nodeID;
-        item.id = 'node-' + nodeID;
-        this._fullListElement.appendChild(item);
+        // this._fullListElement.appendChild(item2);
     }
 
     get content() {
@@ -1419,6 +1546,8 @@ class GroupModelSubgraphView {
         this._name = name;
         this._id = id;
         this._host = host;
+        this._isSelected = false;
+        this._nodes = [];
 
         this._contentElement = document.createElement('ol');
         this._contentElement.id = 'object-' + this._id;
@@ -1432,24 +1561,31 @@ class GroupModelSubgraphView {
         });
         
         this._subgraphNameElement = document.createElement('li');
+        // this._subgraphNameElement = document.createElement('ol');
         this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + this._name;
-        this._subgraphNameElement.id = this._id;
+        this._subgraphNameElement.id = 'list-' + this._id;
 
         this._updateNameButton = document.createElement('div');
         this._updateNameButton.className = 'sidebar-view-item-value-expander';
         this._updateNameButton.innerHTML = '<b>N</b>';
         this._isPopup = false;
         this._updateNameButton.addEventListener('click', (e) => {
+            // console.log('user change nameeeeeeeeeeeeeeeeeeeeeee');
             try {
                 if (!this._isPopup) {
                     this._isPopup = true;
-                    this._contentElement.style.height = 70;
+                    // this._contentElement.style.height = 70;
+                    // var x = this.resizeHeight()+70;
+                    var x = this.resizeHeight();
+                    this._contentElement.style.height = x;
                     this.updateName();
                 }
                 else {
                     this._isPopup = false;
-                    this._contentElement.style.height = 23; // TODO: change according +/- nodes height
+                    var x = this.resizeHeight();
+                    this._contentElement.style.height = x; // TODO: change according +/- nodes height
                     this._contentElement.removeChild(this._contentElement.lastChild)
+                    // this._subgraphNameElement.removeChild(this._subgraphNameElement.lastChild)
                 }
             }
             catch (err) {
@@ -1469,6 +1605,16 @@ class GroupModelSubgraphView {
         this._subgraphElement.appendChild(this._updateNameButton);
         this._subgraphElement.appendChild(this._subgraphNameElement);
         this._contentElement.appendChild(this._subgraphElement);
+
+        // var item1 = document.createElement('li');
+        // item1.innerText = '\u25A2 ' + 'asdfasdfasdf';
+        // item1.style.height = 20;
+        // var item2 = document.createElement('li');
+        // item2.innerText = '\u25A2 ' + 'asdfasdfasdf';
+        // item2.style.height = 20;
+        // // item.id = 'node-' + 'asdfsadfasdf';
+        // this.appendNode(item1);
+        // this.appendNode(item2);
     }
 
     updateName() {
@@ -1482,8 +1628,9 @@ class GroupModelSubgraphView {
         inputElement.setAttribute('type', 'text');
         inputElement.setAttribute('placeholder', this._name);
 
-        var regex = /^[A-Za-z0-9\_]+$/
+        var regex = /^[A-Za-z0-9\_]+$/;     // TODO: force user start with an letter?
         inputElement.addEventListener('input', (e) => {
+            // console.log(e.target.value);
             if (e.target.value.match(regex) !== null) {
                 inputElement.setAttribute('style', 'background-color: #66ff66');
                 this._name = e.target.value;
@@ -1492,18 +1639,39 @@ class GroupModelSubgraphView {
                 inputElement.setAttribute('style', 'background-color: #ff944d');
             }
             this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + this._name;
+            // this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + e.target.value;
         });
         inputElement.addEventListener('keyup', (e) => {
             if (e.keyCode == 13) {
-                this._contentElement.style.height = 23; // TODO: change according +/- nodes height
+                console.log('eeeeennnterrrr');
                 this._isPopup = false;
+                var x = this.resizeHeight();
+                this._contentElement.style.height = x; // TODO: change according +/- nodes height
                 this._contentElement.removeChild(this._contentElement.lastChild)
+                // this._subgraphNameElement.removeChild(this._subgraphNameElement.lastChild)
             }
         });
 
         textboxElement.appendChild(inputElement);
         popupElement.appendChild(textboxElement);
         this._contentElement.appendChild(popupElement);
+        // this._subgraphNameElement.appendChild(popupElement);
+    }
+
+    resizeHeight() {
+        var x = 23;     // default
+        for (var i = 0; i < this._nodes.length; i++) {
+            x += this._nodes[i].style.height;
+        }
+        return x;
+    }
+
+    appendNode(item) {
+        this._nodes.push(item);
+        // TODO
+        // console.log('testttttt');
+        console.log(item);
+        this._contentElement.appendChild(item);
     }
 
     deleteSelf() {
@@ -1513,8 +1681,25 @@ class GroupModelSubgraphView {
         this._raise('delete-me', true);
     }
 
+    get title() {
+        console.log('return title!!!!!!!');
+        return this._subgraphNameElement;
+    }
+
     get content() {
         return this._contentElement;
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    set selected(bool) {
+        this._isSelected = bool;
+    }
+
+    get selected() {
+        return this._isSelected;
     }
 
     on(event, callback) {
