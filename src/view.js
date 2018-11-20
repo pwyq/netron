@@ -802,13 +802,13 @@ view.View = class {
         var strs = params[3];   // `strs` is for debugging
         var name = node.name;
         if (name) {
-            var nodeID = 'node-' + name;
+            var nodeName = name;
         }
         else {
-            var nodeID = 'node-' + id.toString();
+            var nodeName = id.toString();
         }
-        console.log("\n[nodeElementClickHandler] You clicked: " + nodeID);
-        this._eventEmitter.emit('share-node-id', nodeID);
+        console.log("\n[nodeElementClickHandler] You clicked: " + nodeName);
+        this._eventEmitter.emit('share-node-id', nodeName);
         switch (button) {
             case 0:
                 console.log(strs + " left click");
