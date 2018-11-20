@@ -99,7 +99,6 @@ class NodeSidebar {
             documentationButton.className = 'sidebar-view-title-button';
             documentationButton.innerText = '?';
             documentationButton.addEventListener('click', (e) => {
-                // console.log("you clicked here 5");  // the ? mark button for documentation
                 this._raise('show-documentation', null);
             });
             operatorElement.appendChild(documentationButton);
@@ -514,7 +513,6 @@ class NodeAttributeView {
             this._expander.className = 'sidebar-view-item-value-expander';
             this._expander.innerText = '+';
             this._expander.addEventListener('click', (e) => {
-                // console.log("you clicked here 6");  // the plus button for revealing attributes
                 this.toggle();
             });
             this._element.appendChild(this._expander);
@@ -1239,9 +1237,6 @@ class FindSidebar {
 
 class LeftSidebar {
     constructor() {
-        // this._isClosed = true;
-        // this._isGroupNodesMode = false;
-
         this._closeSidebarHandler = (e) => {
             this.close();
         };
@@ -1293,138 +1288,82 @@ class LeftSidebar {
         var contentElement = document.getElementById('left-sidebar-content');
         var closeButtonElement = document.getElementById('left-sidebar-closebutton');
         if (sidebarElement && contentElement && closeButtonElement) {
-            // document.removeEventListener('keydown', this._closeSidebarKeyDownHandler);
             sidebarElement.removeEventListener('resize', this._resizeSidebarHandler);
             closeButtonElement.removeEventListener('click', this._closeSidebarHandler);
             closeButtonElement.style.color = '#f8f8f8';
             sidebarElement.style.width = '0';
-            // this._isClosed = true;
         }
-        // if (this._isGroupNodesMode) {
-        //     this._isGroupNodesMode = false;
-        // }
     }
-
-    // TODO: if in group nodes mode, allow user to add nodes in single right-click,
-    //  - add a peek-lock to allow user to peak the selected elements without adding it to the panel.
-
-    // get isClose() {
-    //     return this._isClosed;
-    // }
-
-    // get isGroupNodesMode() {
-    //     return this._isGroupNodesMode;
-    // }
 }
 
 class GroupModeSidebar {
     constructor(host) {
         this._host = host;
         this._subgraphs = [];
-        // this._selectedSubgraphs = [];
         this._selectedSubgraphs = null;
 
-        try {
-            this._contentElement = document.createElement('div');
-            this._contentElement.setAttribute('class', 'left-sidebar-view-group');
+        this._contentElement = document.createElement('div');
+        this._contentElement.setAttribute('class', 'left-sidebar-view-group');
 
-            this._newSubgraphButtonElement = document.createElement('button');
-            this._newSubgraphButtonElement.setAttribute('id', 'group-new-subgraph');
-            this._newSubgraphButtonElement.innerHTML = 'New Subgraph';    // Add New Subgraph
+        this._newSubgraphButtonElement = document.createElement('button');
+        this._newSubgraphButtonElement.setAttribute('id', 'group-new-subgraph');
+        this._newSubgraphButtonElement.innerHTML = 'New Subgraph';    // Add New Subgraph
 
-            this._subgraphID = 1;
-            this._newSubgraphButtonElement.addEventListener('click', (event) => {
-                // console.log('Button clicked!');
-                var name = 'defaultSubgraph_' + this._subgraphID.toString();
-                this._subgraphID += 1;
-                var subgraphID = 'subgraph-' + name;
-                this.addNewSubgraph(name, subgraphID, this._host);
-                console.log(this._subgraphs);
-            });
+        this._subgraphID = 1;
+        this._newSubgraphButtonElement.addEventListener('click', (event) => {
+            var name = 'defaultSubgraph_' + this._subgraphID.toString();
+            this._subgraphID += 1;
+            var subgraphID = 'subgraph-' + name;
+            this.addNewSubgraph(name, subgraphID, this._host);
+        });
 
-            this._exportButtomElement = document.createElement('button');
-            this._exportButtomElement.setAttribute('id', 'export-group-new-subgraph');
-            this._exportButtomElement.innerHTML = 'Export'; // Export Group Settings
+        this._exportButtomElement = document.createElement('button');
+        this._exportButtomElement.setAttribute('id', 'export-group-new-subgraph');
+        this._exportButtomElement.innerHTML = 'Export'; // Export Group Settings
 
-            this._fullListElement = document.createElement('ol');
-            this._fullListElement.addEventListener('click', (e) => {
-                var tmp = e.target.id;
-                console.log('[group mode sidebar] ' + tmp);
-                if (tmp.split('-').shift() == 'list') {    // be careful, targetID is changed here
-                    // console.log('wtf ' + e.target.id);
-                    var idx = this.findObjectIndex(this._subgraphs, e.target.id);
-                    var target = this._subgraphs[idx];
-                    // console.log(this._subgraphs[idx].selected);
-
-                    if (target == this._selectedSubgraphs || this._selectedSubgraphs == null) {
-                        // same graph
-                        console.log('SAME graph');
-                        if (!target.selected) {
-                            target.selected = true;
-                            // this._selectedSubgraphs.push(target);
-                            this._selectedSubgraphs = target;
-                            // e.target.style.background = "#b3b3b3";
-                            // e.target.style.color = "#ffffff";
-                            this.highlightOn(e.target);
-                        }
-                        else {
-                            target.selected = false;
-                            // var i = this.findObjectIndex(this._selectedSubgraphs, target.id);
-                            // this._selectedSubgraphs.splice(i, 1);
-                            // this._selectedSubgraphs.style.background = document.getElementById('sidebar').style.backgroundColor;
-                            // this._selectedSubgraphs.color = document.getElementById('sidebar').style.color;
-                            this._selectedSubgraphs = null;
-                            this.highlightOff(e.target);
-                            // e.target.style.background = document.getElementById('sidebar').style.backgroundColor;
-                            // e.target.style.color = document.getElementById('sidebar').style.color;
-                        }
+        this._fullListElement = document.createElement('ol');
+        this._fullListElement.addEventListener('click', (e) => {
+            var tmp = e.target.id;
+            console.log('[group mode sidebar] ' + tmp);
+            if (tmp.split('-').shift() == 'list') {
+                var idx = this.findObjectIndex(this._subgraphs, e.target.id);
+                var target = this._subgraphs[idx];
+                if (target == this._selectedSubgraphs || this._selectedSubgraphs == null) {
+                    // same graph
+                    if (!target.selected) {
+                        target.selected = true;
+                        this._selectedSubgraphs = target;
+                        this.highlightOn(e.target);
                     }
                     else {
-                        // different graph
-                        console.log('DIFFERENT graph');
-                        console.log(target);
-                        console.log(this._selectedSubgraphs);
-
-                        // if (!target.selected) {
-                            target.selected = true;
-                            
-                            // this._selectedSubgraphs = target;
-                            this.highlightOn(e.target);
-                            //clean odd
-                            // console.log(this._selectedSubgraphs.title);
-                            try {
-
-                                this._selectedSubgraphs.selected = false;
-                                // this.highlightOff(this._selectedSubgraphs.title);
-                                // this.highlightOff(this._selectedSubgraphs.title);
-                                this._selectedSubgraphs.title.style.background = document.getElementById('sidebar').style.backgroundColor;
-                                this._selectedSubgraphs.title.style.color = document.getElementById('sidebar').style.color;
-                                this._selectedSubgraphs = target;
-                            }
-                            catch (err) {
-                                console.log(err);
-                            }
-                        // }
+                        target.selected = false;
+                        this._selectedSubgraphs = null;
+                        this.highlightOff(e.target);
                     }
-
                 }
-            });
+                else {
+                    // different graph
+                    target.selected = true;
+                    this.highlightOn(e.target);
+                    this._selectedSubgraphs.selected = false;
+                    this.highlightOff(this._selectedSubgraphs.title);
+                    this._selectedSubgraphs = target;
+                }
 
-            var divider = document.createElement('div');
-            divider.setAttribute('style', 'margin-bottom: 20px');
+            }
+        });
 
-            this._buttonsElement = document.createElement('div');
-            this._buttonsElement.setAttribute('class', 'left-sidebar-buttons');
-            this._buttonsElement.appendChild(this._newSubgraphButtonElement);
-            this._buttonsElement.appendChild(this._exportButtomElement);
+        var divider = document.createElement('div');
+        divider.setAttribute('style', 'margin-bottom: 20px');
 
-            this._contentElement.appendChild(this._buttonsElement);
-            this._contentElement.appendChild(divider);
-            this._contentElement.appendChild(this._fullListElement);
-        }
-        catch (err) {
-            console.log(err);
-        }
+        this._buttonsElement = document.createElement('div');
+        this._buttonsElement.setAttribute('class', 'left-sidebar-buttons');
+        this._buttonsElement.appendChild(this._newSubgraphButtonElement);
+        this._buttonsElement.appendChild(this._exportButtomElement);
+
+        this._contentElement.appendChild(this._buttonsElement);
+        this._contentElement.appendChild(divider);
+        this._contentElement.appendChild(this._fullListElement);
     }
 
     highlightOn(target) {
@@ -1451,18 +1390,12 @@ class GroupModeSidebar {
         else {
             targetID = subgraphID;
         }
-        // console.log('[FIND] id = ' + targetID);
 
         for (var i = 0; i < array.length; i++) {
             if (array[i].id == targetID) {
                 return i;
             }
         }
-        // for (var i = 0; i < this._subgraphs.length; i++) {
-        //     if (this._subgraphs[i].id == targetID) {
-        //         return i;
-        //     }
-        // }
         return null;
     }
 
@@ -1484,42 +1417,15 @@ class GroupModeSidebar {
                 this.removeSubgraph(subgraphID)
             }
         });
-        // var node = document.createElement('li');
-        // node.innerText = '\u25A2 ' + 'nodeID';
-        // node.id = 'node-' + 'nodeID';
-        // var node2 = document.createElement('li');
-        // node2.innerText = '\u25A2 ' + 'nodeID2';
-        // node2.id = 'node-' + 'nodeID2';
-        // item.appendNode(node);
-        // item.appendNode(node2);
-
-
         this._subgraphs.push(item);
         this._fullListElement.appendChild(item.content);
     }
 
     appendNode(nodeID) {
-        // TODO TODO: check if any graph is selected, if selected append the node.
         var item1 = document.createElement('li');
         item1.innerText = '\u25A2 ' + nodeID;
-        item1.id = 'test-' + nodeID;
+        item1.id = 'test-' + nodeID;    // TODO: change id
         this._selectedSubgraphs.appendNode(item1);
-        // console.log(this._selectedSubgraphs);
-        // for (var i = 0; i < this._selectedSubgraphs.length; i++) {
-        //     var target = this._selectedSubgraphs[i];
-        //     try {
-        //         target.appendNode(item1);
-        //     }
-        //     catch (err) {
-        //         console.log(err);
-        //     }
-        // }
-        // var item2 = document.createElement('li');
-        // item2.innerText = '\u25A2 ' + nodeID;
-        // item2.id = 'fl-' + nodeID;
-        // console.log('\tGroup Sidebar ' + nodeID);
-        // this._textboxElement.innerText += nodeID
-        // this._fullListElement.appendChild(item2);
     }
 
     get content() {
@@ -1554,14 +1460,12 @@ class GroupModelSubgraphView {
         this._contentElement.addEventListener('click', (e) => {
             var targetId = e.target.id;
             if (targetId) {
-
+                // TODO: allow delete nodes;
                 console.log('[subgraph] ' + targetId);
             }
-            // this.select(e);
         });
         
         this._subgraphNameElement = document.createElement('li');
-        // this._subgraphNameElement = document.createElement('ol');
         this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + this._name;
         this._subgraphNameElement.id = 'list-' + this._id;
 
@@ -1570,26 +1474,18 @@ class GroupModelSubgraphView {
         this._updateNameButton.innerHTML = '<b>N</b>';
         this._isPopup = false;
         this._updateNameButton.addEventListener('click', (e) => {
-            // console.log('user change nameeeeeeeeeeeeeeeeeeeeeee');
-            try {
-                if (!this._isPopup) {
-                    this._isPopup = true;
-                    // this._contentElement.style.height = 70;
-                    // var x = this.resizeHeight()+70;
-                    var x = this.resizeHeight();
-                    this._contentElement.style.height = x;
-                    this.updateName();
-                }
-                else {
-                    this._isPopup = false;
-                    var x = this.resizeHeight();
-                    this._contentElement.style.height = x; // TODO: change according +/- nodes height
-                    this._contentElement.removeChild(this._contentElement.lastChild)
-                    // this._subgraphNameElement.removeChild(this._subgraphNameElement.lastChild)
-                }
+            if (!this._isPopup) {
+                this._isPopup = true;
+                // TODO: fix height when change name
+                var x = this.resizeHeight();
+                this._contentElement.style.height = x;
+                this.updateName();
             }
-            catch (err) {
-                console.log(err);
+            else {
+                this._isPopup = false;
+                var x = this.resizeHeight();
+                this._contentElement.style.height = x; // TODO: change according +/- nodes height
+                this._contentElement.removeChild(this._contentElement.lastChild)
             }
         });
 
@@ -1605,16 +1501,6 @@ class GroupModelSubgraphView {
         this._subgraphElement.appendChild(this._updateNameButton);
         this._subgraphElement.appendChild(this._subgraphNameElement);
         this._contentElement.appendChild(this._subgraphElement);
-
-        // var item1 = document.createElement('li');
-        // item1.innerText = '\u25A2 ' + 'asdfasdfasdf';
-        // item1.style.height = 20;
-        // var item2 = document.createElement('li');
-        // item2.innerText = '\u25A2 ' + 'asdfasdfasdf';
-        // item2.style.height = 20;
-        // // item.id = 'node-' + 'asdfsadfasdf';
-        // this.appendNode(item1);
-        // this.appendNode(item2);
     }
 
     updateName() {
@@ -1630,7 +1516,6 @@ class GroupModelSubgraphView {
 
         var regex = /^[A-Za-z0-9\_]+$/;     // TODO: force user start with an letter?
         inputElement.addEventListener('input', (e) => {
-            // console.log(e.target.value);
             if (e.target.value.match(regex) !== null) {
                 inputElement.setAttribute('style', 'background-color: #66ff66');
                 this._name = e.target.value;
@@ -1639,23 +1524,19 @@ class GroupModelSubgraphView {
                 inputElement.setAttribute('style', 'background-color: #ff944d');
             }
             this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + this._name;
-            // this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + e.target.value;
         });
         inputElement.addEventListener('keyup', (e) => {
             if (e.keyCode == 13) {
-                console.log('eeeeennnterrrr');
                 this._isPopup = false;
                 var x = this.resizeHeight();
                 this._contentElement.style.height = x; // TODO: change according +/- nodes height
                 this._contentElement.removeChild(this._contentElement.lastChild)
-                // this._subgraphNameElement.removeChild(this._subgraphNameElement.lastChild)
             }
         });
 
         textboxElement.appendChild(inputElement);
         popupElement.appendChild(textboxElement);
         this._contentElement.appendChild(popupElement);
-        // this._subgraphNameElement.appendChild(popupElement);
     }
 
     resizeHeight() {
@@ -1668,9 +1549,6 @@ class GroupModelSubgraphView {
 
     appendNode(item) {
         this._nodes.push(item);
-        // TODO
-        // console.log('testttttt');
-        console.log(item);
         this._contentElement.appendChild(item);
     }
 
@@ -1682,7 +1560,6 @@ class GroupModelSubgraphView {
     }
 
     get title() {
-        console.log('return title!!!!!!!');
         return this._subgraphNameElement;
     }
 
