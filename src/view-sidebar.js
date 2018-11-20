@@ -1481,13 +1481,20 @@ class GroupModelSubgraphView {
         var inputElement = document.createElement('input');
         inputElement.setAttribute('type', 'text');
         inputElement.setAttribute('placeholder', this._name);
+
+        var regex = /^[A-Za-z0-9\_]+$/
         inputElement.addEventListener('input', (e) => {
-            this._name = e.target.value;
+            if (e.target.value.match(regex) !== null) {
+                inputElement.setAttribute('style', 'background-color: #66ff66');
+                this._name = e.target.value;
+            }
+            else {
+                inputElement.setAttribute('style', 'background-color: #ff944d');
+            }
             this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + this._name;
         });
         inputElement.addEventListener('keyup', (e) => {
             if (e.keyCode == 13) {
-                textboxElement.classList.toggle("show");
                 this._contentElement.style.height = 23; // TODO: change according +/- nodes height
                 this._isPopup = false;
                 this._contentElement.removeChild(this._contentElement.lastChild)
