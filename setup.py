@@ -122,6 +122,7 @@ setuptools.setup(
             'view-browser.html', 'view-browser.js',
             'view-grapher.css', 'view-grapher.js',
             'view-sidebar.css', 'view-sidebar.js',
+            'view-left-sidebar.css', 'view-left-sidebar.js',
             'view.js', 'view.css',
             'server.py'
         ]
