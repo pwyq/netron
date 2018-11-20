@@ -178,9 +178,7 @@ view.View = class {
 
     groupNodeMode() {
         if (this._activeGraph) {
-
             try {
-                console.log("==== OPEN GROUP NODES MODE! ====");
                 var view = new GroupModeSidebar(this._host);
                 var windowWidth = this.getSidebarWindowWidth();
                 this._eventEmitter.on('share-node-id', (data) => {

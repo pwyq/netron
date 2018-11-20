@@ -89,37 +89,14 @@ class GroupModeSidebar {
         this._exportButtomElement = document.createElement('button');
         this._exportButtomElement.setAttribute('id', 'export-group-new-subgraph');
         this._exportButtomElement.innerHTML = 'Export'; // Export Group Settings
+        this._exportButtomElement.addEventListener('click', (e) => {
+            // TODO TODO            
+            // this.exportHandler()
+        });
 
         this._fullListElement = document.createElement('ol');
         this._fullListElement.addEventListener('click', (e) => {
-            var tmp = e.target.id;
-            console.log('[group mode sidebar] ' + tmp);
-            if (tmp.split('-').shift() == 'list') {
-                var idx = this.findObjectIndex(this._subgraphs, e.target.id);
-                var target = this._subgraphs[idx];
-                if (target == this._selectedSubgraph || this._selectedSubgraph == null) {
-                    // same graph
-                    if (!target.selected) {
-                        target.selected = true;
-                        this._selectedSubgraph = target;
-                        this.highlightOn(e.target);
-                    }
-                    else {
-                        target.selected = false;
-                        this._selectedSubgraph = null;
-                        this.highlightOff(e.target);
-                    }
-                }
-                else {
-                    // different graph
-                    this._selectedSubgraph.selected = false;
-                    this.highlightOff(this._selectedSubgraph.title);
-                    target.selected = true;
-                    this.highlightOn(e.target);
-                    this._selectedSubgraph = target;
-                }
-
-            }
+            this.highlightHandler(e.target);
         });
 
         var divider = document.createElement('div');
@@ -143,6 +120,35 @@ class GroupModeSidebar {
     highlightOff(target) {
         target.style.background = document.getElementById('sidebar').style.backgroundColor;
         target.style.color = document.getElementById('sidebar').style.color;
+    }
+
+    highlightHandler(target) {
+        var tmp = target.id;
+        if (tmp.split('-').shift() == 'list') {
+            var idx = this.findObjectIndex(this._subgraphs, target.id);
+            var t = this._subgraphs[idx];
+            if (t == this._selectedSubgraph || this._selectedSubgraph == null) {
+                // same graph
+                if (!t.selected) {
+                    t.selected = true;
+                    this._selectedSubgraph = t;
+                    this.highlightOn(target);
+                }
+                else {
+                    t.selected = false;
+                    this._selectedSubgraph = null;
+                    this.highlightOff(target);
+                }
+            }
+            else {
+                // different graph
+                this._selectedSubgraph.selected = false;
+                this.highlightOff(this._selectedSubgraph.title);
+                t.selected = true;
+                this.highlightOn(target);
+                this._selectedSubgraph = t;
+            }
+        }
     }
 
     findObjectIndex(array, subgraphID) {
@@ -288,7 +294,6 @@ class GroupModelSubgraphView {
         this._nodelistElement = document.createElement('ol');
         this._nodelistElement.id = 'nodelist-' + this._id;
         this._nodelistElement.addEventListener('click', (e) => {
-            console.log(e.target.id);
             this.deleteNode(e.target.id);
         });
 
