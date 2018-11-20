@@ -26,7 +26,6 @@ var assert = require('assert');
 const jMan = require('./json-manipulate');
 
 view.View = class {
-
     constructor(host) {
         this._host = host;
         this._model = null;
@@ -994,7 +993,6 @@ view.View = class {
                 return;
             }
 
-            const { spawn } = require('child_process');
             var execFile = require('child_process').execFile;
             if (this._host.getIsDev()) {
                 var exe_path = path.join(__dirname, '../python_scripts/dist', exeSubPath);
@@ -1038,7 +1036,6 @@ view.View = class {
         }
     }
     
-    // TOOD, may delete the 3rd arg
     showNodeProperties(node, input, id) {
         if (node) {
             var view = new NodeSidebar(node, this._host);
@@ -1119,7 +1116,6 @@ view.View = class {
 };
 
 class ArchiveContext {
-
     constructor(entries, rootFolder, identifier, buffer) {
         this._entries = {};
         if (entries) {
@@ -1199,7 +1195,6 @@ class ModelError extends Error {
 }
 
 view.ModelFactoryService = class {
-
     constructor(host) {
         this._host = host;
         this._factories = [

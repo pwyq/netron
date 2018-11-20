@@ -1325,21 +1325,21 @@ class GroupModeSidebar {
             this._contentElement = document.createElement('div');
             this._contentElement.setAttribute('class', 'left-sidebar-view-group');
 
-            this._newLayerButtonElement = document.createElement('button');
-            this._newLayerButtonElement.setAttribute('id', 'group-new-layer');
-            this._newLayerButtonElement.innerHTML = 'New Layer';    // Add New Layer
+            this._newSubgraphButtonElement = document.createElement('button');
+            this._newSubgraphButtonElement.setAttribute('id', 'group-new-subgraph');
+            this._newSubgraphButtonElement.innerHTML = 'New Subgraph';    // Add New Subgraph
 
-            this._layerID = 1;
-            this._newLayerButtonElement.addEventListener('click', (event) => {
+            this._subgraphID = 1;
+            this._newSubgraphButtonElement.addEventListener('click', (event) => {
                 console.log('Button clicked!');
-                var name = 'testlayer_' + this._layerID.toString();
-                this._layerID += 1;
-                var layerID = 'layer-' + name;
-                this.addNewLayer(name, layerID, this._host);
+                var name = 'testSubgraph_' + this._subgraphID.toString();
+                this._subgraphID += 1;
+                var subgraphID = 'subgraph-' + name;
+                this.addNewSubgraph(name, subgraphID, this._host);
             });
 
             this._exportButtomElement = document.createElement('button');
-            this._exportButtomElement.setAttribute('id', 'export-group-new-layer');
+            this._exportButtomElement.setAttribute('id', 'export-group-new-subgraph');
             this._exportButtomElement.innerHTML = 'Export'; // Export Group Settings
 
             this._fullListElement = document.createElement('ol');
@@ -1354,7 +1354,7 @@ class GroupModeSidebar {
 
             this._buttonsElement = document.createElement('div');
             this._buttonsElement.setAttribute('class', 'left-sidebar-buttons');
-            this._buttonsElement.appendChild(this._newLayerButtonElement);
+            this._buttonsElement.appendChild(this._newSubgraphButtonElement);
             this._buttonsElement.appendChild(this._exportButtomElement);
 
             this._contentElement.appendChild(this._buttonsElement);
@@ -1366,7 +1366,7 @@ class GroupModeSidebar {
         }
     }
 
-    removeLayer(item) {
+    removeSubgraph(item) {
         for (var i = 0; i < this._fullListElement.childElementCount; i++) {
             var targetID = 'object-' + item.toString();
             var target = this._fullListElement.children[i];
@@ -1376,11 +1376,11 @@ class GroupModeSidebar {
         }
     }
 
-    addNewLayer(name, layerID, host) {
-        var item = new GroupModeLayerView(name, layerID, host);
+    addNewSubgraph(name, subgraphID, host) {
+        var item = new GroupModelSubgraphView(name, subgraphID, host);
         item.on('delete-me', (sender, cb) => {
             if (cb) {
-                this.removeLayer(layerID)
+                this.removeSubgraph(subgraphID)
             }
         });
         this._fullListElement.appendChild(item.content);
@@ -1414,7 +1414,7 @@ class GroupModeSidebar {
     }
 }
 
-class GroupModeLayerView {
+class GroupModelSubgraphView {
     constructor(name, id, host) {
 
         this._name = name;
@@ -1427,14 +1427,14 @@ class GroupModeLayerView {
             var targetId = e.target.id;
             if (targetId) {
 
-                console.log('[layer] ' + targetId);
+                console.log('[subgraph] ' + targetId);
             }
             // this.select(e);
         });
         
-        this._layerElement = document.createElement('li');
-        this._layerElement.innerText = 'Layer \u2192 ' + this._name;
-        this._layerElement.id = this._id;
+        this._subgraphElement = document.createElement('li');
+        this._subgraphElement.innerText = 'Layer \u2192 ' + this._name;
+        this._subgraphElement.id = this._id;
 
         this._updateNameButton = document.createElement('div');
         this._updateNameButton.className = 'sidebar-view-item-value-expander';
@@ -1443,7 +1443,7 @@ class GroupModeLayerView {
             try {
                 this._contentElement.style.height += 70;
                 // contentElement.style.height = window.innerHeight - 60;
-                console.log('User wanna change name of current layer!');
+                console.log('User wanna change name of current subgraph!');
                 var popupID = this.updateName();
                 var popup = document.getElementById(popupID);
                 popup.classList.toggle("show");
@@ -1460,9 +1460,9 @@ class GroupModeLayerView {
             this.deleteSelf();
         });
 
-        this._layerElement.appendChild(this._expander);
-        this._layerElement.appendChild(this._updateNameButton);
-        this._contentElement.appendChild(this._layerElement);
+        this._subgraphElement.appendChild(this._expander);
+        this._subgraphElement.appendChild(this._updateNameButton);
+        this._contentElement.appendChild(this._subgraphElement);
     }
 
     updateName() {
@@ -1477,7 +1477,7 @@ class GroupModeLayerView {
         inputElement.setAttribute('type', 'text');
         inputElement.setAttribute('placeholder', this._name);
         inputElement.addEventListener('input', (e) => {
-            this._layerElement.innerText = 'Layer \u2192 ' + e.target.value;
+            this._subgraphElement.innerText = 'Layer \u2192 ' + e.target.value;
         });
         inputElement.addEventListener('keyup', (e) => {
             if (e.keyCode == 13) {

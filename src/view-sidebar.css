@@ -137,22 +137,8 @@
 .left-sidebar-view-group li:not(:first-child) { border-top: 1px solid #f0f0f0; }
 .left-sidebar-view-group li:hover { background: #eee; }
 
-/* .left-sidebar-view-documentation { font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 11px; line-height: 1.5; margin: 0; }
-.left-sidebar-view-documentation h1 { font-weight: 600; font-size: 13px; line-height: 1.25; border-bottom: 1px solid #e8e8e8; padding-bottom: 0.3em; margin-top: 0; margin-bottom: 16px; }
-.left-sidebar-view-documentation h2 { font-weight: 600; font-size: 11px; line-height: 1.25; margin-bottom: 16px; border-bottom: 1px solid #e8e8e8; }
-.left-sidebar-view-documentation h3 { font-weight: 600; font-size: 11px; line-height: 1.25; }
-.left-sidebar-view-documentation p { margin-top: 2px; margin-bottom: 2px; maring-left: 0px; }
-.left-sidebar-view-documentation a { color: #237; }
-.left-sidebar-view-documentation code { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 10px; background-color: rgba(27, 31, 35, 0.05); padding: 0.2em 0.4em; margin: 0; border-radius: 3px; }
-.left-sidebar-view-documentation pre { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 10px; padding: 16px; overflow: auto; line-height: 1.45; background-color: rgba(27, 31, 35, 0.05); border-radius: 3px; }
-.left-sidebar-view-documentation pre code { font-size: 11px; padding: 16px; line-height: 1.45; background-color: transparent; padding: 0; border-radius: 0; }
-.left-sidebar-view-documentation tt { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-weight: 600; font-size: 90%; background-color: rgba(27, 31, 35, 0.05); border-radius: 3px; padding: 0.2em 0.4em; margin: 0; }
-.left-sidebar-view-documentation dl dt { font-size: 11px; font-weight: 600; padding: 0; margin-top: 16px; margin-left: 0px; }
-.left-sidebar-view-documentation dd { padding: 0 16px; margin-left: 0; margin-bottom: 16px; }
-.left-sidebar-view-documentation ul { margin-top: 6px; margin-bottom: 6px; padding-left: 20px; } */
-
 .left-sidebar-layer { white-space: pre; word-wrap: normal; overflow: auto; display: block; }
-#group-new-layer, #export-group-new-layer {
+#group-new-subgraph, #export-group-new-subgraph {
     background-color: #b3b3b3;
     border: none;
     color: white;
@@ -163,22 +149,15 @@
     margin: 4px 2px;
     cursor: pointer;
 }
-#export-group-new-layer {
+#export-group-new-subgraph {
     float: right;
 }
 
-/* Popup container - can be anything you want */
+/* Popup container */
 .popup {
-    /* float: right; */
     position: relative;
-    /* display: inline-block; */
     display: absolute;
-    /* right: 5px; */
     cursor: pointer;
-    /* -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none; */
 }
 
 /* The actual popup */
@@ -192,8 +171,6 @@
     padding: 8px 0;
     position: absolute;
     z-index: 1;
-    /* bottom: 125%; */
-    /* left: 50%; */
     right: 5%;
     top: 5%;
     margin-left: -80px;
@@ -203,20 +180,14 @@
 .popup .popuptext::after {
     content: "";
     position: absolute;
-    /* top: 100%; */
-    /* left: 50%; */
     right: 5%;
     bottom: 95%;
     margin-left: -5px;
     border-width: 5px;
-    /* border-style: solid; */
-
     border-top: 5px solid transparent;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-bottom: 5px solid #555;
-
-
 }
 
 /* Toggle this class - hide and show the popup */
