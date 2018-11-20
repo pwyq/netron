@@ -185,7 +185,7 @@ view.View = class {
                 var windowWidth = this.getSidebarWindowWidth();
                 this._eventEmitter.on('share-node-id', (data) => {
                     // console.log('[groupNodeMode]: ' + data);
-                    view.appendNode(data);
+                    view.appendNode(data)
                 });
                 this._leftSidebar.open(view.content, 'Group Nodes Mode', windowWidth.toString());
             }
@@ -989,7 +989,7 @@ view.View = class {
                     break;
             }
             if (exeSubPath == '') {
-                alert('Model Not Supported!');
+                this._host.error('Invalid Error', 'Model Not Supported');
                 return;
             }
 
@@ -1006,7 +1006,7 @@ view.View = class {
                 var parameters = [outputFilePath, inputFilePath, 'txt'];    // TODO: 3rd arg is redundant
                 execFile(exe_path, parameters, function(err, data) {
                     if (err) {
-                        alert("ERROR: " + err);
+                        this._host.error('Python Error', err);
                         return;
                     }
                     alert(data.toString());
@@ -1016,7 +1016,7 @@ view.View = class {
                 var parameters = [outputFilePath, inputFilePath, 'json'];   // TODO: 3rd arg is redundant
                 execFile(exe_path, parameters, function(err, data) {
                     if (err) {
-                        alert("ERROR: " + err);
+                        this._host.error('Python Error', err);
                         return;
                     }
                     alert(data.toString());

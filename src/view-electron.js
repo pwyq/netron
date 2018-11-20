@@ -157,6 +157,10 @@ host.ElectronHost = class {
         return null;
     }
 
+    realError(title, content) {
+        electron.remote.dialog.showErrorBox(title, content);
+    }
+
     error(message, detail) {
         var owner = electron.remote.getCurrentWindow();
         var options = {

@@ -68,7 +68,8 @@ class GroupModeSidebar {
     constructor(host) {
         this._host = host;
         this._subgraphs = [];
-        this._selectedSubgraphs = null;
+        this._allNodes = [];
+        this._selectedSubgraph = null;
 
         this._contentElement = document.createElement('div');
         this._contentElement.setAttribute('class', 'left-sidebar-view-group');
@@ -96,26 +97,26 @@ class GroupModeSidebar {
             if (tmp.split('-').shift() == 'list') {
                 var idx = this.findObjectIndex(this._subgraphs, e.target.id);
                 var target = this._subgraphs[idx];
-                if (target == this._selectedSubgraphs || this._selectedSubgraphs == null) {
+                if (target == this._selectedSubgraph || this._selectedSubgraph == null) {
                     // same graph
                     if (!target.selected) {
                         target.selected = true;
-                        this._selectedSubgraphs = target;
+                        this._selectedSubgraph = target;
                         this.highlightOn(e.target);
                     }
                     else {
                         target.selected = false;
-                        this._selectedSubgraphs = null;
+                        this._selectedSubgraph = null;
                         this.highlightOff(e.target);
                     }
                 }
                 else {
                     // different graph
-                    this._selectedSubgraphs.selected = false;
-                    this.highlightOff(this._selectedSubgraphs.title);
+                    this._selectedSubgraph.selected = false;
+                    this.highlightOff(this._selectedSubgraph.title);
                     target.selected = true;
                     this.highlightOn(e.target);
-                    this._selectedSubgraphs = target;
+                    this._selectedSubgraph = target;
                 }
 
             }
@@ -185,17 +186,39 @@ class GroupModeSidebar {
                 this.removeSubgraph(subgraphID)
             }
         });
+        item.on('deleted-node', (sender, cb) => {
+            this.removeNodelistItem(cb);
+        });
         this._subgraphs.push(item);
         this._fullListElement.appendChild(item.content);
     }
 
+    removeNodelistItem(nodeID) {
+        for (var i = 0; i < this._allNodes.length; i++) {
+            if (this._allNodes[i].id == nodeID) {
+                this._allNodes.splice(i, 1);
+            }
+        }
+    }
+
     appendNode(nodeName) {
-        if (this._selectedSubgraphs != null) {
+        if (this._selectedSubgraph != null) {
+            var itemID = 'nodelist-item-' + nodeName;
+            for (var i = 0; i < this._allNodes.length; i++) {
+                if (this._allNodes[i].id == itemID) {
+                    var errMsg = nodeName + ' has been selected';
+                    this._host.realError('Invalid Error', errMsg);
+                    return false;
+                }
+            }
             var item = document.createElement('li');
             item.innerText = '\u25A2 ' + nodeName;
-            item.id = 'node-' + nodeName;
-            this._selectedSubgraphs.appendNode(item);
+            item.id = itemID;
+            this._allNodes.push(item);
+            this._selectedSubgraph.appendNode(item);
+            return true;
         }
+        return false;
     }
 
     get content() {
@@ -240,7 +263,7 @@ class GroupModelSubgraphView {
         this._subgraphNameElement.id = 'list-' + this._id;
 
         this._updateNameButton = document.createElement('div');
-        this._updateNameButton.className = 'left-sidebar-view-item-value-expander';
+        this._updateNameButton.className = 'left-sidebar-view-item-title-button';
         this._updateNameButton.innerHTML = 'N';
         this._isPopup = false;
         this._updateNameButton.addEventListener('click', (e) => {
@@ -256,7 +279,7 @@ class GroupModelSubgraphView {
         });
 
         this._expander = document.createElement('div');
-        this._expander.className = 'left-sidebar-view-item-value-expander';
+        this._expander.className = 'left-sidebar-view-item-title-button';
         this._expander.innerHTML = 'X';
         this._expander.addEventListener('click', () => {
             this.deleteSelf();
@@ -264,6 +287,10 @@ class GroupModelSubgraphView {
 
         this._nodelistElement = document.createElement('ol');
         this._nodelistElement.id = 'nodelist-' + this._id;
+        this._nodelistElement.addEventListener('click', (e) => {
+            console.log(e.target.id);
+            this.deleteNode(e.target.id);
+        });
 
         this._subgraphElement = document.createElement('div');
         this._subgraphElement.appendChild(this._expander);
@@ -272,6 +299,17 @@ class GroupModelSubgraphView {
 
         this._contentElement.appendChild(this._subgraphElement);
         this._contentElement.appendChild(this._nodelistElement);
+    }
+
+    deleteNode(nodeID) {
+        for (var i = 0; i < this._nodes.length; i++) {
+            if (this._nodes[i].id == nodeID) {
+                this._nodes.splice(i, 1);
+            }
+        }
+        var x = document.getElementById(nodeID);
+        this._nodelistElement.removeChild(x);
+        this._raise('deleted-node', nodeID);
     }
 
     updateName() {
@@ -312,22 +350,12 @@ class GroupModelSubgraphView {
             this._contentElement.appendChild(popupElement);
         }
         else {
-            try {
-                var ref = document.getElementById('nodelist-'+this._id);
-                this._contentElement.insertBefore(popupElement, ref);
-            }
-            catch (err) {
-                console.log(err);
-            }
+            var ref = document.getElementById('nodelist-'+this._id);
+            this._contentElement.insertBefore(popupElement, ref);
         }
     }
 
     appendNode(item) {
-        for (var i = 0; i < this._nodes.length; i++) {
-            if (this._nodes[i].id == item.id) {
-                return;
-            }
-        }
         this._nodes.push(item);
         this._nodelistElement.appendChild(item);
     }

@@ -34,8 +34,27 @@
 .left-sidebar-view-item-value-line-border { padding: 4px 6px 4px 6px; border-top: 1px solid rgba(27, 31, 35, 0.05); }
 .left-sidebar-view-item-value-line-content { white-space: pre; word-wrap: normal; overflow: auto; display: block; }
 .attr-choose:hover { background-color:#d9d9d9; cursor: pointer; }
-.left-sidebar-view-item-value-expander { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-weight: bold; float: right; color: #aaa; cursor: hand; user-select: none; -webkit-user-select: none; -moz-user-select: none; padding: 8px 4px 8px 4px; }
-.left-sidebar-view-item-value-expander:hover { color: #000; }
+.left-sidebar-view-item-title-button { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-weight: bold; float: right; color: #aaa; cursor: hand; user-select: none; -webkit-user-select: none; -moz-user-select: none; padding: 8px 4px 8px 4px; }
+.left-sidebar-view-item-title-button:hover { color: #000; }
+
+.left-sidebar-view-item-delete-button {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    position: absolute;
+    /* display: inline; */
+    right: 2%;
+	font-weight: bold;
+	/* float: right; */
+	color: #aaa;
+	cursor: hand;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	padding: 4px;
+ }
+
+ .left-sidebar-view-item-delete-button:hover {
+    color: #000;
+ }
 
 .left-sidebar-view-group input[type=text] { font-family: 'Open Sans', --apple-system, "Helvetica Neue", Helvetica, Arial, sans-serf; font-size: 12px; padding: 4px 6px 4px 6px; background: #fff; border-radius: 4px; border: 1px solid #ccc; outline: 0; }
 .left-sidebar-view-group ol { list-style-type: none; overflow-y: auto; margin: 8px 0 20px 0; padding: 0; }

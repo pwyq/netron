@@ -78,6 +78,7 @@ add usage for major files:
 
 # TODO
 - allow user to add custom attributes??
+- Mark all AIRunner supported operations when loading
 - fix ONNX export (.py)
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
 - group items
