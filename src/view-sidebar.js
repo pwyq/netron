@@ -1432,9 +1432,9 @@ class GroupModelSubgraphView {
             // this.select(e);
         });
         
-        this._subgraphElement = document.createElement('li');
-        this._subgraphElement.innerText = 'Layer \u2192 ' + this._name;
-        this._subgraphElement.id = this._id;
+        this._subgraphNameElement = document.createElement('li');
+        this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + this._name;
+        this._subgraphNameElement.id = this._id;
 
         this._updateNameButton = document.createElement('div');
         this._updateNameButton.className = 'sidebar-view-item-value-expander';
@@ -1442,7 +1442,7 @@ class GroupModelSubgraphView {
         this._updateNameButton.addEventListener('click', (e) => {
             try {
                 this._contentElement.style.height += 70;
-                // contentElement.style.height = window.innerHeight - 60;
+                // this._subgraphElement.style.height += 70;
                 console.log('User wanna change name of current subgraph!');
                 var popupID = this.updateName();
                 var popup = document.getElementById(popupID);
@@ -1460,8 +1460,10 @@ class GroupModelSubgraphView {
             this.deleteSelf();
         });
 
+        this._subgraphElement = document.createElement('div');
         this._subgraphElement.appendChild(this._expander);
         this._subgraphElement.appendChild(this._updateNameButton);
+        this._subgraphElement.appendChild(this._subgraphNameElement);
         this._contentElement.appendChild(this._subgraphElement);
     }
 
@@ -1477,13 +1479,14 @@ class GroupModelSubgraphView {
         inputElement.setAttribute('type', 'text');
         inputElement.setAttribute('placeholder', this._name);
         inputElement.addEventListener('input', (e) => {
-            this._subgraphElement.innerText = 'Layer \u2192 ' + e.target.value;
+            this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + e.target.value;
         });
         inputElement.addEventListener('keyup', (e) => {
             if (e.keyCode == 13) {
                 textboxElement.classList.toggle("show");
+                this._contentElement.style.height = 23; // TODO: change according +/- nodes height
+                this._contentElement.removeChild(this._contentElement.lastChild)
             }
-            // this._contentElement.style.height -= 70;
         });
 
         var popupID = 'popup-' + this._id; 
