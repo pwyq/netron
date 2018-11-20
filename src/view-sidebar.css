@@ -162,7 +162,9 @@
 
 /* The actual popup */
 .popup .popuptext {
-    visibility: hidden;
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
     width: 160px;
     background-color: #555;
     color: #fff;
@@ -188,13 +190,6 @@
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-bottom: 5px solid #555;
-}
-
-/* Toggle this class - hide and show the popup */
-.popup .show {
-    visibility: visible;
-    -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;
 }
 
 /* Add animation (fade in the popup) */

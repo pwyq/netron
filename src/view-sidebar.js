@@ -1331,8 +1331,8 @@ class GroupModeSidebar {
 
             this._subgraphID = 1;
             this._newSubgraphButtonElement.addEventListener('click', (event) => {
-                console.log('Button clicked!');
-                var name = 'testSubgraph_' + this._subgraphID.toString();
+                // console.log('Button clicked!');
+                var name = 'defaultSubgraph_' + this._subgraphID.toString();
                 this._subgraphID += 1;
                 var subgraphID = 'subgraph-' + name;
                 this.addNewSubgraph(name, subgraphID, this._host);
@@ -1345,7 +1345,7 @@ class GroupModeSidebar {
             this._fullListElement = document.createElement('ol');
             this._fullListElement.addEventListener('click', (e) => {
                 var targetId = e.target.id;
-                
+                console.log('[group mode sidebar] ' + targetId);
                 // this.select(e);
             });
 
@@ -1416,7 +1416,6 @@ class GroupModeSidebar {
 
 class GroupModelSubgraphView {
     constructor(name, id, host) {
-
         this._name = name;
         this._id = id;
         this._host = host;
@@ -1439,14 +1438,19 @@ class GroupModelSubgraphView {
         this._updateNameButton = document.createElement('div');
         this._updateNameButton.className = 'sidebar-view-item-value-expander';
         this._updateNameButton.innerHTML = '<b>N</b>';
+        this._isPopup = false;
         this._updateNameButton.addEventListener('click', (e) => {
             try {
-                this._contentElement.style.height += 70;
-                // this._subgraphElement.style.height += 70;
-                console.log('User wanna change name of current subgraph!');
-                var popupID = this.updateName();
-                var popup = document.getElementById(popupID);
-                popup.classList.toggle("show");
+                if (!this._isPopup) {
+                    this._isPopup = true;
+                    this._contentElement.style.height = 70;
+                    this.updateName();
+                }
+                else {
+                    this._isPopup = false;
+                    this._contentElement.style.height = 23; // TODO: change according +/- nodes height
+                    this._contentElement.removeChild(this._contentElement.lastChild)
+                }
             }
             catch (err) {
                 console.log(err);
@@ -1472,33 +1476,27 @@ class GroupModelSubgraphView {
         popupElement.setAttribute('class', 'popup');
         
         var textboxElement = document.createElement('span');
-        // var textboxElement = document.createElement('input');
         textboxElement.setAttribute('class', 'popuptext');
 
         var inputElement = document.createElement('input');
         inputElement.setAttribute('type', 'text');
         inputElement.setAttribute('placeholder', this._name);
         inputElement.addEventListener('input', (e) => {
-            this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + e.target.value;
+            this._name = e.target.value;
+            this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + this._name;
         });
         inputElement.addEventListener('keyup', (e) => {
             if (e.keyCode == 13) {
                 textboxElement.classList.toggle("show");
                 this._contentElement.style.height = 23; // TODO: change according +/- nodes height
+                this._isPopup = false;
                 this._contentElement.removeChild(this._contentElement.lastChild)
             }
         });
 
-        var popupID = 'popup-' + this._id; 
-        textboxElement.setAttribute('id', popupID);
-        // textboxElement.innerHTML = 'a simple popup aaaaaaaa';
-
         textboxElement.appendChild(inputElement);
         popupElement.appendChild(textboxElement);
         this._contentElement.appendChild(popupElement);
-
-        // console.log(res);
-        return popupID
     }
 
     deleteSelf() {
