@@ -910,7 +910,6 @@ view.View = class {
     }
 
     export(file) {
-        console.log('.......................');
         var extension = '';
         var lastIndex = file.lastIndexOf('.');
         if (lastIndex != -1) {
@@ -978,42 +977,35 @@ view.View = class {
         if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
             var outputFilePath = file;
             var inputFilePath = this._host.getFileName();
-            try {
-                var exe = '';
-                var ext = path.extname(inputFilePath);
-                console.log(ext);
-                switch (ext) {
-                    case 'pb':
-                        exe = 'dumpPB/dumpPB.exe';
-                        break;
-                    case 'onnx':
-                        exe = 'dumpONNX/dumpONNX.exe';
-                        break;
-                    default:
-                        break;
-                }
-                console.log(exe);
-                if (exe == '') {
-                    alert('error');
+            var extName = path.extname(inputFilePath);
+            var exeSubPath = '';
+            switch (extName) {
+                case '.pb':
+                    exeSubPath = 'dumpPB/dumpPB.exe';
                     break;
-                }
+                case '.onnx':
+                    exeSubPath = 'dumpONNX/dumpONNX.exe';
+                    break;
+                default:
+                    break;
             }
-            catch (err) {
-                console.log(err);
+            if (exeSubPath == '') {
+                alert('Model Not Supported!');
+                return;
             }
 
             const { spawn } = require('child_process');
             var execFile = require('child_process').execFile;
             if (this._host.getIsDev()) {
-                var exe_path = path.join(__dirname, '../python_scripts/dist', exe);
+                var exe_path = path.join(__dirname, '../python_scripts/dist', exeSubPath);
             }
             else {
                 // https://github.com/electron-userland/electron-builder/issues/751
-                var exe_path = path.join(process.resourcesPath, 'python_scripts/dist', exe)
+                var exe_path = path.join(process.resourcesPath, 'python_scripts/dist', exeSubPath)
             }
 
             if (extension == 'txt') {
-                var parameters = [outputFilePath, inputFilePath, 'txt'];
+                var parameters = [outputFilePath, inputFilePath, 'txt'];    // TODO: 3rd arg is redundant
                 execFile(exe_path, parameters, function(err, data) {
                     if (err) {
                         alert("ERROR: " + err);
@@ -1023,7 +1015,7 @@ view.View = class {
                 });
             }
             if (extension == 'json') {
-                var parameters = [outputFilePath, inputFilePath, 'json'];
+                var parameters = [outputFilePath, inputFilePath, 'json'];   // TODO: 3rd arg is redundant
                 execFile(exe_path, parameters, function(err, data) {
                     if (err) {
                         alert("ERROR: " + err);
