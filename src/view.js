@@ -84,6 +84,7 @@ view.View = class {
         this._host.screen(page);
 
         this._sidebar.close();
+        this._leftSidebar.close();
 
         var welcomeElement = document.getElementById('welcome');
         var openFileButton = document.getElementById('open-file-button');
@@ -295,6 +296,7 @@ view.View = class {
 
     error(message, err) {
         this._sidebar.close();
+        this._leftSidebar.close();
         this._host.exception(err, false);
         this._host.error(message, err.toString());
         this.show('Welcome');
@@ -328,6 +330,7 @@ view.View = class {
 
     updateActiveGraph(name) {
         this._sidebar.close();
+        this._leftSidebar.close();
         if (this._model) {
             var model = this._model;
             var graph = model.graphs.filter(graph => name == graph.name).shift();

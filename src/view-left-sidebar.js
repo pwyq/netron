@@ -85,6 +85,7 @@ class GroupModeSidebar {
             var name = 'default_subgraph_' + this._subgraphID.toString();
             this._subgraphID += 1;
             var subgraphID = 'subgraph-' + name;
+            [name, subgraphID] = this.validate(name, subgraphID);
             this.addNewSubgraph(name, subgraphID, this._host);
         });
 
@@ -115,8 +116,17 @@ class GroupModeSidebar {
         this.readJSON();
     }
 
-    // validateSubgraphCreation(name, id) {
-    // }
+    validate(name, id) {
+        for (var i = 0; i < this._subgraphs.length; i++) {
+            if (name == this._subgraphs[i].subgraphName) {
+                name += '_new';
+            }
+            if (id == this._subgraphs[i].id) {
+                id += '_new';
+            }
+        }
+        return [name, id];
+    }
 
     readJSON() {
         if (jMan.isGraphEmpty(this._filePath)) {
