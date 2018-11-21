@@ -65,10 +65,12 @@ class LeftSidebar {
 }
 
 class GroupModeSidebar {
-    constructor(host) {
+    constructor(host, fileName, filePath) {
         this._host = host;
         this._subgraphs = [];
         this._allNodes = [];
+        this._fileName = fileName;
+        this._filePath = filePath;
         this._selectedSubgraph = null;
 
         this._contentElement = document.createElement('div');
@@ -79,7 +81,7 @@ class GroupModeSidebar {
         this._newSubgraphButtonElement.innerHTML = 'New Subgraph';    // Add New Subgraph
 
         this._subgraphID = 1;
-        this._newSubgraphButtonElement.addEventListener('click', (event) => {
+        this._newSubgraphButtonElement.addEventListener('click', () => {
             var name = 'defaultSubgraph_' + this._subgraphID.toString();
             this._subgraphID += 1;
             var subgraphID = 'subgraph-' + name;
@@ -89,9 +91,8 @@ class GroupModeSidebar {
         this._exportButtomElement = document.createElement('button');
         this._exportButtomElement.setAttribute('id', 'export-group-new-subgraph');
         this._exportButtomElement.innerHTML = 'Export'; // Export Group Settings
-        this._exportButtomElement.addEventListener('click', (e) => {
-            // TODO TODO            
-            // this.exportHandler()
+        this._exportButtomElement.addEventListener('click', () => {
+            this.exportHandler()
         });
 
         this._fullListElement = document.createElement('ol');
@@ -110,6 +111,54 @@ class GroupModeSidebar {
         this._contentElement.appendChild(this._buttonsElement);
         this._contentElement.appendChild(divider);
         this._contentElement.appendChild(this._fullListElement);
+
+        this.readJSON();
+    }
+
+    readJSON() {
+        if (jMan.isGraphEmpty(this._filePath)) {
+            return;
+        }
+        else {
+            var raw = fs.readFileSync(this._filePath);
+            var graphObj = JSON.parse(raw);
+        }
+        var keys = Object.keys(graphObj);
+        var obj = graphObj[keys[0]];
+        for (var i = 0; i < obj.length; i++) {
+            var sgName = obj[i].subgraphName;
+            var sgID = 'subgraph-' + sgName;
+            this.addNewSubgraph(sgName, sgID, this._host);
+            this._selectedSubgraph = this._subgraphs.slice(-1)[0];
+            var nodes = obj[i].nodes;
+            for (var j = 0; j < nodes.length; j++) {
+                this.appendNode(nodes[j]);
+            }
+        }
+        this._selectedSubgraph = null;
+    }
+
+    exportHandler() {
+        if (!jMan.isGraphEmpty(this._filePath)) {
+            var graphObj = jMan.createGraph(this._fileName);
+        }
+        else {
+            var raw = fs.readFileSync(this._filePath);
+            var graphObj = JSON.parse(raw);
+        }
+
+        for (var i = 0; i < this._subgraphs.length; i++) {
+            var sg = this._subgraphs[i].subgraphName;
+            jMan.addNewSubgraph(graphObj, this._fileName, sg);
+            for (var j = 0; j < this._subgraphs[i]._nodes.length; j++) {
+                var x = this._subgraphs[i]._nodes[j].id;
+                var nodeName = x.split('-').pop();
+                jMan.addNodeToSubgraph(graphObj, this._fileName, sg, nodeName);
+            }
+        }
+
+        var json = JSON.stringify(graphObj, null , 2);
+        fs.writeFileSync(this._filePath, json);
     }
 
     highlightOn(target) {
@@ -390,6 +439,14 @@ class GroupModelSubgraphView {
 
     get selected() {
         return this._isSelected;
+    }
+
+    get nodes() {
+        return this._nodes;
+    }
+
+    get subgraphName() {
+        return this._name;
     }
 
     on(event, callback) {

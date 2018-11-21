@@ -179,7 +179,16 @@ view.View = class {
     groupNodeMode() {
         if (this._activeGraph) {
             try {
-                var view = new GroupModeSidebar(this._host);
+                var inputFileName = path.parse(path.basename(this._host.getFileName())).name;
+                var outputFileName = inputFileName + '_subgraph_grouping.json';
+                if (this._host.getIsDev()) {
+                    var filePath = path.join(__dirname, '../graph_grouping_json', outputFileName);
+                }
+                else {
+                    var filePath = path.join(process.resourcesPath, 'graph_grouping_json', outputFileName);
+                }
+
+                var view = new GroupModeSidebar(this._host, inputFileName, filePath);
                 var windowWidth = this.getSidebarWindowWidth();
                 this._eventEmitter.on('share-node-id', (data) => {
                     // console.log('[groupNodeMode]: ' + data);
@@ -817,7 +826,7 @@ view.View = class {
                 break;
             case 2:
                 console.log(strs + " right click");
-                this.showDropdownMenu(node, id);
+                this.showCustomAttributes(node, id);
                 break;
             default:
                 this.showNodeProperties(node, input, id);
@@ -839,9 +848,9 @@ view.View = class {
         }
     }
 
-    showDropdownMenu(node, nodeID) {
-        var pbFileName = path.parse(path.basename(this._host.getFileName())).name;
-        var outputFileName = pbFileName + '_custom_attributes.json';
+    showCustomAttributes(node, nodeID) {
+        var inputFileName = path.parse(path.basename(this._host.getFileName())).name;
+        var outputFileName = inputFileName + '_custom_attributes.json';
         if (this._host.getIsDev()) {
             var filePath = path.join(__dirname, '../custom_json', outputFileName);
         }
@@ -849,22 +858,22 @@ view.View = class {
             var filePath = path.join(process.resourcesPath, 'custom_json', outputFileName);
         }
         if (node) {
-            var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, pbFileName, filePath);
+            var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, inputFileName, filePath);
             view.on('custom-attr-sidebar', (sender, cb) => {
-                this.saveCustomAttributes(cb, pbFileName, filePath);
+                this.saveCustomAttributes(cb, inputFileName, filePath);
             });
             var windowWidth = this.getSidebarWindowWidth();
             this._sidebar.open(view.elements, 'Node Custom Attributes', windowWidth.toString());
         }
     }
     
-    saveCustomAttributes(item, pbFileName, filePath) {
+    saveCustomAttributes(item, inputFileName, filePath) {
         var strs = item.split('-');	
         var nodeId = strs[2];	
         var customAttr = strs[1];	
         var customVal = strs[3];
         if (jMan.isGraphEmpty(filePath)) {
-            var graphObj = jMan.createGraph(pbFileName);
+            var graphObj = jMan.createGraph(inputFileName);
         }
         else {
             var raw = fs.readFileSync(filePath);
@@ -872,13 +881,13 @@ view.View = class {
         }
         var customAttrObj = {};
         customAttrObj[customAttr] = customVal;
-        if (!jMan.addNewNode(graphObj, pbFileName, nodeId, customAttrObj)) {
-            if (!jMan.addAttribute(graphObj, pbFileName, nodeId, customAttrObj)) {
-                assert(jMan.updateAttribute(graphObj, pbFileName, nodeId, customAttrObj) === true);
+        if (!jMan.addNewNode(graphObj, inputFileName, nodeId, customAttrObj)) {
+            if (!jMan.addAttribute(graphObj, inputFileName, nodeId, customAttrObj)) {
+                assert(jMan.updateAttribute(graphObj, inputFileName, nodeId, customAttrObj) === true);
             }
         }
 
-        var json  = JSON.stringify(graphObj, null , 2);
+        var json = JSON.stringify(graphObj, null , 2);
         fs.writeFileSync(filePath, json);
     }
 

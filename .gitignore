@@ -16,3 +16,4 @@ python_scripts/*.spec
 .*
 .vscode/settings.json
 custom_json/*.json
+graph_grouping_json/*.json

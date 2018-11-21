@@ -15,6 +15,10 @@ extraResources:
     to: "custom_json"
     filter:
       - "**/*"
+  - from: "graph_grouping_json"
+    to: "graph_grouping_json"
+    filter:
+      - "**/*"
 
 directories:
   buildResources: setup
