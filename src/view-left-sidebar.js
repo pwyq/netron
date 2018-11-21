@@ -82,7 +82,7 @@ class GroupModeSidebar {
 
         this._subgraphID = 1;
         this._newSubgraphButtonElement.addEventListener('click', () => {
-            var name = 'defaultSubgraph_' + this._subgraphID.toString();
+            var name = 'default_subgraph_' + this._subgraphID.toString();
             this._subgraphID += 1;
             var subgraphID = 'subgraph-' + name;
             this.addNewSubgraph(name, subgraphID, this._host);
@@ -114,6 +114,9 @@ class GroupModeSidebar {
 
         this.readJSON();
     }
+
+    // validateSubgraphCreation(name, id) {
+    // }
 
     readJSON() {
         if (jMan.isGraphEmpty(this._filePath)) {
@@ -223,7 +226,10 @@ class GroupModeSidebar {
         return null;
     }
 
-    removeSubgraph(itemID) {
+    removeSubgraph(itemID, nodes) {
+        for (var i = 0; i < nodes.length; i++) {
+            this.removeNodelistItem(nodes[i].id);
+        }
         for (var i = 0; i < this._fullListElement.childElementCount; i++) {
             var targetID = 'object-' + itemID.toString();
             var target = this._fullListElement.children[i];
@@ -238,10 +244,10 @@ class GroupModeSidebar {
         var item = new GroupModelSubgraphView(name, subgraphID, host);
         item.on('delete-me', (sender, cb) => {
             if (cb) {
-                this.removeSubgraph(subgraphID)
+                this.removeSubgraph(subgraphID, item.nodes);
             }
         });
-        item.on('deleted-node', (sender, cb) => {
+        item.on('delete-node', (sender, cb) => {
             this.removeNodelistItem(cb);
         });
         this._subgraphs.push(item);
@@ -305,13 +311,6 @@ class GroupModelSubgraphView {
 
         this._contentElement = document.createElement('div');
         this._contentElement.id = 'object-' + this._id;
-        this._contentElement.addEventListener('click', (e) => {
-            var targetId = e.target.id;
-            if (targetId) {
-                // TODO: allow delete nodes;
-                console.log('[subgraph] ' + targetId);
-            }
-        });
         
         this._subgraphNameElement = document.createElement('li');
         this._subgraphNameElement.innerText = 'Subgraph \u2192 ' + this._name;
@@ -363,7 +362,7 @@ class GroupModelSubgraphView {
         }
         var x = document.getElementById(nodeID);
         this._nodelistElement.removeChild(x);
-        this._raise('deleted-node', nodeID);
+        this._raise('delete-node', nodeID);
     }
 
     updateName() {
