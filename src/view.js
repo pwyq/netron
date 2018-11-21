@@ -179,27 +179,21 @@ view.View = class {
 
     groupNodeMode() {
         if (this._activeGraph) {
-            try {
-                var inputFileName = path.parse(path.basename(this._host.getFileName())).name;
-                var outputFileName = inputFileName + '_subgraph_grouping.json';
-                if (this._host.getIsDev()) {
-                    var filePath = path.join(__dirname, '../graph_grouping_json', outputFileName);
-                }
-                else {
-                    var filePath = path.join(process.resourcesPath, 'graph_grouping_json', outputFileName);
-                }
+            var inputFileName = path.parse(path.basename(this._host.getFileName())).name;
+            var outputFileName = inputFileName + '_subgraph_grouping.json';
+            if (this._host.getIsDev()) {
+                var filePath = path.join(__dirname, '../graph_grouping_json', outputFileName);
+            }
+            else {
+                var filePath = path.join(process.resourcesPath, 'graph_grouping_json', outputFileName);
+            }
 
-                var view = new GroupModeSidebar(this._host, inputFileName, filePath);
-                var windowWidth = this.getSidebarWindowWidth();
-                this._eventEmitter.on('share-node-id', (data) => {
-                    // console.log('[groupNodeMode]: ' + data);
-                    view.appendNode(data)
-                });
-                this._leftSidebar.open(view.content, 'Group Nodes Mode', windowWidth.toString());
-            }
-            catch (err) {
-                console.log(err);
-            }
+            var view = new GroupModeSidebar(this._host, inputFileName, filePath);
+            var windowWidth = this.getSidebarWindowWidth();
+            this._eventEmitter.on('share-node-id', (data) => {
+                view.appendNode(data)
+            });
+            this._leftSidebar.open(view.content, 'Group Nodes Mode', windowWidth.toString());
         }
     }
 
@@ -818,9 +812,9 @@ view.View = class {
             var nodeName = id.toString();
         }
         console.log("\n[nodeElementClickHandler] You clicked: " + nodeName);
-        this._eventEmitter.emit('share-node-id', nodeName);
         switch (button) {
             case 0:
+                this._eventEmitter.emit('share-node-id', nodeName);
                 console.log(strs + " left click");
                 this.showNodeProperties(node, input, id);
                 break;

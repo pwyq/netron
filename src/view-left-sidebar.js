@@ -330,7 +330,7 @@ class GroupModelSubgraphView {
         this._updateNameButton.className = 'left-sidebar-view-item-title-button';
         this._updateNameButton.innerHTML = 'N';
         this._isPopup = false;
-        this._updateNameButton.addEventListener('click', (e) => {
+        this._updateNameButton.addEventListener('click', () => {
             if (!this._isPopup) {
                 this._isPopup = true;
                 this.updateName();
