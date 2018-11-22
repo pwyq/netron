@@ -152,7 +152,10 @@ class GroupModeSidebar {
     }
 
     exportHandler() {
-        if (!jMan.isGraphEmpty(this._filePath)) {
+        if (!fs.existsSync(path.dirname(this._filePath))) {
+            fs.mkdirSync(path.dirname(this._filePath));
+        }
+        if (jMan.isGraphEmpty(this._filePath)) {
             var graphObj = jMan.createGraph(this._fileName);
         }
         else {

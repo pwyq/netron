@@ -869,6 +869,9 @@ view.View = class {
         var nodeId = strs[2];	
         var customAttr = strs[1];	
         var customVal = strs[3];
+        if (!fs.existsSync(path.dirname(filePath))) {
+            fs.mkdirSync(path.dirname(filePath));
+        }
         if (jMan.isGraphEmpty(filePath)) {
             var graphObj = jMan.createGraph(inputFileName);
         }
