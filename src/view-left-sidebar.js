@@ -149,19 +149,17 @@ class GroupModeSidebar {
             }
         }
         this._selectedSubgraph = null;
+        this._exportButtomElement.innerHTML = 'Save';
     }
 
     exportHandler() {
         if (!fs.existsSync(path.dirname(this._filePath))) {
             fs.mkdirSync(path.dirname(this._filePath));
         }
-        if (jMan.isGraphEmpty(this._filePath)) {
-            var graphObj = jMan.createGraph(this._fileName);
+        if (!jMan.isGraphEmpty(this._filePath)) {
+            fs.unlinkSync(this._filePath);
         }
-        else {
-            var raw = fs.readFileSync(this._filePath);
-            var graphObj = JSON.parse(raw);
-        }
+        var graphObj = jMan.createGraph(this._fileName);
 
         for (var i = 0; i < this._subgraphs.length; i++) {
             var sg = this._subgraphs[i].subgraphName;
