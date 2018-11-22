@@ -1,0 +1,17 @@
+{
+  "resnet": [
+    {
+      "subgraphName": "Conv2D_2",
+      "nodes": [
+        "activation_3",
+        "conv2d_4",
+        "activation_4",
+        "conv2d_5"
+      ]
+    },
+    {
+      "subgraphName": "default_subgraph_3",
+      "nodes": []
+    }
+  ]
+}

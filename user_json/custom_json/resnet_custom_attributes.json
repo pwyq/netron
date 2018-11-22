@@ -1,0 +1,11 @@
+{
+  "resnet": [
+    {
+      "id": "conv2d_1",
+      "attrs": {
+        "Hardware_Target": "GPU",
+        "Quantization_Type": "Quant1"
+      }
+    }
+  ]
+}

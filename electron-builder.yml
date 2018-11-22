@@ -11,12 +11,8 @@ extraResources:
     to: "python_scripts"
     filter:
       - "**/*"
-  - from: "custom_json"
-    to: "custom_json"
-    filter:
-      - "**/*"
-  - from: "graph_grouping_json"
-    to: "graph_grouping_json"
+  - from: "user_json"
+    to: "user_json"
     filter:
       - "**/*"
 

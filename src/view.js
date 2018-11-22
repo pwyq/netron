@@ -182,10 +182,10 @@ view.View = class {
             var inputFileName = path.parse(path.basename(this._host.getFileName())).name;
             var outputFileName = inputFileName + '_subgraph_grouping.json';
             if (this._host.getIsDev()) {
-                var filePath = path.join(__dirname, '../graph_grouping_json', outputFileName);
+                var filePath = path.join(__dirname, '../user_json/graph_grouping_json', outputFileName);
             }
             else {
-                var filePath = path.join(process.resourcesPath, 'graph_grouping_json', outputFileName);
+                var filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', outputFileName);
             }
 
             var view = new GroupModeSidebar(this._host, inputFileName, filePath);
@@ -849,10 +849,10 @@ view.View = class {
         var inputFileName = path.parse(path.basename(this._host.getFileName())).name;
         var outputFileName = inputFileName + '_custom_attributes.json';
         if (this._host.getIsDev()) {
-            var filePath = path.join(__dirname, '../custom_json', outputFileName);
+            var filePath = path.join(__dirname, '../user_json/custom_json', outputFileName);
         }
         else {
-            var filePath = path.join(process.resourcesPath, 'custom_json', outputFileName);
+            var filePath = path.join(process.resourcesPath, 'user_json/custom_json', outputFileName);
         }
         if (node) {
             var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, inputFileName, filePath);

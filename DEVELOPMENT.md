@@ -72,9 +72,7 @@ add usage for major files:
 
 # Note
 1. Ask user to use no white-space paths
-2. there should be no `-` in node name/id etc.
 3. Only tested on Windows OS
-4. For now, must create a `/custom_json` directory in the root directory
 
 # TODO
 - allow user to add custom attributes??
