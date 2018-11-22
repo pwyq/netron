@@ -75,18 +75,18 @@ add usage for major files:
 3. Only tested on Windows OS
 
 # TODO
-- allow user to add custom attributes??
-- Mark all AIRunner supported operations when loading
 - fix ONNX export (.py)
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
 - add custom attr to the main box (the white one)
 - dumpGraph.py
     - test white-space path
+- Mark all AIRunner supported operations when loading
     - test on linux/macOS
 https://github.com/onnx/onnxmltools
 
 # Done
 - group items
+- allow user to add custom attributes
 - test if custom attr works in product
 - id issue. some graph nodes don't have id, but use time as id instead
 - customAttr obj value (no use), maybe delete that? (i add comment)

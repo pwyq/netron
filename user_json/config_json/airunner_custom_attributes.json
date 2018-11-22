@@ -1,0 +1,23 @@
+{
+  "HARDWARE_TARGET": [
+    "None",
+    "CPU",
+    "GPU",
+    "APEX",
+    "HW1",
+    "HW2"
+  ],
+  "QUANTIZATION_TYPE": [
+    "None",
+    "Fix_Point",
+    "Float_Point",
+    "Quant1",
+    "Quant2"
+  ],
+  "TEST_ATTR_1": [
+    "ATTR_1",
+    "ATTR_2",
+    "ATTR_3",
+    "ATTR_4"
+  ]
+}

@@ -13,7 +13,6 @@ package-lock.json
 python_scripts/build/*
 python_scripts/dist/*
 python_scripts/*.spec
-.*
 .vscode/settings.json
-custom_json/*.json
-graph_grouping_json/*.json
+user_json/custom_json/*.json
+user_json/graph_grouping_json/*.json

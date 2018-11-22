@@ -3,10 +3,6 @@
 var Handlebars = Handlebars || require('handlebars');
 const jMan = require('./json-manipulate');
 
-// [a-zA-Z0-9]+[_]+[^-*(){}!@#$%&]
-const HARDWARE_TARGETS = ['None', 'CPU', 'GPU', 'APEX', 'HW1', 'HW2'];
-const QUANTIZATION_TYPES = ['None', 'Fix_Point', 'Float_Point', 'Quant1', 'Quant2'];
-
 class Sidebar {
     /*
      * Right Sidebar
@@ -216,12 +212,14 @@ class NodeSidebar {
 }
 
 class customAttributes {
-    constructor(node) {
+    constructor(node, attrList) {
         this._name = node.name;
+        this._attrList = attrList;
         this._attributes = [];
 
-        this.addAttribute('Hardware_Target', '');
-        this.addAttribute('Quantization_Type', '');
+        this._attrList.forEach((e) => {
+            this.addAttribute(e, '');
+        });
     }
 
     addAttribute(_key, _value) {
@@ -250,24 +248,26 @@ class NodeCustomAttributeSidebar {
         this._filePath = filePath;
         this._elements = [];
         this._attributes = [];
-
         this._attributeView = [];   // for listening
+        
+        this._airunnerConfigObj = null;
+        this._airunnerConfigKeys = [];
+        this.readJSON();
 
         var operatorElement = document.createElement('div');
         operatorElement.className = 'sidebar-view-title';
         operatorElement.innerText = node.operator;
         this._elements.push(operatorElement);
 
-        if (this._name) {
-            this.addProperty('name', new ValueTextView(this._name));
-        }
+        this.addProperty('name', new ValueTextView(this._name));
 
-        var attributes = new customAttributes(this._node);
+        var attributes = new customAttributes(this._node, this._airunnerConfigKeys);
         var attrList = attributes.attributeList;
         if (attributes && attrList.length > 0) {
             this.addHeader('Custom Attributes');
             attrList.forEach((attribute) => {
-                this.addCustomAttribute(this._name, attribute, this._fileName, this._filePath);
+                var l = this._airunnerConfigObj[attribute.key];
+                this.addCustomAttribute(this._name, attribute, l, this._fileName, this._filePath);
             });
         }
 
@@ -283,6 +283,25 @@ class NodeCustomAttributeSidebar {
                 });
             });
         }
+    }
+
+    readJSON() {
+        if (this._host.getIsDev()) {
+            var filePath = path.join(__dirname, '../user_json/config_json', 'airunner_custom_attributes.json');
+        }
+        else {
+            var filePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_custom_attributes.json');
+        }
+
+        if (jMan.isGraphEmpty(filePath)) {
+            this._host.realError('Invalid Error', '\"airunner_custom_attributes.json\" not exists!');
+            return;
+        }
+        else {
+            var raw = fs.readFileSync(filePath);
+            this._airunnerConfigObj = JSON.parse(raw);
+        }
+        this._airunnerConfigKeys = Object.keys(this._airunnerConfigObj);
     }
 
     get elements() {
@@ -301,8 +320,8 @@ class NodeCustomAttributeSidebar {
         this._elements.push(item.element);
     }
 
-    addCustomAttribute(name, attribute, fileName, filePath) {
-        var customAttrView = new NodeCustomAttributeView(name, attribute, fileName, filePath);
+    addCustomAttribute(name, attribute, attrList, fileName, filePath) {
+        var customAttrView = new NodeCustomAttributeView(name, attribute, attrList, fileName, filePath);
         this._attributeView.push(customAttrView);
         var item = new NameValueView(attribute.key, customAttrView);
         this._attributes.push(item);
@@ -325,11 +344,12 @@ class NodeCustomAttributeSidebar {
 }
 
 class NodeCustomAttributeView {
-    constructor(name, attribute, fileName, filePath) {
+    constructor(name, attribute, attrList, fileName, filePath) {
         this._name = name;
         this._fileName = fileName;
         this._filePath = filePath;
         this._attribute = attribute;
+        this._attrList = attrList;
         this._element = document.createElement('div');
         this._element.className = 'sidebar-view-item-value';
 
@@ -387,26 +407,11 @@ class NodeCustomAttributeView {
         return [ this._element ];
     }
 
-    getConstAttributeList(key) {
-        var res = [];
-        switch (key) {
-            case 'Hardware_Target':
-                res = HARDWARE_TARGETS;
-                break;
-            case 'Quantization_Type':
-                res = QUANTIZATION_TYPES;
-                break;
-            default:
-                res = undefined;
-        }
-        return res;
-    }
-
     toggle() {
         if (this._expander.innerText == '+') {
             this._expander.innerText = '-';
 
-            var attrFullList = this.getConstAttributeList(this._attribute.key);
+            var attrFullList = this._attrList;
             for (var i = 0; i < attrFullList.length; i++) { 
                 var attrLine = document.createElement('li');
                 attrLine.className = 'sidebar-view-item-value-line-border attr-choose';
