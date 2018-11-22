@@ -409,6 +409,8 @@ class GroupModelSubgraphView {
 
         textboxElement.appendChild(inputElement);
         popupElement.appendChild(textboxElement);
+        // TODO?
+        // if user tries to re-name the last empty (no node) subgraph, the height of the parent node is a bit short
         if (this._nodes.length == 0) {
             popupElement.setAttribute('style', 'top: -20px;');
             this._contentElement.appendChild(popupElement);
