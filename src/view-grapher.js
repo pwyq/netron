@@ -15,21 +15,30 @@ grapher.Renderer = class {
         var svgClusterGroup = this.createElement('g');
         svgClusterGroup.setAttribute('id', 'clusters');
         svgClusterGroup.setAttribute('class', 'clusters');
+        // svgClusterGroup.style.setProperty('fill', 'red');   // useless
+        // svgClusterGroup.style.setProperty('stroke', 'green'); //    useless
         this._svgElement.appendChild(svgClusterGroup);
 
         var svgEdgePathGroup = this.createElement('g');
         svgEdgePathGroup.setAttribute('id', 'edge-paths');
         svgEdgePathGroup.setAttribute('class', 'edge-paths');
+        // svgEdgePathGroup.style.setProperty('fill', 'red');  // useless
+        // svgEdgePathGroup.style.setProperty('stroke', 'red');   // useless
+        // svgEdgePathGroup.style.setProperty('stroke-width', '5');   // useless
         this._svgElement.appendChild(svgEdgePathGroup);
 
         var svgEdgeLabelGroup = this.createElement('g');
         svgEdgeLabelGroup.setAttribute('id', 'edge-labels');
         svgEdgeLabelGroup.setAttribute('class', 'edge-labels');
+        // svgEdgeLabelGroup.style.setProperty('fill', 'red');  // change label color
+        // svgEdgeLabelGroup.style.setProperty('stroke', 'green');  // change label color
         this._svgElement.appendChild(svgEdgeLabelGroup);
 
         var svgNodeGroup = this.createElement('g');
         svgNodeGroup.setAttribute('id', 'nodes');
         svgNodeGroup.setAttribute('class', 'nodes');
+        // svgNodeGroup.style.setProperty('fill', 'red');
+        // svgNodeGroup.style.setProperty('stroke', 'green'); This did the same thing as below (container) and will be overwrite as below
         this._svgElement.appendChild(svgNodeGroup);
 
         graph.nodes().forEach((nodeId) => {
@@ -41,6 +50,8 @@ grapher.Renderer = class {
                 }
                 element.setAttribute('class', node.hasOwnProperty('class') ? ('node ' + node.class) : 'node');
                 element.style.setProperty('opacity', 0);
+                // element.style.setProperty('fill', 'red');    // This did the same thing as below (container) and will be overwrite as below
+                // element.style.setProperty('stroke', 'red');
                 var container = this.createElement('g');
                 container.appendChild(node.label);
                 element.appendChild(container);
@@ -49,6 +60,9 @@ grapher.Renderer = class {
                 var x = - bbox.width / 2;
                 var y = - bbox.height / 2;
                 container.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+                // container.style.setProperty('fill', 'red');     // This makes all text red, except the upper left part
+                // container.style.setProperty('stroke', 'green');       // This makes all text red and super bold, hard to read (ok with following)
+                // container.style.setProperty('stroke-width', '0.5');       // This set the width of the text
                 node.width = bbox.width;
                 node.height = bbox.height;
                 node.element = element;
@@ -103,6 +117,7 @@ grapher.Renderer = class {
         var edgePathGroupDefs = this.createElement('defs');
         svgEdgePathGroup.appendChild(edgePathGroupDefs);
         var marker = this.createElement('marker');
+        // https://developer.mozilla.org/en-US/docs/Web/SVG/Element/marker
         marker.setAttribute('id', 'arrowhead-vee');
         marker.setAttribute('viewBox', '0 0 10 10');
         marker.setAttribute('refX', 9);
@@ -111,11 +126,14 @@ grapher.Renderer = class {
         marker.setAttribute('markerWidth', 8);
         marker.setAttribute('markerHeight', 6);
         marker.setAttribute('orient', 'auto');
+        // marker.style.setProperty('fill`', 'red');    // useless
         edgePathGroupDefs.appendChild(marker);
         var markerPath = this.createElement('path');
         markerPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 L 4 5 z');
-        markerPath.style.setProperty('stroke-width', 1);
+        // markerPath.style.setProperty('stroke-width', 1);    // useless
         markerPath.style.setProperty('stroke-dasharray', '1,0');
+        // markerPath.style.setProperty('stroke', 'red');   // use-less
+        // markerPath.style.setProperty('fill', 'red');    // this change the arrow color
         marker.appendChild(markerPath);
 
         graph.edges().forEach((edgeId) => {
@@ -137,7 +155,9 @@ grapher.Renderer = class {
                 var element = this.createElement('g');
                 element.setAttribute('class', 'cluster');
                 element.setAttribute('transform', 'translate(' + node.x + ',' + node.y + ')');
+                // element.style.setProperty('fill', 'red');    // useless
                 var rect = this.createElement('rect');
+                // https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect
                 rect.setAttribute('x', - node.width / 2);
                 rect.setAttribute('y', - node.height / 2 );
                 rect.setAttribute('width', node.width);
@@ -223,6 +243,7 @@ grapher.NodeElement = class {
         }
         if (classes) {
             item.classes = classes;
+            // console.log(classes);
         }
         if (title) {
             item.title = title;
@@ -248,6 +269,7 @@ grapher.NodeElement = class {
 
     format(contextElement) {
         var rootElement = this.createElement('g');
+        // https://developer.mozilla.org/en-US/docs/Web/SVG/Element/g
         contextElement.appendChild(rootElement);
         var hasAttributes = this._attributes && this._attributes.length > 0;
         var x = 0;
@@ -268,6 +290,7 @@ grapher.NodeElement = class {
             var content = item.content;
             var handler = item.handler;
             var title = item.title;
+            // console.log('content = ' + content + ', handler = ' + handler + ', title = ' + title);
             if (item.classes) {
                 item.classes.forEach((className) => {
                     itemGroupClassList.push(className);
@@ -318,6 +341,7 @@ grapher.NodeElement = class {
         {
             var attributeGroupElement = this.createElement('g');
             attributeGroupElement.setAttribute('class', 'node-attribute');
+            // attributeGroupElement.setAttribute('id', 'testtttttttt');
             rootElement.appendChild(attributeGroupElement);
             if (this._attributeHandler) {
                 attributeGroupElement.addEventListener('mousedown', this._attributeHandler);
@@ -325,6 +349,17 @@ grapher.NodeElement = class {
             attributesPathElement = this.createElement('path');
             attributeGroupElement.appendChild(attributesPathElement);
             attributeGroupElement.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+
+            // var testele = this.createElement('g');
+            // testele.setAttribute('class', 'node-attribute');
+            // testele.setAttribute('id', 'testele');
+            // console.log('x = ' + x + ', y = ' + y);
+            // testele.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+            // testele.style.setProperty('fill', 'green');
+            // rootElement.appendChild(testele);
+
+
+            // attributeGroupElement.style.setProperty('fill', 'yellow');
             attributesHeight += 4;
             this._attributes.forEach((attribute) => {
                 var yPadding = 1;
@@ -349,13 +384,16 @@ grapher.NodeElement = class {
                 if (maxWidth < width) {
                     maxWidth = width;
                 }
+                // TODO, IMPORTANT
                 textElement.setAttribute('x', x + xPadding);
                 textElement.setAttribute('y', attributesHeight + yPadding - size.y);
+                // var t_h = textElement.clientHeight;
+                // var t_w = textElement.clientWidth;
+                // console.log('h = ' + t_h + ', w = ' + t_w);
+                // textElement.style.setProperty('fill', 'red');   // this just changes text colors...
                 attributesHeight += yPadding + size.height + yPadding;
             });
-            attributesHeight += 4;
         }
-        // TODO, add custom attributes here (models with no-name nodes may not work...)
 
         if (maxWidth > itemWidth) {
             var d = (maxWidth - itemWidth) / this._items.length;
@@ -375,6 +413,9 @@ grapher.NodeElement = class {
             itemBox.path.setAttribute('d', this.roundedRect(0, 0, itemBox.width, itemBox.height, r1, r2, r3, r4));
             itemBox.text.setAttribute('x', itemBox.tx);
             itemBox.text.setAttribute('y', itemBox.ty);
+            // itemBox.group.setProperty('fill', 'yellow'); // error
+            // itemBox.path.style.setProperty('stroke', 'yellow');     // the vertical and the horizontal line... (and still see a black line)
+            // itemBox.path.style.setProperty('stroke-width', '5');
         });
 
         if (hasAttributes) {
@@ -383,7 +424,9 @@ grapher.NodeElement = class {
 
         itemBoxes.forEach((itemBox, index) => {
             if (index != 0) {
-                var lineElement = this.createElement('line');
+                var lineElement = this.createElement('line');    // the vertical line that separate the upper and bottom part
+                // lineElement.style.setProperty('stroke', 'yellow');
+                // lineElement.style.setProperty('stroke-width', '5');
                 lineElement.setAttribute('class', 'node');
                 lineElement.setAttribute('x1', itemBox.x);
                 lineElement.setAttribute('y1', 0);
@@ -393,7 +436,9 @@ grapher.NodeElement = class {
             }
         });
         if (hasAttributes) {
-            var lineElement = this.createElement('line');
+            var lineElement = this.createElement('line');       // the horizontal line that separate the upper and bottom part
+            // lineElement.style.setProperty('stroke', 'yellow');
+            // lineElement.style.setProperty('stroke-width', '5');
             lineElement.setAttribute('class', 'node');
             lineElement.setAttribute('x1', 0);
             lineElement.setAttribute('y1', itemHeight);
@@ -401,6 +446,7 @@ grapher.NodeElement = class {
             lineElement.setAttribute('y2', itemHeight);
             rootElement.appendChild(lineElement);
         }
+        // NOTE: try comment out and see; this just a boarder
         var borderElement = this.createElement('path');
         var borderClassList = [ 'node', 'border' ];
         if (this._controlDependencies) {
@@ -408,6 +454,15 @@ grapher.NodeElement = class {
         }
         borderElement.setAttribute('class', borderClassList.join(' '));
         borderElement.setAttribute('d', this.roundedRect(0, 0, maxWidth, itemHeight + attributesHeight, true, true, true, true));
+
+        // TODO: example of marking different colors.
+        // this._items.forEach((item) => {
+        //     if (item.content == 'Conv2D') {
+        //         borderElement.style.setProperty('stroke', 'red');
+        //         borderElement.style.setProperty('stroke-width', '5');
+        //     }
+        // });
+
         rootElement.appendChild(borderElement);
 
         contextElement.innerHTML = '';
