@@ -36,6 +36,7 @@ view.View = class {
         this._showDetails = true;
         this._showNames = false;
         this._searchText = '';
+        this._testEdgeMap = null;
         document.documentElement.style.overflow = 'hidden';
         document.body.scroll = 'no';
         document.getElementById('model-properties-button').addEventListener('click', (e) => {
@@ -398,6 +399,7 @@ view.View = class {
                 graphOptions.nodesep = 25;
                 graphOptions.ranksep = 25;
     
+                // https://github.com/dagrejs/dagre/wiki#an-example-layout
                 var g = new dagre.graphlib.Graph({ compound: groups });
                 g.setGraph(graphOptions);
                 g.setDefaultEdgeLabel(() => { return {}; });
@@ -464,7 +466,9 @@ view.View = class {
                     var hiddenInitializers = false;
             
                     node.inputs.forEach((input) => {
-                        // TODO what about mixed input & initializer
+                        // console.log('\ninput: ');
+                        // console.log(input._name);
+
                         if (input.connections.length > 0) {
                             var initializers = input.connections.filter(connection => connection.initializer);
                             var inputId = null;
@@ -508,6 +512,8 @@ view.View = class {
                             }
             
                             input.connections.forEach((connection) => {
+                                // console.log('\ninput_connection: ');
+                                // console.log(connection._id);
                                 if (!connection.initializer) {
                                     var tuple = edgeMap[connection.id];
                                     if (!tuple) {
@@ -547,7 +553,11 @@ view.View = class {
                     }
             
                     node.outputs.forEach((output) => {
+                        // console.log('\noutput: ');
+                        // console.log(output._name);
                         output.connections.forEach((connection) => {
+                            // console.log('\noutput_connection: ');
+                            // console.log(connection._id);
                             var tuple = edgeMap[connection.id];
                             if (!tuple) {
                                 tuple = { from: null, to: [] };
@@ -680,6 +690,7 @@ view.View = class {
                     g.setNode(nodeId++, { label: formatter.format(graphElement) } ); 
                 });
             
+                // TODO: important!
                 Object.keys(edgeMap).forEach((edge) => {
                     var tuple = edgeMap[edge];
                     if (tuple.from != null) {
@@ -715,6 +726,9 @@ view.View = class {
                         });
                     }
                 });
+
+                // TODO: test
+                this._testEdgeMap = edgeMap;
             
                 // Workaround for Safari background drag/zoom issue:
                 // https://stackoverflow.com/questions/40887193/d3-js-zoom-is-not-working-with-mousewheel-in-safari
@@ -781,6 +795,14 @@ view.View = class {
         }
     }
 
+    outputObjKey(obj) {
+        var k = Object.keys(obj)
+        for (var i = 0; i < k.length; i++) {
+            console.log(k[i]);
+        }
+        console.log('\n');
+    }
+
     getTempID(node) {
         var _id = '';
         for (let [_key, _value] of Object.entries(node.outputs[0])) {
@@ -820,6 +842,7 @@ view.View = class {
                 break;
             case 1:
                 console.log(strs + " middle click");
+                this.testEdgeMap();
                 break;
             case 2:
                 console.log(strs + " right click");
@@ -828,6 +851,35 @@ view.View = class {
             default:
                 this.showNodeProperties(node, input, id);
                 break;
+        }
+    }
+
+    testEdgeMap() {
+        var keys = Object.keys(this._testEdgeMap);
+        for (var i = 0; i < keys.length; i++) {
+            // console.log(keys[i]);
+            var x = this._testEdgeMap[keys[i]];
+            console.log('\n');
+            console.log('key = ' + keys[i]);
+            console.log('---- ---- ---- ----');
+            // console.log(x);
+            // console.log('---- ---- ---- ----');
+            if (x.from) {
+                if (x.from.node) {
+                    console.log('from id = ' + x.from.node);
+                }
+                if (x.from.name) {
+                    console.log('from name = ' + x.from.name);
+                }
+            }
+            if (x.to) {
+                if (x.to.node) {
+                    console.log('to id = ' + x.to.node);
+                }
+                if (x.to.name) {
+                    console.log('to name = ' + x.to.name);
+                }
+            }
         }
     }
 
