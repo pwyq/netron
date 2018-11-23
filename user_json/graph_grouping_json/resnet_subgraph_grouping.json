@@ -1,8 +1,0 @@
-{
-  "resnet": [
-    {
-      "subgraphName": "default_subgraph_1",
-      "nodes": []
-    }
-  ]
-}
