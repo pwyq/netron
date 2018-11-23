@@ -532,6 +532,7 @@ class NodeAttributeView {
         if (value && value.length > 1000) {
             value = value.substring(0, 1000) + '...';
         }
+        value = value.split('<').join('&lt;').split('>').join('&gt;');
         var valueLine = document.createElement('div');
         valueLine.className = 'sidebar-view-item-value-line';
         valueLine.innerHTML = (value ? value : '&nbsp;');

@@ -1107,6 +1107,12 @@ view.View = class {
         if (type == 'shape[]') {
             return value.map((item) => item.toString()).join(', ');
         }
+        if (type == 'graph') {
+            return value.toString();
+        }
+        if (type == 'graph[]') {
+            return value.map((item) => item.toString()).join(', ');
+        }
         if (Array.isArray(value)) {
             return value.map((item) => {
                 if (item && item.__isLong__) {
@@ -1335,6 +1341,7 @@ view.ModelFactoryService = class {
                     case 'prototxt':
                     case 'pth':
                     case 'h5':
+                    case 'cntk':
                     case 'model':
                         callback(new ModelError("Unsupported file content for extension '." + extension + "' in '" + context.identifier + "'."), null);
                         break;

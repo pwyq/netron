@@ -81,6 +81,7 @@ pytorch.ModelFactory = class {
             var functionTable = {};
 
             constructorTable['argparse.Namespace'] = function (args) { this.args = args; };
+            constructorTable['torch.autograd.variable.Variable'] = function () {};
             constructorTable['torch.backends.cudnn.rnn.Unserializable'] = function () {};
             constructorTable['torch.nn.backends.thnn._get_thnn_function_backend'] = function () {};
             constructorTable['torch.nn.modules.activation.LeakyReLU'] = function () {};
@@ -90,6 +91,7 @@ pytorch.ModelFactory = class {
             constructorTable['torch.nn.modules.activation.Sigmoid'] = function () {};
             constructorTable['torch.nn.modules.activation.Softmax'] = function () {};
             constructorTable['torch.nn.modules.activation.Tanh'] = function () {};
+            constructorTable['torch.nn.modules.activation.Threshold'] = function () {};
             constructorTable['torch.nn.modules.batchnorm.BatchNorm1d'] = function () {};
             constructorTable['torch.nn.modules.batchnorm.BatchNorm2d'] = function () {};
             constructorTable['torch.nn.modules.batchnorm.BatchNorm3d'] = function () {};
@@ -220,13 +222,7 @@ pytorch.ModelFactory = class {
                 if (constructor) {
                     constructor.apply(obj, args);
                 }
-                else if (!name.startsWith('__main__.') && !name.startsWith('networks.') && !name.startsWith('nets.') && 
-                         !name.startsWith('model.') && !name.startsWith('models.') &&
-                         !name.startsWith('modeling.') && !name.startsWith('src.model.') && !name.startsWith('resnet.') &&
-                         !name.startsWith('Layers.') && !name.startsWith('Sublayers.') && !name.startsWith('parts.') &&
-                         !name.startsWith('Embed.') && !name.startsWith('fpn.') && !name.startsWith('retinanet.') &&
-                         !name.startsWith('darknet.') && !name.startsWith('self_attn.') && !name.startsWith('base.')) {
-                    debugger;
+                else if (name.startsWith('torch.') || name.startsWith('torchvision.') || name.startsWith('argparse.') || name.startsWith('collections.') | name.startsWith('__builtin__.')) {
                     host.exception(new pytorch.Error("Unknown function '" + name + "' in '" + identifier + "'."), false);
                 }
                 return obj;
@@ -301,6 +297,21 @@ pytorch.ModelFactory = class {
 
     _isLegacyFormat(buffer) {
         try {
+            if (buffer.length < 512) {
+                return false;
+            }
+            var sum = 0;
+            for (var i = 0; i < 512; i++) {
+                sum += (i >= 148 && i < 156) ? 32 : buffer[i];
+            }
+            var checksum = '';
+            for (var j = 148; j < 156 && buffer[j] != 0; j++) {
+                checksum += String.fromCharCode(buffer[j]);
+            }
+            checksum = parseInt(checksum, 8);
+            if (isNaN(checksum) || sum != checksum) {
+                return false;
+            }
             var archive = new tar.Archive(buffer);
             if (archive.entries.some((entry) => entry.name == 'pickle') &&
                 archive.entries.some((entry) => entry.name == 'storages') &&
@@ -803,11 +814,8 @@ pytorch.OperatorMetadata = class {
             var items = JSON.parse(data);
             if (items) {
                 items.forEach((item) => {
-                    if (item.name && item.schema)
-                    {
-                        var name = item.name;
-                        var schema = item.schema;
-                        this._map[name] = schema;
+                    if (item.name && item.schema) {
+                        this._map[item.name] = item.schema;
                     }
                 });
             }

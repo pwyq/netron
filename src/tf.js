@@ -1286,8 +1286,7 @@ tf.OperatorMetadata = class {
                 var items = JSON.parse(data);
                 if (items) {
                     items.forEach((item) => {
-                        if (item.name && item.schema)
-                        {
+                        if (item.name && item.schema) {
                             this._map[item.name] = item.schema;
                         }
                     });
