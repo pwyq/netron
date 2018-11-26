@@ -70,6 +70,8 @@ view.View = class {
         //         console.log("ctrl key + right-click");	
         //     }	
         // });
+
+        this._connections = [];
     }
 
     addMultiListener(element, eventNames, listener) {
@@ -190,11 +192,11 @@ view.View = class {
             }
 
             var view = new GroupModeSidebar(this._host, inputFileName, filePath);
-            var windowWidth = this.getSidebarWindowWidth();
+            // var windowWidth = this.getSidebarWindowWidth();
             this._eventEmitter.on('share-node-id', (data) => {
                 view.appendNode(data)
             });
-            this._leftSidebar.open(view.content, 'Group Nodes Mode', windowWidth.toString());
+            this._leftSidebar.open(view.content, 'Group Nodes Mode', 500);
         }
     }
 
@@ -427,7 +429,24 @@ view.View = class {
                         }
                     });
                 }
-    
+
+                var inputFileName_1 = path.parse(path.basename(this._host.getFileName())).name;
+                var outputFileName_1 = inputFileName_1 + '_DAG.json';
+                var extName_1 = path.extname(path.basename(this._host.getFileName()));
+                if (this._host.getIsDev()) {
+                    var filePath_1 = path.join(__dirname, '../user_json/DAG_json', outputFileName_1);
+                }
+                else {
+                    var filePath_1 = path.join(process.resourcesPath, 'user_json/DAG_json', outputFileName_1);
+                }
+                var skip_1 = false;
+                if (jMan.isGraphEmpty(filePath_1)) {
+                    var graphObj_1 = jMan.createGraph(inputFileName_1);
+                }
+                else {
+                    skip_1 = true;
+                }
+
                 nodes.forEach((node) => {
                     var formatter = new grapher.NodeElement();
 
@@ -435,6 +454,41 @@ view.View = class {
                         formatter.addItem('+', null, [ 'node-item-function' ], null, () => { 
                             debugger;
                         });
+                    }
+
+                    var node_id_1 = null;
+                    var node_op_1 = null;
+                    switch (extName_1) {
+                        case '.pb':
+                            if (node._node) {
+                                node_id_1 = node._node.name;
+                                node_op_1 = node._node.op;
+                            }
+                            else {
+                                node_id_1 = node._outputs[0]._connections[0]._id;
+                                node_op_1 = node.operator;
+                            }
+                            break;
+                        case '.caffemodel':
+                            node_id_1 = node._name;
+                            node_op_1 = node._type;
+                            break;
+                        case '.h5':
+                            node_id_1 = node._config.name;
+                            node_op_1 = node._operator;
+                            break;
+                        case '.onnx':
+                            node_id_1 = node._outputs[0]._connections[0]._id;
+                            node_op_1 = node._operator;
+                            break;
+                        default:
+                            console.log('NOT SUPPORTED YET');
+                            skip_1 = true;
+                            break;
+                    }
+
+                    if (!skip_1 && node_id_1 && node_op_1) {
+                        jMan.addNewConnection(graphObj_1, inputFileName_1, node_id_1, node_op_1);
                     }
 
                     function addOperator(view, formatter, node) {
@@ -514,6 +568,11 @@ view.View = class {
                             input.connections.forEach((connection) => {
                                 // console.log('\ninput_connection: ');
                                 // console.log(connection._id);
+
+                                if (!skip_1 && node_id_1 && node_op_1) {
+                                    jMan.addNodeToConnection(graphObj_1, inputFileName_1, node_id_1, connection._id, true);
+                                }
+
                                 if (!connection.initializer) {
                                     var tuple = edgeMap[connection.id];
                                     if (!tuple) {
@@ -558,6 +617,11 @@ view.View = class {
                         output.connections.forEach((connection) => {
                             // console.log('\noutput_connection: ');
                             // console.log(connection._id);
+
+                            if (!skip_1 && node_id_1 && node_op_1) {
+                                jMan.addNodeToConnection(graphObj_1, inputFileName_1, node_id_1, connection._id, false);
+                            }
+
                             var tuple = edgeMap[connection.id];
                             if (!tuple) {
                                 tuple = { from: null, to: [] };
@@ -650,6 +714,10 @@ view.View = class {
                 
                     nodeId++;
                 });
+                if (!skip_1) {
+                    var json_1 = JSON.stringify(graphObj_1, null , 2);
+                    fs.writeFileSync(filePath_1, json_1);
+                }
             
                 graph.inputs.forEach((input) => {
                     input.connections.forEach((connection) => {
@@ -792,6 +860,7 @@ view.View = class {
         }
         catch (err) {
             callback(err);
+            console.log(err);
         }
     }
 
@@ -799,6 +868,7 @@ view.View = class {
         var k = Object.keys(obj)
         for (var i = 0; i < k.length; i++) {
             console.log(k[i]);
+            // console.log(obj[k]);
         }
         console.log('\n');
     }

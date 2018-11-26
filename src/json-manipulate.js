@@ -15,6 +15,7 @@ var _isGraphEmpty = function isGraphEmpty(filePath) {
   return isEmpty;
 }
   
+// TODO: some function can be combined
 var _isNodeExist = function isNodeExist(data, graphName, nodeName) {
   var isExist = false;
   var _node = _findNode(data, graphName, nodeName);
@@ -67,6 +68,21 @@ var _addNewNode = function addNewNode(data, graphName, nodeName, attributes) {
   return isAdded;
 }
 
+var _addNewConnection = function addNewConnection(data, graphName, connectionName, opName) {
+  var isAdded = false;
+  if (!_isNodeExist(data, graphName, connectionName)) {
+    var newNode = {
+      id: connectionName,
+      op: opName,
+      inputs: [],
+      outputs: []
+    };
+    data[graphName].push(newNode);
+    isAdded = true;
+  }
+  return isAdded;
+}
+
 var _addNewSubgraph = function addNewSubgraph(data, graphName, subgraphName) {
   var isAdded = false;
   if (!_isSubgraphExist(data, graphName, subgraphName)) {
@@ -92,7 +108,28 @@ var _addNodeToSubgraph = function addNodeToSubgraph(data, graphName, subgraphNam
   }
   return isAdded;
 }
-  
+
+var _addNodeToConnection = function addNodeToConnection(data, graphName, nodeName, connection, isInput) {
+  var isUpdated = false;
+  var _node = _findNode(data, graphName, nodeName);
+  if (!_isObjectEmpty(_node)) {
+    var node = _node[0];
+    if (isInput) {
+      if (node.inputs.indexOf(connection) == -1) {
+        node.inputs.push(connection);
+        isUpdated = true;
+      }
+    }
+    else {
+      if (node.outputs.indexOf(connection) == -1) {
+        node.outputs.push(connection);
+        isUpdated = true;
+      }
+    }
+  }
+  return isUpdated;
+}
+
 var _isObjectEmpty = function isObjectEmpty(obj) {
   var isEmpty = false;
   if (Object.keys(obj).length === 0) {
@@ -139,10 +176,13 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
   module.exports.updateAttribute   = _updateAttribute;
   module.exports.addAttribute      = _addAttribute;
 
-  module.exports.isSubgraphExist   = _isSubgraphExist
-  module.exports.findSubgraph      = _findSubgraph
-  module.exports.addNewSubgraph    = _addNewSubgraph
-  module.exports.addNodeToSubgraph = _addNodeToSubgraph
+  module.exports.isSubgraphExist   = _isSubgraphExist;
+  module.exports.findSubgraph      = _findSubgraph;
+  module.exports.addNewSubgraph    = _addNewSubgraph;
+  module.exports.addNodeToSubgraph = _addNodeToSubgraph;
+
+  module.exports.addNewConnection    = _addNewConnection;
+  module.exports.addNodeToConnection = _addNodeToConnection;
 }
   
   
@@ -216,6 +256,45 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
 // addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_a_1x3/BatchNorm/FusedBatchNorm');
 // addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_a_1x3/BatchNorm/FusedBatchNorm/conv');
 // addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_b_3x1/BiasAdd/conv');
+
+// var json = JSON.stringify(graphObj, null , 2);
+// fs.writeFileSync(inputPath, json);
+
+
+//========= TEST (layer grouping)
+// const path = require('path');
+// var fs = require('fs');
+// var inputFileName = 'FREESPACE_graph';
+// var outputFileName = inputFileName + '_DAG.json';
+// var inputPath = path.join('../user_json/DAG_json', outputFileName);
+
+// if (_isGraphEmpty(inputPath)) {
+//     var graphObj = _createGraph(inputFileName);
+// }
+// else {
+//     var raw = fs.readFileSync(inputPath);
+//     var graphObj = JSON.parse(raw);
+// }
+
+// addNewConnection(graphObj, inputFileName, 'node_1_id', 'Conv2D');
+// addNewConnection(graphObj, inputFileName, 'node_1_id', 'Conv2D');
+// addNewConnection(graphObj, inputFileName, 'node_2_id', 'Conv2D');
+// addNewConnection(graphObj, inputFileName, 'node_3_id', 'Add');
+
+// addNodeToConnection(graphObj, inputFileName, 'node_1_id', 'input_1', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_1_id', 'input_1', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_1_id', 'input_2', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_1_id', 'input_3', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_1_id', 'input_4', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_2_id', 'input_4', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_3_id', 'input_4', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_2_id', 'input_4', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_3_id', 'input_4', true);
+// addNodeToConnection(graphObj, inputFileName, 'node_3_id', 'output_1', false);
+// addNodeToConnection(graphObj, inputFileName, 'node_3_id', 'output_2', false);
+// addNodeToConnection(graphObj, inputFileName, 'node_3_id', 'output_1', false);
+// addNodeToConnection(graphObj, inputFileName, 'node_1_id', 'output_3', false);
+// addNodeToConnection(graphObj, inputFileName, 'node_2_id', 'output_4', false);
 
 // var json = JSON.stringify(graphObj, null , 2);
 // fs.writeFileSync(inputPath, json);

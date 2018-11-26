@@ -72,10 +72,33 @@ class GroupModeSidebar {
         this._fileName = fileName;
         this._filePath = filePath;
         this._selectedSubgraph = null;
+        this._startOn = false;
+        this._endOn = false;
+        this._startNode = null;
+        this._endNode = null;
 
         this._contentElement = document.createElement('div');
         this._contentElement.setAttribute('class', 'left-sidebar-view-group');
 
+        this._fullListElement = document.createElement('ol');
+        this._fullListElement.setAttribute('id', 'left-sidebar-full-list');
+        this._fullListElement.addEventListener('click', (e) => {
+            this.highlightHandler(e.target);
+        });
+
+        this._addButtons();
+
+        var divider = document.createElement('div');
+        divider.setAttribute('style', 'margin-bottom: 20px');
+
+        this._contentElement.appendChild(this._buttonsElement);
+        this._contentElement.appendChild(divider);
+        this._contentElement.appendChild(this._fullListElement);
+
+        this._readGroupingJSON();
+    }
+
+    _addButtons() {
         this._newSubgraphButtonElement = document.createElement('button');
         this._newSubgraphButtonElement.setAttribute('id', 'group-new-subgraph');
         this._newSubgraphButtonElement.innerHTML = 'New Subgraph';    // Add New Subgraph
@@ -89,6 +112,35 @@ class GroupModeSidebar {
             this.addNewSubgraph(name, subgraphID, this._host);
         });
 
+        this._startNodeButtomElement = document.createElement('button');
+        this._startNodeButtomElement.setAttribute('id', 'start-group-new-subgraph');
+        this._startNodeButtomElement.innerHTML = 'Start Node';
+        this._startNodeButtomElement.addEventListener('click', () => {
+            if (!document.getElementById('left-sidebar-start-value-id')) {
+                this.startHandler();
+            }
+            this._startOn = true;
+            this._endOn = false;
+        });
+        this._endNodeButtomElement = document.createElement('button');
+        this._endNodeButtomElement.setAttribute('id', 'end-group-new-subgraph');
+        this._endNodeButtomElement.innerHTML = 'End Node';
+        this._endNodeButtomElement.addEventListener('click', () => {
+            if (!document.getElementById('left-sidebar-end-value-id')) {
+                this.endHandler();
+            }
+            this._endOn = true;
+            this._startOn = false;
+        });
+
+        this._findNodeButtomElement = document.createElement('button');
+        this._findNodeButtomElement.setAttribute('id', 'find-group-new-subgraph');
+        this._findNodeButtomElement.innerHTML = 'Traverse';
+        this._findNodeButtomElement.addEventListener('click', () => {
+            console.log("START TRAVERSE");
+            // TODO TODO
+        });
+
         this._exportButtomElement = document.createElement('button');
         this._exportButtomElement.setAttribute('id', 'export-group-new-subgraph');
         this._exportButtomElement.innerHTML = 'Export'; // Export Group Settings
@@ -96,39 +148,44 @@ class GroupModeSidebar {
             this.exportHandler()
         });
 
-        this._fullListElement = document.createElement('ol');
-        this._fullListElement.addEventListener('click', (e) => {
-            this.highlightHandler(e.target);
-        });
-
-        var divider = document.createElement('div');
-        divider.setAttribute('style', 'margin-bottom: 20px');
-
         this._buttonsElement = document.createElement('div');
         this._buttonsElement.setAttribute('class', 'left-sidebar-buttons');
         this._buttonsElement.appendChild(this._newSubgraphButtonElement);
+        this._buttonsElement.appendChild(this._startNodeButtomElement);
+        this._buttonsElement.appendChild(this._endNodeButtomElement);
+        this._buttonsElement.appendChild(this._findNodeButtomElement);
         this._buttonsElement.appendChild(this._exportButtomElement);
-
-        this._contentElement.appendChild(this._buttonsElement);
-        this._contentElement.appendChild(divider);
-        this._contentElement.appendChild(this._fullListElement);
-
-        this.readJSON();
     }
 
-    validate(name, id) {
-        for (var i = 0; i < this._subgraphs.length; i++) {
-            if (name == this._subgraphs[i].subgraphName) {
-                name += '_new';
-            }
-            if (id == this._subgraphs[i].id) {
-                id += '_new';
-            }
-        }
-        return [name, id];
+    startHandler() {
+        var start = document.createElement('div');
+        start.setAttribute('class', 'left-sidebar-name');
+        start.setAttribute('id', 'left-sidebar-start-name-id');
+        start.innerHTML = 'Start Node: ';
+        var startText = document.createElement('div');
+        startText.setAttribute('class', 'left-sidebar-value');
+        startText.setAttribute('id', 'left-sidebar-start-value-id')
+        startText.innerHTML = '<i>choose a node as start node...</i>';
+        start.appendChild(startText);
+        var ref = document.getElementById('left-sidebar-full-list');
+        this._contentElement.insertBefore(start, ref);
     }
 
-    readJSON() {
+    endHandler() {
+        var end = document.createElement('div');
+        end.setAttribute('class', 'left-sidebar-name');
+        end.setAttribute('id', 'left-sidebar-end-name-id');
+        end.innerHTML = 'End Node: &nbsp;&nbsp;';
+        var endText = document.createElement('div');
+        endText.setAttribute('class', 'left-sidebar-value');
+        endText.setAttribute('id', 'left-sidebar-end-value-id')
+        endText.innerHTML = '<i>choose a node as end node...</i>';
+        end.appendChild(endText);
+        var ref = document.getElementById('left-sidebar-full-list');
+        this._contentElement.insertBefore(end, ref);
+    }
+
+    _readGroupingJSON() {
         if (jMan.isGraphEmpty(this._filePath)) {
             return;
         }
@@ -150,6 +207,18 @@ class GroupModeSidebar {
         }
         this._selectedSubgraph = null;
         this._exportButtomElement.innerHTML = 'Save';
+    }
+
+    validate(name, id) {
+        for (var i = 0; i < this._subgraphs.length; i++) {
+            if (name == this._subgraphs[i].subgraphName) {
+                name += '_new';
+            }
+            if (id == this._subgraphs[i].id) {
+                id += '_new';
+            }
+        }
+        return [name, id];
     }
 
     exportHandler() {
@@ -178,11 +247,20 @@ class GroupModeSidebar {
     highlightOn(target) {
         target.style.background = "#e6e6ff";
         //   target.style.color = "#ffffff";
+        this._startNodeButtomElement.style.visibility = 'visible';
+        this._endNodeButtomElement.style.visibility = 'visible';
     }
 
     highlightOff(target) {
         target.style.background = document.getElementById('sidebar').style.backgroundColor;
         target.style.color = document.getElementById('sidebar').style.color;
+        this._startNodeButtomElement.style.visibility = 'hidden';
+        this._endNodeButtomElement.style.visibility = 'hidden';
+        this._findNodeButtomElement.style.visibility = 'hidden';
+        var x = document.getElementById('left-sidebar-start-name-id');
+        this._contentElement.removeChild(x);
+        var y = document.getElementById('left-sidebar-end-name-id');
+        this._contentElement.removeChild(y);
     }
 
     highlightHandler(target) {
@@ -275,20 +353,38 @@ class GroupModeSidebar {
 
     appendNode(nodeName) {
         if (this._selectedSubgraph != null) {
-            var itemID = 'nodelist-item-' + nodeName;
-            for (var i = 0; i < this._allNodes.length; i++) {
-                if (this._allNodes[i].id == itemID) {
-                    var errMsg = nodeName + ' has been selected';
-                    this._host.realError('Invalid Error', errMsg);
-                    return false;
-                }
+            if (this._startOn) {
+                var x = document.getElementById('left-sidebar-start-value-id');
+                this._startNode = nodeName;
+                x.innerHTML = this._startNode;
+                this._startOn = false;
             }
-            var item = document.createElement('li');
-            item.innerText = '\u25A2 ' + nodeName;
-            item.id = itemID;
-            this._allNodes.push(item);
-            this._selectedSubgraph.appendNode(item);
-            return true;
+            else if (this._endOn) {
+                var x = document.getElementById('left-sidebar-end-value-id');
+                this._endNode = nodeName;
+                x.innerHTML = this._endNode;
+                this._endOn = false;
+            }
+            else {
+                var itemID = 'nodelist-item-' + nodeName;
+                for (var i = 0; i < this._allNodes.length; i++) {
+                    if (this._allNodes[i].id == itemID) {
+                        var errMsg = nodeName + ' has been selected';
+                        this._host.realError('Invalid Error', errMsg);
+                        return false;
+                    }
+                }
+                var item = document.createElement('li');
+                item.innerText = '\u25A2 ' + nodeName;
+                item.id = itemID;
+                this._allNodes.push(item);
+                this._selectedSubgraph.appendNode(item);
+                return true;
+            }
+
+            if (this._startNode && this._endNode) {
+                this._findNodeButtomElement.style.visibility = 'visible';
+            }
         }
         return false;
     }

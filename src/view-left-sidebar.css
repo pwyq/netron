@@ -37,6 +37,18 @@
 .left-sidebar-view-item-title-button { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-weight: bold; float: right; color: #aaa; cursor: hand; user-select: none; -webkit-user-select: none; -moz-user-select: none; padding: 8px 4px 8px 4px; }
 .left-sidebar-view-item-title-button:hover { color: #000; }
 
+.left-sidebar-name {
+    padding: 4px 6px 4px 6px;
+    font-weight: bold;
+    display: block;
+}
+
+.left-sidebar-value {
+    padding: 4px 6px 4px 6px;
+    font-weight: normal;
+    display: inline-block;
+}
+
 .left-sidebar-view-item-delete-button {
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
     position: absolute;
@@ -63,7 +75,7 @@
 .left-sidebar-view-group li:hover { background: #eee; }
 
 .left-sidebar-layer { white-space: pre; word-wrap: normal; overflow: auto; display: block; }
-#group-new-subgraph, #export-group-new-subgraph {
+#group-new-subgraph, #export-group-new-subgraph, #start-group-new-subgraph, #end-group-new-subgraph, #find-group-new-subgraph {
     background-color: #b3b3b3;
     border: none;
     color: white;
@@ -74,6 +86,11 @@
     margin: 4px 2px;
     cursor: pointer;
 }
+
+#start-group-new-subgraph, #end-group-new-subgraph, #find-group-new-subgraph {
+    visibility: hidden;
+}
+
 #export-group-new-subgraph {
     float: right;
 }
