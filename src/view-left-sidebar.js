@@ -65,13 +65,14 @@ class LeftSidebar {
 }
 
 class GroupModeSidebar {
-    constructor(host, fileName, filePath, dagFilePath) {
+    constructor(host, fileName, filePath, dagFilePath, dag) {
         this._host = host;
         this._subgraphs = [];
         this._allNodes = [];
         this._fileName = fileName;
         this._filePath = filePath;
-        this._dagFile = dagFilePath;
+        this._dagFilePath = dagFilePath;    // TODO: remove
+        this._dag = dag;
         this._selectedSubgraph = null;
         this._startOn = false;
         this._endOn = false;
@@ -184,26 +185,12 @@ class GroupModeSidebar {
     }
 
     traverseHandler() {
-        console.log("START TRAVERSE");
-        if (jMan.isGraphEmpty(this._dagFile)) {
-            return;
+        var sortedArray = dagre.graphlib.alg.topsort(this._dag);
+        var s = sortedArray.indexOf(this._startNode);
+        var e = sortedArray.indexOf(this._endNode);
+        for (s; s <= e; s++) {
+            this.appendNode(sortedArray[s]);
         }
-        else {
-            var raw = fs.readFileSync(this._filePath);
-            var dagObj = JSON.parse(raw);
-        }
-        var keys = Object.keys(dagObj);
-        var obj = dagObj[keys[0]];
-        var x = jMan.findNode(dagObj, this._fileName, this._startNode);
-        console.log(x);
-        var y = jMan.findNode(dagObj, this._fileName, this._endNode);
-        console.log(y);
-        // for (var i = 0; i < obj.length; i++) {
-        // }
-        // find the start node in graph;
-        // find the end node in graph;
-        // list all passed the node;
-        // if null, return false
     }
 
     _readGroupingJSON() {

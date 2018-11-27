@@ -194,7 +194,8 @@ view.View = class {
                 var dagFilePath = path.join(process.resourcesPath, 'user_json/DAG_json', dagFileName);
             }          
 
-            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, dagFilePath);
+            // TODO: dagFilePath is no longer needed
+            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, dagFilePath, this._graph);
             // var windowWidth = this.getSidebarWindowWidth();
             this._eventEmitter.on('share-node-id', (data) => {
                 view.appendNode(data)
@@ -410,7 +411,9 @@ view.View = class {
                 graphOptions.ranksep = 25;
     
                 // https://github.com/dagrejs/dagre/wiki#an-example-layout
+                // Default: directed: true, multigraph: false
                 var g = new dagre.graphlib.Graph({ compound: groups });
+                var dag = new dagre.graphlib.Graph({ directed: true, multigraph: false, compound: false });
                 g.setGraph(graphOptions);
                 g.setDefaultEdgeLabel(() => { return {}; });
             
@@ -496,6 +499,7 @@ view.View = class {
                     if (!skipDAG && dagNodeID && dagNodeOp) {
                         jMan.addNewConnection(dagObj, this._inputFileBaseName, dagNodeID, dagNodeOp);
                     }
+                    dag.setNode(dagNodeID, { op: dagNodeOp });
 
                     function addOperator(view, formatter, node) {
                         if (node) {
@@ -577,6 +581,9 @@ view.View = class {
 
                                 if (!skipDAG && dagNodeID && dagNodeOp) {
                                     jMan.addNodeToConnection(dagObj, this._inputFileBaseName, dagNodeID, connection._id, true);
+                                }
+                                if (dag.hasNode(dagNodeID)) {
+                                    dag.setEdge(connection._id, dagNodeID);
                                 }
 
                                 if (!connection.initializer) {
@@ -862,6 +869,17 @@ view.View = class {
                         callback(err);
                     }
                 }, 20);
+
+                // post-processing of DAG; remove garbages
+                for (var i = 0; i < dag.nodes().length; i++) {
+                    var curr = dag.nodes()[i];
+                    var exist = dag.node(curr);
+                    if (!exist) {
+                        dag.removeNode(curr);
+                        i--;
+                    }
+                }
+                this._graph = dag;
             }
         }
         catch (err) {
@@ -918,7 +936,27 @@ view.View = class {
                 break;
             case 1:
                 console.log(strs + " middle click");
-                this.testEdgeMap();
+                try {
+                    // for (var i = 0; i < this._graph.nodes().length; i++) {
+                    //     var curr = this._graph.nodes()[i];
+                    //     var exist = this._graph.node(curr);
+                    //     if (!exist) {
+                    //         this._graph.removeNode(curr);
+                    //         i--;
+                    //     }
+                    // }
+                    // console.log('-----------------------');
+                    var json = dagre.graphlib.json.write(this._graph);
+                    console.log(json);
+                    console.log('-----------------------');
+                    var json1  = JSON.stringify(json, null , 2);
+                    var filePath = path.join(__dirname, '../user_json/test.json');
+                    fs.writeFileSync(filePath, json1);
+                }
+                catch (e) {
+                    console.log(e);
+                }
+                // this.testEdgeMap();
                 break;
             case 2:
                 console.log(strs + " right click");
