@@ -70,8 +70,6 @@ view.View = class {
         //         console.log("ctrl key + right-click");	
         //     }	
         // });
-
-        this._connections = [];
     }
 
     addMultiListener(element, eventNames, listener) {
@@ -506,9 +504,6 @@ view.View = class {
                     var hiddenInitializers = false;
             
                     node.inputs.forEach((input) => {
-                        // console.log('\ninput: ');
-                        // console.log(input._name);
-
                         if (input.connections.length > 0) {
                             var initializers = input.connections.filter(connection => connection.initializer);
                             var inputId = null;
@@ -638,6 +633,8 @@ view.View = class {
                                         attributeValue = attributeValue.substring(0, 25) + '...';
                                     }
                                     formatter.addAttribute(attribute.name, attributeValue, attribute.type);
+
+                                    // TODO: load custom attribute here?
                                 }
                             });
                         }
@@ -847,15 +844,6 @@ view.View = class {
         }
     }
 
-    outputObjKey(obj) {
-        var k = Object.keys(obj)
-        for (var i = 0; i < k.length; i++) {
-            console.log(k[i]);
-            // console.log(obj[k]);
-        }
-        console.log('\n');
-    }
-
     getTempID(node) {
         var _id = '';
         for (let [_key, _value] of Object.entries(node.outputs[0])) {
@@ -890,14 +878,15 @@ view.View = class {
         switch (button) {
             case 0:
                 this._eventEmitter.emit('share-node-id', nodeName);
-                console.log(strs + " left click");
+                // console.log(strs + " left click");
                 this.showNodeProperties(node, input, id);
                 break;
             case 1:
-                console.log(strs + " middle click");
+                // console.log(strs + " middle click");
+                var formatter = new grapher.NodeElement();
                 break;
             case 2:
-                console.log(strs + " right click");
+                // console.log(strs + " right click");
                 this.showCustomAttributes(node, id);
                 break;
             default:

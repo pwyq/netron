@@ -383,7 +383,7 @@ class NodeCustomAttributeView {
     readJSON() {
         var val = ''
         if (jMan.isGraphEmpty(this._filePath)) {
-            var graphObj = jMan.createGraph(this._fileName);
+            return val;
         }
         else {
             var raw = fs.readFileSync(this._filePath);
