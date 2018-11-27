@@ -36,7 +36,6 @@ view.View = class {
         this._showDetails = true;
         this._showNames = false;
         this._searchText = '';
-        this._testEdgeMap = null;   // TODO: delete
 
         document.documentElement.style.overflow = 'hidden';
         document.body.scroll = 'no';
@@ -184,18 +183,14 @@ view.View = class {
     groupNodeMode() {
         if (this._activeGraph) {
             var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
-            var dagFileName = this._inputFileBaseName + '_DAG.json';
             if (this._host.getIsDev()) {
                 var filePath    = path.join(__dirname, '../user_json/graph_grouping_json', outputFileName);
-                var dagFilePath = path.join(__dirname, '../user_json/DAG_json', dagFileName);
             }
             else {
                 var filePath    = path.join(process.resourcesPath, 'user_json/graph_grouping_json', outputFileName);
-                var dagFilePath = path.join(process.resourcesPath, 'user_json/DAG_json', dagFileName);
             }          
 
-            // TODO: dagFilePath is no longer needed
-            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, dagFilePath, this._graph);
+            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, this._graph);
             // var windowWidth = this.getSidebarWindowWidth();
             this._eventEmitter.on('share-node-id', (data) => {
                 view.appendNode(data)
@@ -441,21 +436,6 @@ view.View = class {
                     });
                 }
 
-                var dagOutputFileName = this._inputFileBaseName + '_DAG.json';
-                if (this._host.getIsDev()) {
-                    var dagFilePath = path.join(__dirname, '../user_json/DAG_json', dagOutputFileName);
-                }
-                else {
-                    var dagFilePath = path.join(process.resourcesPath, 'user_json/DAG_json', dagOutputFileName);
-                }
-                var skipDAG = false;
-                if (jMan.isGraphEmpty(dagFilePath)) {
-                    var dagObj = jMan.createGraph(this._inputFileBaseName);
-                }
-                else {
-                    skipDAG = true;
-                }
-
                 nodes.forEach((node) => {
                     var formatter = new grapher.NodeElement();
 
@@ -492,13 +472,9 @@ view.View = class {
                             break;
                         default:
                             console.log('NOT SUPPORTED YET');
-                            skipDAG = true;
                             break;
                     }
 
-                    if (!skipDAG && dagNodeID && dagNodeOp) {
-                        jMan.addNewConnection(dagObj, this._inputFileBaseName, dagNodeID, dagNodeOp);
-                    }
                     dag.setNode(dagNodeID, { op: dagNodeOp });
 
                     function addOperator(view, formatter, node) {
@@ -576,12 +552,6 @@ view.View = class {
                             }
             
                             input.connections.forEach((connection) => {
-                                // console.log('\ninput_connection: ');
-                                // console.log(connection._id);
-
-                                if (!skipDAG && dagNodeID && dagNodeOp) {
-                                    jMan.addNodeToConnection(dagObj, this._inputFileBaseName, dagNodeID, connection._id, true);
-                                }
                                 if (dag.hasNode(dagNodeID)) {
                                     dag.setEdge(connection._id, dagNodeID);
                                 }
@@ -625,16 +595,7 @@ view.View = class {
                     }
             
                     node.outputs.forEach((output) => {
-                        // console.log('\noutput: ');
-                        // console.log(output._name);
                         output.connections.forEach((connection) => {
-                            // console.log('\noutput_connection: ');
-                            // console.log(connection._id);
-
-                            if (!skipDAG && dagNodeID && dagNodeOp) {
-                                jMan.addNodeToConnection(dagObj, this._inputFileBaseName, dagNodeID, connection._id, false);
-                            }
-
                             var tuple = edgeMap[connection.id];
                             if (!tuple) {
                                 tuple = { from: null, to: [] };
@@ -727,10 +688,6 @@ view.View = class {
                 
                     nodeId++;
                 });
-                if (!skipDAG) {
-                    var dagJSON = JSON.stringify(dagObj, null , 2);
-                    fs.writeFileSync(dagFilePath, dagJSON);
-                }
             
                 graph.inputs.forEach((input) => {
                     input.connections.forEach((connection) => {
@@ -771,7 +728,6 @@ view.View = class {
                     g.setNode(nodeId++, { label: formatter.format(graphElement) } ); 
                 });
             
-                // TODO: important!
                 Object.keys(edgeMap).forEach((edge) => {
                     var tuple = edgeMap[edge];
                     if (tuple.from != null) {
@@ -807,9 +763,6 @@ view.View = class {
                         });
                     }
                 });
-
-                // TODO: test
-                this._testEdgeMap = edgeMap;
             
                 // Workaround for Safari background drag/zoom issue:
                 // https://stackoverflow.com/questions/40887193/d3-js-zoom-is-not-working-with-mousewheel-in-safari
@@ -880,6 +833,12 @@ view.View = class {
                     }
                 }
                 this._graph = dag;
+                /* // FOR DEBUGGING
+                var t = dagre.graphlib.json.write(this._graph);
+                var json  = JSON.stringify(t, null , 2);
+                var filePath = path.join(__dirname, '../user_json/dag_debug.json');
+                fs.writeFileSync(filePath, json);
+                */
             }
         }
         catch (err) {
@@ -936,27 +895,6 @@ view.View = class {
                 break;
             case 1:
                 console.log(strs + " middle click");
-                try {
-                    // for (var i = 0; i < this._graph.nodes().length; i++) {
-                    //     var curr = this._graph.nodes()[i];
-                    //     var exist = this._graph.node(curr);
-                    //     if (!exist) {
-                    //         this._graph.removeNode(curr);
-                    //         i--;
-                    //     }
-                    // }
-                    // console.log('-----------------------');
-                    var json = dagre.graphlib.json.write(this._graph);
-                    console.log(json);
-                    console.log('-----------------------');
-                    var json1  = JSON.stringify(json, null , 2);
-                    var filePath = path.join(__dirname, '../user_json/test.json');
-                    fs.writeFileSync(filePath, json1);
-                }
-                catch (e) {
-                    console.log(e);
-                }
-                // this.testEdgeMap();
                 break;
             case 2:
                 console.log(strs + " right click");
@@ -965,35 +903,6 @@ view.View = class {
             default:
                 this.showNodeProperties(node, input, id);
                 break;
-        }
-    }
-
-    testEdgeMap() {
-        var keys = Object.keys(this._testEdgeMap);
-        for (var i = 0; i < keys.length; i++) {
-            // console.log(keys[i]);
-            var x = this._testEdgeMap[keys[i]];
-            console.log('\n');
-            console.log('key = ' + keys[i]);
-            console.log('---- ---- ---- ----');
-            // console.log(x);
-            // console.log('---- ---- ---- ----');
-            if (x.from) {
-                if (x.from.node) {
-                    console.log('from id = ' + x.from.node);
-                }
-                if (x.from.name) {
-                    console.log('from name = ' + x.from.name);
-                }
-            }
-            if (x.to) {
-                if (x.to.node) {
-                    console.log('to id = ' + x.to.node);
-                }
-                if (x.to.name) {
-                    console.log('to name = ' + x.to.name);
-                }
-            }
         }
     }
 

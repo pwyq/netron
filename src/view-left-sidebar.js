@@ -1,7 +1,6 @@
 /*jshint esversion: 6 */
 
 var Handlebars = Handlebars || require('handlebars');
-// const jMan = require('./json-manipulate');
 
 class LeftSidebar {
     constructor() {
@@ -65,13 +64,12 @@ class LeftSidebar {
 }
 
 class GroupModeSidebar {
-    constructor(host, fileName, filePath, dagFilePath, dag) {
+    constructor(host, fileName, filePath, dag) {
         this._host = host;
         this._subgraphs = [];
         this._allNodes = [];
         this._fileName = fileName;
         this._filePath = filePath;
-        this._dagFilePath = dagFilePath;    // TODO: remove
         this._dag = dag;
         this._selectedSubgraph = null;
         this._startOn = false;
