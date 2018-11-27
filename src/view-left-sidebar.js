@@ -132,15 +132,12 @@ class GroupModeSidebar {
             this._endOn = true;
             this._startOn = false;
         });
-
         this._findNodeButtomElement = document.createElement('button');
         this._findNodeButtomElement.setAttribute('id', 'find-group-new-subgraph');
         this._findNodeButtomElement.innerHTML = 'Traverse';
         this._findNodeButtomElement.addEventListener('click', () => {
-            console.log("START TRAVERSE");
-            // TODO TODO
+            this.traverseHandler();
         });
-
         this._exportButtomElement = document.createElement('button');
         this._exportButtomElement.setAttribute('id', 'export-group-new-subgraph');
         this._exportButtomElement.innerHTML = 'Export'; // Export Group Settings
@@ -183,6 +180,14 @@ class GroupModeSidebar {
         end.appendChild(endText);
         var ref = document.getElementById('left-sidebar-full-list');
         this._contentElement.insertBefore(end, ref);
+    }
+
+    traverseHandler() {
+        console.log("START TRAVERSE");
+        // find the start node in graph;
+        // find the end node in graph;
+        // list all passed the node;
+        // if null, return false
     }
 
     _readGroupingJSON() {
@@ -258,9 +263,13 @@ class GroupModeSidebar {
         this._endNodeButtomElement.style.visibility = 'hidden';
         this._findNodeButtomElement.style.visibility = 'hidden';
         var x = document.getElementById('left-sidebar-start-name-id');
-        this._contentElement.removeChild(x);
+        if (x) {
+            this._contentElement.removeChild(x);
+        }
         var y = document.getElementById('left-sidebar-end-name-id');
-        this._contentElement.removeChild(y);
+        if (y) {
+            this._contentElement.removeChild(y);
+        }
     }
 
     highlightHandler(target) {
@@ -270,6 +279,7 @@ class GroupModeSidebar {
             var t = this._subgraphs[idx];
             if (t == this._selectedSubgraph || this._selectedSubgraph == null) {
                 // same graph
+                console.log('same graph');
                 if (!t.selected) {
                     t.selected = true;
                     this._selectedSubgraph = t;
@@ -283,11 +293,17 @@ class GroupModeSidebar {
             }
             else {
                 // different graph
-                this._selectedSubgraph.selected = false;
-                this.highlightOff(this._selectedSubgraph.title);
-                t.selected = true;
-                this.highlightOn(target);
-                this._selectedSubgraph = t;
+                console.log('different graph');
+                try {
+                    this._selectedSubgraph.selected = false;
+                    this.highlightOff(this._selectedSubgraph.title);
+                    t.selected = true;
+                    this.highlightOn(target);
+                    this._selectedSubgraph = t;
+                }
+                catch (e) {
+                    console.log(e);
+                }
             }
         }
     }
@@ -505,8 +521,7 @@ class GroupModelSubgraphView {
 
         textboxElement.appendChild(inputElement);
         popupElement.appendChild(textboxElement);
-        // TODO?
-        // if user tries to re-name the last empty (no node) subgraph, the height of the parent node is a bit short
+        // TODO? if user tries to re-name the last empty (no node) subgraph, the height of the parent node is a bit short
         if (this._nodes.length == 0) {
             popupElement.setAttribute('style', 'top: -20px;');
             this._contentElement.appendChild(popupElement);

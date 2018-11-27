@@ -370,7 +370,9 @@ class NodeCustomAttributeView {
         this.valueLine.innerHTML = (this._value ? this._value : '&nbsp;');
         this._element.appendChild(this.valueLine);
 
-        this._dropdownListElement = document.createElement('ol');
+        this._dropdownListElement = document.createElement('ul');
+        this._dropdownListElement.setAttribute('style', 'list-style: none;');
+        this._dropdownListElement.setAttribute('style', 'padding-left: 0;');
         this._dropdownListElement.addEventListener('click', (e) => {
             this.updateValue(e.target.id);
             this._raise('custom-attr-selected', e.target.id);

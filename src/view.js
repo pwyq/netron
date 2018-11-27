@@ -36,7 +36,8 @@ view.View = class {
         this._showDetails = true;
         this._showNames = false;
         this._searchText = '';
-        this._testEdgeMap = null;
+        this._testEdgeMap = null;   // TODO: delete
+
         document.documentElement.style.overflow = 'hidden';
         document.body.scroll = 'no';
         document.getElementById('model-properties-button').addEventListener('click', (e) => {
@@ -182,8 +183,7 @@ view.View = class {
 
     groupNodeMode() {
         if (this._activeGraph) {
-            var inputFileName = path.parse(path.basename(this._host.getFileName())).name;
-            var outputFileName = inputFileName + '_subgraph_grouping.json';
+            var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
             if (this._host.getIsDev()) {
                 var filePath = path.join(__dirname, '../user_json/graph_grouping_json', outputFileName);
             }
@@ -191,7 +191,7 @@ view.View = class {
                 var filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', outputFileName);
             }
 
-            var view = new GroupModeSidebar(this._host, inputFileName, filePath);
+            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath);
             // var windowWidth = this.getSidebarWindowWidth();
             this._eventEmitter.on('share-node-id', (data) => {
                 view.appendNode(data)
@@ -392,6 +392,12 @@ view.View = class {
                 while (graphElement.lastChild) {
                     graphElement.removeChild(graphElement.lastChild);
                 }
+
+
+                this._inputFilePath     = this._host.getFileName();
+                this._inputFileName     = path.basename(this._inputFilePath);
+                this._inputFileBaseName = path.parse(this._inputFileName).name;
+                this._inputFileExtName  = path.extname(this._inputFileName);
     
                 this._zoom = null;
     
@@ -430,21 +436,19 @@ view.View = class {
                     });
                 }
 
-                var inputFileName_1 = path.parse(path.basename(this._host.getFileName())).name;
-                var outputFileName_1 = inputFileName_1 + '_DAG.json';
-                var extName_1 = path.extname(path.basename(this._host.getFileName()));
+                var dagOutputFileName = this._inputFileBaseName + '_DAG.json';
                 if (this._host.getIsDev()) {
-                    var filePath_1 = path.join(__dirname, '../user_json/DAG_json', outputFileName_1);
+                    var dagFilePath = path.join(__dirname, '../user_json/DAG_json', dagOutputFileName);
                 }
                 else {
-                    var filePath_1 = path.join(process.resourcesPath, 'user_json/DAG_json', outputFileName_1);
+                    var dagFilePath = path.join(process.resourcesPath, 'user_json/DAG_json', dagOutputFileName);
                 }
-                var skip_1 = false;
-                if (jMan.isGraphEmpty(filePath_1)) {
-                    var graphObj_1 = jMan.createGraph(inputFileName_1);
+                var skipDAG = false;
+                if (jMan.isGraphEmpty(dagFilePath)) {
+                    var dagObj = jMan.createGraph(this._inputFileBaseName);
                 }
                 else {
-                    skip_1 = true;
+                    skipDAG = true;
                 }
 
                 nodes.forEach((node) => {
@@ -456,39 +460,40 @@ view.View = class {
                         });
                     }
 
-                    var node_id_1 = null;
-                    var node_op_1 = null;
-                    switch (extName_1) {
+                    var dagNodeID = null;
+                    var dagNodeOp = null;
+                    // console.log(this._inputFileExtName);
+                    switch (this._inputFileExtName) {
                         case '.pb':
                             if (node._node) {
-                                node_id_1 = node._node.name;
-                                node_op_1 = node._node.op;
+                                dagNodeID = node._node.name;
+                                dagNodeOp = node._node.op;
                             }
                             else {
-                                node_id_1 = node._outputs[0]._connections[0]._id;
-                                node_op_1 = node.operator;
+                                dagNodeID = node._outputs[0]._connections[0]._id;
+                                dagNodeOp = node.operator;
                             }
                             break;
                         case '.caffemodel':
-                            node_id_1 = node._name;
-                            node_op_1 = node._type;
+                            dagNodeID = node._name;
+                            dagNodeOp = node._type;
                             break;
                         case '.h5':
-                            node_id_1 = node._config.name;
-                            node_op_1 = node._operator;
+                            dagNodeID = node._config.name;
+                            dagNodeOp = node._operator;
                             break;
                         case '.onnx':
-                            node_id_1 = node._outputs[0]._connections[0]._id;
-                            node_op_1 = node._operator;
+                            dagNodeID = node._outputs[0]._connections[0]._id;
+                            dagNodeOp = node._operator;
                             break;
                         default:
-                            console.log('NOT SUPPORTED YET');
-                            skip_1 = true;
+                            // console.log('NOT SUPPORTED YET');
+                            skipDAG = true;
                             break;
                     }
 
-                    if (!skip_1 && node_id_1 && node_op_1) {
-                        jMan.addNewConnection(graphObj_1, inputFileName_1, node_id_1, node_op_1);
+                    if (!skipDAG && dagNodeID && dagNodeOp) {
+                        jMan.addNewConnection(dagObj, this._inputFileBaseName, dagNodeID, dagNodeOp);
                     }
 
                     function addOperator(view, formatter, node) {
@@ -569,8 +574,8 @@ view.View = class {
                                 // console.log('\ninput_connection: ');
                                 // console.log(connection._id);
 
-                                if (!skip_1 && node_id_1 && node_op_1) {
-                                    jMan.addNodeToConnection(graphObj_1, inputFileName_1, node_id_1, connection._id, true);
+                                if (!skipDAG && dagNodeID && dagNodeOp) {
+                                    jMan.addNodeToConnection(dagObj, this._inputFileBaseName, dagNodeID, connection._id, true);
                                 }
 
                                 if (!connection.initializer) {
@@ -618,8 +623,8 @@ view.View = class {
                             // console.log('\noutput_connection: ');
                             // console.log(connection._id);
 
-                            if (!skip_1 && node_id_1 && node_op_1) {
-                                jMan.addNodeToConnection(graphObj_1, inputFileName_1, node_id_1, connection._id, false);
+                            if (!skipDAG && dagNodeID && dagNodeOp) {
+                                jMan.addNodeToConnection(dagObj, this._inputFileBaseName, dagNodeID, connection._id, false);
                             }
 
                             var tuple = edgeMap[connection.id];
@@ -714,9 +719,9 @@ view.View = class {
                 
                     nodeId++;
                 });
-                if (!skip_1) {
-                    var json_1 = JSON.stringify(graphObj_1, null , 2);
-                    fs.writeFileSync(filePath_1, json_1);
+                if (!skipDAG) {
+                    var dagJSON = JSON.stringify(dagObj, null , 2);
+                    fs.writeFileSync(dagFilePath, dagJSON);
                 }
             
                 graph.inputs.forEach((input) => {
@@ -968,8 +973,7 @@ view.View = class {
     }
 
     showCustomAttributes(node, nodeID) {
-        var inputFileName = path.parse(path.basename(this._host.getFileName())).name;
-        var outputFileName = inputFileName + '_custom_attributes.json';
+        var outputFileName = this._inputFileBaseName + '_custom_attributes.json';
         if (this._host.getIsDev()) {
             var filePath = path.join(__dirname, '../user_json/custom_json', outputFileName);
         }
@@ -977,16 +981,16 @@ view.View = class {
             var filePath = path.join(process.resourcesPath, 'user_json/custom_json', outputFileName);
         }
         if (node) {
-            var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, inputFileName, filePath);
+            var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, this._inputFileBaseName, filePath);
             view.on('custom-attr-sidebar', (sender, cb) => {
-                this.saveCustomAttributes(cb, inputFileName, filePath);
+                this.saveCustomAttributes(cb, filePath);
             });
             var windowWidth = this.getSidebarWindowWidth();
             this._sidebar.open(view.elements, 'Node Custom Attributes', windowWidth.toString());
         }
     }
     
-    saveCustomAttributes(item, inputFileName, filePath) {
+    saveCustomAttributes(item, filePath) {
         var strs = item.split('-');	
         var nodeId = strs[2];	
         var customAttr = strs[1];	
@@ -995,7 +999,7 @@ view.View = class {
             fs.mkdirSync(path.dirname(filePath));
         }
         if (jMan.isGraphEmpty(filePath)) {
-            var graphObj = jMan.createGraph(inputFileName);
+            var graphObj = jMan.createGraph(this._inputFileBaseName);
         }
         else {
             var raw = fs.readFileSync(filePath);
@@ -1003,9 +1007,9 @@ view.View = class {
         }
         var customAttrObj = {};
         customAttrObj[customAttr] = customVal;
-        if (!jMan.addNewNode(graphObj, inputFileName, nodeId, customAttrObj)) {
-            if (!jMan.addAttribute(graphObj, inputFileName, nodeId, customAttrObj)) {
-                assert(jMan.updateAttribute(graphObj, inputFileName, nodeId, customAttrObj) === true);
+        if (!jMan.addNewNode(graphObj, this._inputFileBaseName, nodeId, customAttrObj)) {
+            if (!jMan.addAttribute(graphObj, this._inputFileBaseName, nodeId, customAttrObj)) {
+                assert(jMan.updateAttribute(graphObj, this._inputFileBaseName, nodeId, customAttrObj) === true);
             }
         }
 
@@ -1104,10 +1108,8 @@ view.View = class {
 
         if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
             var outputFilePath = file;
-            var inputFilePath = this._host.getFileName();
-            var extName = path.extname(inputFilePath);
             var exeSubPath = '';
-            switch (extName) {
+            switch (this._inputFileExtName) {
                 case '.pb':
                     exeSubPath = 'dumpPB/dumpPB.exe';
                     break;
@@ -1132,7 +1134,7 @@ view.View = class {
             }
 
             if (extension == 'txt') {
-                var parameters = [outputFilePath, inputFilePath, 'txt'];    // TODO: 3rd arg is redundant
+                var parameters = [outputFilePath, this._inputFilePath, 'txt'];    // TODO: 3rd arg is redundant
                 execFile(exe_path, parameters, function(err, data) {
                     if (err) {
                         this._host.error('Python Error', err);
@@ -1142,7 +1144,7 @@ view.View = class {
                 });
             }
             if (extension == 'json') {
-                var parameters = [outputFilePath, inputFilePath, 'json'];   // TODO: 3rd arg is redundant
+                var parameters = [outputFilePath, this._inputFilePath, 'json'];   // TODO: 3rd arg is redundant
                 execFile(exe_path, parameters, function(err, data) {
                     if (err) {
                         this._host.error('Python Error', err);
