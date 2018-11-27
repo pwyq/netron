@@ -184,14 +184,17 @@ view.View = class {
     groupNodeMode() {
         if (this._activeGraph) {
             var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
+            var dagFileName = this._inputFileBaseName + '_DAG.json';
             if (this._host.getIsDev()) {
-                var filePath = path.join(__dirname, '../user_json/graph_grouping_json', outputFileName);
+                var filePath    = path.join(__dirname, '../user_json/graph_grouping_json', outputFileName);
+                var dagFilePath = path.join(__dirname, '../user_json/DAG_json', dagFileName);
             }
             else {
-                var filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', outputFileName);
-            }
+                var filePath    = path.join(process.resourcesPath, 'user_json/graph_grouping_json', outputFileName);
+                var dagFilePath = path.join(process.resourcesPath, 'user_json/DAG_json', dagFileName);
+            }          
 
-            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath);
+            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, dagFilePath);
             // var windowWidth = this.getSidebarWindowWidth();
             this._eventEmitter.on('share-node-id', (data) => {
                 view.appendNode(data)
@@ -393,7 +396,6 @@ view.View = class {
                     graphElement.removeChild(graphElement.lastChild);
                 }
 
-
                 this._inputFilePath     = this._host.getFileName();
                 this._inputFileName     = path.basename(this._inputFilePath);
                 this._inputFileBaseName = path.parse(this._inputFileName).name;
@@ -462,7 +464,6 @@ view.View = class {
 
                     var dagNodeID = null;
                     var dagNodeOp = null;
-                    // console.log(this._inputFileExtName);
                     switch (this._inputFileExtName) {
                         case '.pb':
                             if (node._node) {
@@ -487,7 +488,7 @@ view.View = class {
                             dagNodeOp = node._operator;
                             break;
                         default:
-                            // console.log('NOT SUPPORTED YET');
+                            console.log('NOT SUPPORTED YET');
                             skipDAG = true;
                             break;
                     }

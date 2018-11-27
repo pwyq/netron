@@ -65,12 +65,13 @@ class LeftSidebar {
 }
 
 class GroupModeSidebar {
-    constructor(host, fileName, filePath) {
+    constructor(host, fileName, filePath, dagFilePath) {
         this._host = host;
         this._subgraphs = [];
         this._allNodes = [];
         this._fileName = fileName;
         this._filePath = filePath;
+        this._dagFile = dagFilePath;
         this._selectedSubgraph = null;
         this._startOn = false;
         this._endOn = false;
@@ -184,6 +185,21 @@ class GroupModeSidebar {
 
     traverseHandler() {
         console.log("START TRAVERSE");
+        if (jMan.isGraphEmpty(this._dagFile)) {
+            return;
+        }
+        else {
+            var raw = fs.readFileSync(this._filePath);
+            var dagObj = JSON.parse(raw);
+        }
+        var keys = Object.keys(dagObj);
+        var obj = dagObj[keys[0]];
+        var x = jMan.findNode(dagObj, this._fileName, this._startNode);
+        console.log(x);
+        var y = jMan.findNode(dagObj, this._fileName, this._endNode);
+        console.log(y);
+        // for (var i = 0; i < obj.length; i++) {
+        // }
         // find the start node in graph;
         // find the end node in graph;
         // list all passed the node;
@@ -279,7 +295,6 @@ class GroupModeSidebar {
             var t = this._subgraphs[idx];
             if (t == this._selectedSubgraph || this._selectedSubgraph == null) {
                 // same graph
-                console.log('same graph');
                 if (!t.selected) {
                     t.selected = true;
                     this._selectedSubgraph = t;
@@ -293,17 +308,11 @@ class GroupModeSidebar {
             }
             else {
                 // different graph
-                console.log('different graph');
-                try {
-                    this._selectedSubgraph.selected = false;
-                    this.highlightOff(this._selectedSubgraph.title);
-                    t.selected = true;
-                    this.highlightOn(target);
-                    this._selectedSubgraph = t;
-                }
-                catch (e) {
-                    console.log(e);
-                }
+                this._selectedSubgraph.selected = false;
+                this.highlightOff(this._selectedSubgraph.title);
+                t.selected = true;
+                this.highlightOn(target);
+                this._selectedSubgraph = t;
             }
         }
     }
