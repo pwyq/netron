@@ -14,6 +14,7 @@ var coreml = coreml || require('./coreml');
 var keras = keras || require('./keras');
 var mxnet = mxnet || require('./mxnet');
 var onnx = onnx || require('./onnx');
+var openvino = openvino || require('./openvino');
 var pytorch = pytorch || require('./pytorch');
 var sklearn = sklearn || require('./sklearn');
 var tf = tf || require('./tf');
@@ -401,10 +402,8 @@ view.View = class {
     
                 var graphOptions = {};
                 graphOptions.nodesep = 25;
-                graphOptions.ranksep = 25;
-    
-                // https://github.com/dagrejs/dagre/wiki#an-example-layout
-                // Default: directed: true, multigraph: false
+                graphOptions.ranksep = 30;
+
                 var g = new dagre.graphlib.Graph({ compound: groups });
                 var dag = new dagre.graphlib.Graph({ directed: true, multigraph: false, compound: false });
                 g.setGraph(graphOptions);
@@ -418,7 +417,11 @@ view.View = class {
     
                 var id = new Date().getTime();
                 var nodes = graph.nodes;
-        
+
+                if (nodes.length > 1500) {
+                    graphOptions.ranker = 'longest-path';
+                }
+
                 this._host.event('Graph', 'Render', 'Size', nodes.length);
 
                 if (groups) {
@@ -622,13 +625,7 @@ view.View = class {
                             });
                             attributes.forEach((attribute) => {
                                 if (attribute.visible) {
-                                    var attributeValue = '';
-                                    if (attribute.tensor) {
-                                        attributeValue = '[...]';
-                                    }
-                                    else {
-                                        attributeValue = view.View.formatAttributeValue(attribute.value, attribute.type);
-                                    }
+                                    var attributeValue = view.View.formatAttributeValue(attribute.value, attribute.type);
                                     if (attributeValue && attributeValue.length > 25) {
                                         attributeValue = attributeValue.substring(0, 25) + '...';
                                     }
@@ -733,15 +730,6 @@ view.View = class {
                             var type = tuple.from.type;
                             if (type && type.shape && type.shape.dimensions && type.shape.dimensions.length > 0) {
                                 text = type.shape.dimensions.join('\u00D7');
-                            }
-                            else if (tuple.from.name && to.name) {
-                                text = tuple.from.name + ' \u21E8 ' + to.name;
-                            }
-                            else if (tuple.from.name) {
-                                text = tuple.from.name;
-                            }
-                            else {
-                                text = to.name;
                             }
             
                             if (this._showNames) {
@@ -1156,7 +1144,7 @@ view.View = class {
         if (value && value.__isLong__) {
             return value.toString();
         }
-        if (value instanceof base.Int64 || value instanceof base.Uint64) {
+        if (value && (value instanceof base.Int64 || value instanceof base.Uint64)) {
             return value.toString();
         }
         if (Number.isNaN(value)) {
@@ -1173,6 +1161,9 @@ view.View = class {
         }
         if (type == 'graph[]') {
             return value.map((item) => item.toString()).join(', ');
+        }
+        if (type == 'tensor') {
+            return '[...]';
         }
         if (Array.isArray(value)) {
             return value.map((item) => {
@@ -1282,7 +1273,8 @@ view.ModelFactoryService = class {
             new tflite.ModelFactory(),
             new tf.ModelFactory(),
             new sklearn.ModelFactory(),
-            new cntk.ModelFactory()
+            new cntk.ModelFactory(),
+            new openvino.ModelFactory()
         ];
     }
 
@@ -1402,7 +1394,10 @@ view.ModelFactoryService = class {
                     case 'prototxt':
                     case 'pth':
                     case 'h5':
+                    case 'hdf5':
                     case 'cntk':
+                    case 'xml':
+                    case 'dot':
                     case 'model':
                         callback(new ModelError("Unsupported file content for extension '." + extension + "' in '" + context.identifier + "'."), null);
                         break;

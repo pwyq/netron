@@ -164,11 +164,14 @@ function loadModel(target, item, callback) {
                     });
                 });
                 graph.nodes.forEach((node) => {
+                    var documentation = node.documentation;
+                    var category = node.category;
                     node.attributes.forEach((attribute) => {
                         var value = view.View.formatAttributeValue(attribute.value, attribute.type)
                         if (value && value.length > 1000) {
                             value = value.substring(0, 1000) + '...';
                         }
+                        value = value.split('<');
                     });
                     node.inputs.forEach((input) => {
                         input.connections.forEach((connection) => {
