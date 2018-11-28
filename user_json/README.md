@@ -16,4 +16,4 @@
 - Subgraph naming only supports
   - English alphabet ([A-Z]+[a-z])
   - Arabic numerals ([0-9])
-  - underscore (`_`)
+  - Underscores (`_`)
