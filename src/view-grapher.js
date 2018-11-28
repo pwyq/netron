@@ -229,10 +229,20 @@ grapher.Renderer = class {
 
 grapher.NodeElement = class {
 
-    constructor(host) {
+    constructor(host, inputFileName) {
         this._host = host;
         this._items = [];
         this._attributes = [];
+
+        var name = inputFileName + '_subgraph_grouping.json';
+        if (this._host.getIsDev()) {
+            // var filePath = path.join(__dirname, '../user_json/config_json', 'airunner_config.json');
+            this._filePath = path.join(__dirname, '../user_json/graph_grouping_json', name);
+        }
+        else {
+            // var filePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_config.json');
+            this._filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', name);
+        }
     }
 
     addItem(content, identifier, classes, title, handler) {
@@ -250,7 +260,6 @@ grapher.NodeElement = class {
         }
         if (title) {
             item.title = title;
-            // console.log(title);
         }
         if (handler) {
             item.handler = handler;
@@ -447,32 +456,42 @@ grapher.NodeElement = class {
         borderElement.setAttribute('class', borderClassList.join(' '));
         borderElement.setAttribute('d', this.roundedRect(0, 0, maxWidth, itemHeight + attributesHeight, true, true, true, true));
 
-        if (this._host.getIsDev()) {
-            var filePath = path.join(__dirname, '../user_json/config_json', 'airunner_config.json');
-        }
-        else {
-            var filePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_config.json');
-        }
-        if (jMan.isGraphEmpty(filePath)) {
-            this._host.realError('Invalid Error', '\"airunner_config.json\" not exists! Can\'t color nodes.');
-        }
-        else {
-            var raw = fs.readFileSync(filePath);
-            var x = JSON.parse(raw);
+        if (!jMan.isGraphEmpty(this._filePath)) {
+            var raw = fs.readFileSync(this._filePath);
+            var groupingObj = JSON.parse(raw);
+            var keys = Object.keys(groupingObj);
+            var obj = groupingObj[keys[0]];
+            var COLORS = ['black', 'yellow', 'blue', 'green', 'red'];
+            // Supports (tested): .h5, .pb, .caffemodel, .onnx
             this._items.forEach((item) => {
-                if (x.red.includes(item.content)) {
-                    borderElement.style.setProperty('stroke', 'red');
-                    borderElement.style.setProperty('stroke-width', '5');
+                if (item.identifier) {
+                    return;
                 }
-                else if (x.blue.includes(item.content)) {
-                    borderElement.style.setProperty('stroke', 'blue');
-                    borderElement.style.setProperty('stroke-width', '5');
-                }
-                else if (x.green.includes(item.content)) {
-                    borderElement.style.setProperty('stroke', 'green');
-                    borderElement.style.setProperty('stroke-width', '5');
+                for (var i = 0; i < obj.length; i++) {
+                    var nodes = obj[i].nodes;
+                    var x = COLORS.pop();
+                    for (var j = 0; j < nodes.length; j++) {
+                        if (nodes[j] == item.title) {
+                            borderElement.style.setProperty('stroke', x);
+                            borderElement.style.setProperty('stroke-width', '5');
+                        }
+                    }
                 }
             });
+            // this._items.forEach((item) => {
+            //     if (x.red.includes(item.content)) {
+            //         borderElement.style.setProperty('stroke', 'red');
+            //         borderElement.style.setProperty('stroke-width', '5');
+            //     }
+            //     else if (x.blue.includes(item.content)) {
+            //         borderElement.style.setProperty('stroke', 'blue');
+            //         borderElement.style.setProperty('stroke-width', '5');
+            //     }
+            //     else if (x.green.includes(item.content)) {
+            //         borderElement.style.setProperty('stroke', 'green');
+            //         borderElement.style.setProperty('stroke-width', '5');
+            //     }
+            // });
         }
 
         rootElement.appendChild(borderElement);

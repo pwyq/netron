@@ -210,6 +210,10 @@ class GroupModeSidebar {
         var sortedArray = dagre.graphlib.alg.topsort(this._dag);
         var s = sortedArray.indexOf(this._startNode);
         var e = sortedArray.indexOf(this._endNode);
+        if (s >= e) {
+            this._host.realError('Invalid Error', 'Start Node must be before End Node');
+            return;
+        }
         for (s; s <= e; s++) {
             this.appendNode(sortedArray[s]);
         }
@@ -248,6 +252,7 @@ class GroupModeSidebar {
 
         var json = JSON.stringify(graphObj, null , 2);
         fs.writeFileSync(this._filePath, json);
+        this._host.info('File Saved', 'Group settings is saved.');
     }
 
     nodeButtonsOn() {
@@ -334,12 +339,6 @@ class GroupModeSidebar {
     }
 
     removeSubgraph(itemID, nodes) {
-        if (itemID == this._selectedSubgraph.id) {
-            this._selectedSubgraph = null;
-            this._startNode = null;
-            this._endNode = null;
-            this.nodeButtonsOff();
-        }
         for (var i = 0; i < nodes.length; i++) {
             this.removeNodelistItem(nodes[i].id);
         }
@@ -351,6 +350,12 @@ class GroupModeSidebar {
             }
         }
         this._subgraphs.splice(this.findObjectIndex(this._subgraphs, itemID), 1);
+        if (itemID == this._selectedSubgraph.id) {
+            this._selectedSubgraph = null;
+            this._startNode = null;
+            this._endNode = null;
+            this.nodeButtonsOff();
+        }
     }
 
     addNewSubgraph(name, subgraphID, host) {

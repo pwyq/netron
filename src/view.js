@@ -438,7 +438,7 @@ view.View = class {
                 }
 
                 nodes.forEach((node) => {
-                    var formatter = new grapher.NodeElement(this._host);
+                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName);
 
                     if (node.function) {
                         formatter.addItem('+', null, [ 'node-item-function' ], null, () => { 
@@ -454,8 +454,12 @@ view.View = class {
                                 dagNodeID = node._node.name;
                                 dagNodeOp = node._node.op;
                             }
-                            else {
+                            else if (node._outputs[0]._connections) {
                                 dagNodeID = node._outputs[0]._connections[0]._id;
+                                dagNodeOp = node.operator;
+                            }
+                            else if (node._outputs[0] && !node._outputs[0]._connections) {  // for predict_net.pb
+                                dagNodeID = node._outputs[0];
                                 dagNodeOp = node.operator;
                             }
                             break;
@@ -482,7 +486,7 @@ view.View = class {
                         dag.setNode(dagNodeID, { op: dagNodeOp });
                     }
 
-                    function addOperator(view, formatter, node) {
+                    function addOperator(view, formatter, node, ext) {
                         if (node) {
                             var styles = [ 'node-item-operator' ];
                             var category = node.category;
@@ -491,6 +495,9 @@ view.View = class {
                             }
                             var text = view.showNames && node.name ? node.name : (node.primitive ? node.primitive : node.operator);
                             var title = view.showNames && node.name ? node.operator : node.name;
+                            if (title == null && ext === '.onnx') {
+                                title = dagNodeID;
+                            }
                             formatter.addItem(text, null, styles, title, (event) => {
                                 var tempID = '';
                                 if (!node.name) {
@@ -502,8 +509,8 @@ view.View = class {
                         }
                     }
     
-                    addOperator(this, formatter, node);
-                    addOperator(this, formatter, node.inner);
+                    addOperator(this, formatter, node, this._inputFileExtName);
+                    addOperator(this, formatter, node.inner, this._inputFileExtName);       // TODO: what's node.inner???
             
                     var primitive = node.primitive;
             
@@ -701,7 +708,7 @@ view.View = class {
                     });
                     var types = input.connections.map(connection => connection.type || '').join('\n');
     
-                    var formatter = new grapher.NodeElement(this._host);
+                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName);
                     formatter.addItem(input.name, null, [ 'graph-item-input' ], types, () => {
                         this.showModelProperties();
                     });
@@ -719,7 +726,7 @@ view.View = class {
                     });
                     var types = output.connections.map(connection => connection.type || '').join('\n');
             
-                    var formatter = new grapher.NodeElement(this._host);
+                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName);
                     formatter.addItem(output.name, null, [ 'graph-item-output' ], types, () => {
                         this.showModelProperties();
                     });
@@ -1068,7 +1075,8 @@ view.View = class {
                         this._host.error('Python Error', err);
                         return;
                     }
-                    alert(data.toString());
+                    var msg = 'File has been exported to ' + outputFilePath;
+                    alert(msg);
                 });
             }
             if (extension == 'json') {
@@ -1078,7 +1086,8 @@ view.View = class {
                         this._host.error('Python Error', err);
                         return;
                     }
-                    alert(data.toString());
+                    var msg = 'File has been exported to ' + outputFilePath;
+                    alert(msg);
                 });
             }
         }

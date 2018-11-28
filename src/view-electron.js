@@ -161,6 +161,16 @@ host.ElectronHost = class {
         electron.remote.dialog.showErrorBox(title, content);
     }
 
+    info(message, detail) {
+        var owner = electron.remote.getCurrentWindow();
+        var options = {
+            type: 'info',
+            message: message,
+            detail: detail,
+        };
+        electron.remote.dialog.showMessageBox(owner, options);
+    }
+
     error(message, detail) {
         var owner = electron.remote.getCurrentWindow();
         var options = {
