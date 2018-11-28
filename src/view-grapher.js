@@ -109,8 +109,10 @@ grapher.Renderer = class {
         graph.edges().forEach((edgeId) => {
             var edge = graph.edge(edgeId);
             var element = edge.element;
-            element.setAttribute('transform', 'translate(' + edge.x + ',' + edge.y + ')');
-            element.style.setProperty('opacity', 1);
+            if (edge.x && edge.y) {
+                element.setAttribute('transform', 'translate(' + edge.x + ',' + edge.y + ')');
+                element.style.setProperty('opacity', 1);
+            }
             delete edge.element;
         });
 
@@ -227,7 +229,8 @@ grapher.Renderer = class {
 
 grapher.NodeElement = class {
 
-    constructor() {
+    constructor(host) {
+        this._host = host;
         this._items = [];
         this._attributes = [];
     }
@@ -350,16 +353,6 @@ grapher.NodeElement = class {
             attributeGroupElement.appendChild(attributesPathElement);
             attributeGroupElement.setAttribute('transform', 'translate(' + x + ',' + y + ')');
 
-            // var testele = this.createElement('g');
-            // testele.setAttribute('class', 'node-attribute');
-            // testele.setAttribute('id', 'testele');
-            // console.log('x = ' + x + ', y = ' + y);
-            // testele.setAttribute('transform', 'translate(' + x + ',' + y + ')');
-            // testele.style.setProperty('fill', 'green');
-            // rootElement.appendChild(testele);
-
-
-            // attributeGroupElement.style.setProperty('fill', 'yellow');
             attributesHeight += 4;
             this._attributes.forEach((attribute) => {
                 var yPadding = 1;
@@ -384,7 +377,6 @@ grapher.NodeElement = class {
                 if (maxWidth < width) {
                     maxWidth = width;
                 }
-                // TODO, IMPORTANT
                 textElement.setAttribute('x', x + xPadding);
                 textElement.setAttribute('y', attributesHeight + yPadding - size.y);
                 // var t_h = textElement.clientHeight;
@@ -455,13 +447,33 @@ grapher.NodeElement = class {
         borderElement.setAttribute('class', borderClassList.join(' '));
         borderElement.setAttribute('d', this.roundedRect(0, 0, maxWidth, itemHeight + attributesHeight, true, true, true, true));
 
-        // TODO: example of marking different colors.
-        // this._items.forEach((item) => {
-        //     if (item.content == 'Conv2D') {
-        //         borderElement.style.setProperty('stroke', 'red');
-        //         borderElement.style.setProperty('stroke-width', '5');
-        //     }
-        // });
+        if (this._host.getIsDev()) {
+            var filePath = path.join(__dirname, '../user_json/config_json', 'airunner_config.json');
+        }
+        else {
+            var filePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_config.json');
+        }
+        if (jMan.isGraphEmpty(filePath)) {
+            this._host.realError('Invalid Error', '\"airunner_config.json\" not exists! Can\'t color nodes.');
+        }
+        else {
+            var raw = fs.readFileSync(filePath);
+            var x = JSON.parse(raw);
+            this._items.forEach((item) => {
+                if (x.red.includes(item.content)) {
+                    borderElement.style.setProperty('stroke', 'red');
+                    borderElement.style.setProperty('stroke-width', '5');
+                }
+                else if (x.blue.includes(item.content)) {
+                    borderElement.style.setProperty('stroke', 'blue');
+                    borderElement.style.setProperty('stroke-width', '5');
+                }
+                else if (x.green.includes(item.content)) {
+                    borderElement.style.setProperty('stroke', 'green');
+                    borderElement.style.setProperty('stroke-width', '5');
+                }
+            });
+        }
 
         rootElement.appendChild(borderElement);
 

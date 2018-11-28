@@ -438,7 +438,7 @@ view.View = class {
                 }
 
                 nodes.forEach((node) => {
-                    var formatter = new grapher.NodeElement();
+                    var formatter = new grapher.NodeElement(this._host);
 
                     if (node.function) {
                         formatter.addItem('+', null, [ 'node-item-function' ], null, () => { 
@@ -697,7 +697,7 @@ view.View = class {
                     });
                     var types = input.connections.map(connection => connection.type || '').join('\n');
     
-                    var formatter = new grapher.NodeElement();
+                    var formatter = new grapher.NodeElement(this._host);
                     formatter.addItem(input.name, null, [ 'graph-item-input' ], types, () => {
                         this.showModelProperties();
                     });
@@ -715,7 +715,7 @@ view.View = class {
                     });
                     var types = output.connections.map(connection => connection.type || '').join('\n');
             
-                    var formatter = new grapher.NodeElement();
+                    var formatter = new grapher.NodeElement(this._host);
                     formatter.addItem(output.name, null, [ 'graph-item-output' ], types, () => {
                         this.showModelProperties();
                     });
@@ -871,7 +871,6 @@ view.View = class {
                 break;
             case 1:
                 // console.log(strs + " middle click");
-                var formatter = new grapher.NodeElement();
                 break;
             case 2:
                 // console.log(strs + " right click");

@@ -4,13 +4,13 @@ productName: Netron
 
 files:
   - 'src/**/*'
-  # - 'custom_json/**/*'
 
 extraResources:
   - from: "python_scripts"
     to: "python_scripts"
     filter:
       - "**/*"
+  # TODO: how to only transfer folders?
   - from: "user_json"
     to: "user_json"
     filter:

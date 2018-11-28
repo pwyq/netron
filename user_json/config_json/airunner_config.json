@@ -1,0 +1,13 @@
+{
+  "red": [
+    "Conv",
+    "Conv2D"
+  ],
+  "blue": [
+    "Add",
+    "Batch"
+  ],
+  "green": [
+    "Relu"
+  ]
+}
