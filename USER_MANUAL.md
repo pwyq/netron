@@ -22,7 +22,7 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 - Allows user to set custom attributes of specific nodes, and _automatically_ saves custom setting to local `.json` file
 - Netron will import custom settings if corresponding configuration file is available
 	- (`{Netron root}/user_json/custom_json/{model_name}_custom_attributes.json`)
-- Allows users to add their own custom attributes in the configuration file
+- Allows developers/users to add custom attributes in the configuration file
 	- (`{Netron root}/user_json/config_json/airunner_custom_attributes.json`)
 - Supported models:
 	- ALL models
@@ -40,7 +40,7 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 - Allows user to edit group settings on Netron
 	- Add/Delete/Rename sub-graphs
 	- Add/Delete a node (layer) in a sub-graph
-	- Add/Delete nodes in a sub-graph (after user specifies the start-node and end-node)
+	- Add nodes in a sub-graph (after user specifies the start-node and end-node)
 - Supported models:
 	- `.pb`, `.caffemodel`, `.h5`, `.onnx`
 	- May supports other models but not guaranteed
@@ -55,13 +55,13 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 		- Arabic numerals ([0-9])
 		- Underscores (`_`)
 - __Add a node to a group__: 
-	- left-click on target group to select it
-	- left-click on any nodes to add it to the group
-	- left-click targeted group again to de-select it
+	- click on target group to select it
+	- click on any nodes to add it to the group
+	- click targeted group again to de-select it
 - __Delete a node in a group__:
 	- click on the target node on the leftside panel (this action cannot be undone)
 - __Add a series of ndoes to a group__
-	- left-click on target group to select it
+	- click on target group to select it
 	- click `Start Node`
 	- choose your start-node on the graph
 	- click `End Node`
@@ -71,8 +71,8 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 - __Save group settings__:
 	- click `Export` (for first time grouping) or `Save` (to overwrite old settings)
 - __Color groups__:
-	- After you saved your group settings, press `F5` to refresh the page
+	- After you saved your group settings, press `F5`
 
-[text_export]: media/user_manual/text_export.PNG "Export Text File"
+[text_export]: media/user_manual/text_export.png "Export Text File"
 [custom_attr]: media/user_manual/node_right_click.PNG "Edit Node Custom Attributes (Right-click Node)"
 [group_node_mode]: media/user_manual/subgraph_2.PNG "Group Node Mode"
