@@ -154,6 +154,30 @@ class GroupModeSidebar {
         this._buttonsElement.appendChild(this._exportButtomElement);
     }
 
+    _readGroupingJSON() {
+        if (jMan.isGraphEmpty(this._filePath)) {
+            return;
+        }
+        else {
+            var raw = fs.readFileSync(this._filePath);
+            var graphObj = JSON.parse(raw);
+        }
+        var keys = Object.keys(graphObj);
+        var obj = graphObj[keys[0]];
+        for (var i = 0; i < obj.length; i++) {
+            var sgName = obj[i].subgraphName;
+            var sgID = 'subgraph-' + sgName;
+            this.addNewSubgraph(sgName, sgID, this._host);
+            this._selectedSubgraph = this._subgraphs.slice(-1)[0];
+            var nodes = obj[i].nodes;
+            for (var j = 0; j < nodes.length; j++) {
+                this.appendNode(nodes[j]);
+            }
+        }
+        this._selectedSubgraph = null;
+        this._exportButtomElement.innerHTML = 'Save';
+    }
+
     startHandler() {
         var start = document.createElement('div');
         start.setAttribute('class', 'left-sidebar-name');
@@ -189,30 +213,6 @@ class GroupModeSidebar {
         for (s; s <= e; s++) {
             this.appendNode(sortedArray[s]);
         }
-    }
-
-    _readGroupingJSON() {
-        if (jMan.isGraphEmpty(this._filePath)) {
-            return;
-        }
-        else {
-            var raw = fs.readFileSync(this._filePath);
-            var graphObj = JSON.parse(raw);
-        }
-        var keys = Object.keys(graphObj);
-        var obj = graphObj[keys[0]];
-        for (var i = 0; i < obj.length; i++) {
-            var sgName = obj[i].subgraphName;
-            var sgID = 'subgraph-' + sgName;
-            this.addNewSubgraph(sgName, sgID, this._host);
-            this._selectedSubgraph = this._subgraphs.slice(-1)[0];
-            var nodes = obj[i].nodes;
-            for (var j = 0; j < nodes.length; j++) {
-                this.appendNode(nodes[j]);
-            }
-        }
-        this._selectedSubgraph = null;
-        this._exportButtomElement.innerHTML = 'Save';
     }
 
     validate(name, id) {
@@ -336,6 +336,8 @@ class GroupModeSidebar {
     removeSubgraph(itemID, nodes) {
         if (itemID == this._selectedSubgraph.id) {
             this._selectedSubgraph = null;
+            this._startNode = null;
+            this._endNode = null;
             this.nodeButtonsOff();
         }
         for (var i = 0; i < nodes.length; i++) {
