@@ -250,16 +250,12 @@ class GroupModeSidebar {
         fs.writeFileSync(this._filePath, json);
     }
 
-    highlightOn(target) {
-        target.style.background = "#e6e6ff";
-        //   target.style.color = "#ffffff";
+    nodeButtonsOn() {
         this._startNodeButtomElement.style.visibility = 'visible';
         this._endNodeButtomElement.style.visibility = 'visible';
     }
 
-    highlightOff(target) {
-        target.style.background = document.getElementById('sidebar').style.backgroundColor;
-        target.style.color = document.getElementById('sidebar').style.color;
+    nodeButtonsOff() {
         this._startNodeButtomElement.style.visibility = 'hidden';
         this._endNodeButtomElement.style.visibility = 'hidden';
         this._findNodeButtomElement.style.visibility = 'hidden';
@@ -271,6 +267,18 @@ class GroupModeSidebar {
         if (y) {
             this._contentElement.removeChild(y);
         }
+    }
+
+    highlightOn(target) {
+        target.style.background = "#e6e6ff";
+        //   target.style.color = "#ffffff";
+        this.nodeButtonsOn();
+    }
+
+    highlightOff(target) {
+        target.style.background = document.getElementById('sidebar').style.backgroundColor;
+        target.style.color = document.getElementById('sidebar').style.color;
+        this.nodeButtonsOff();
     }
 
     highlightHandler(target) {
@@ -326,6 +334,10 @@ class GroupModeSidebar {
     }
 
     removeSubgraph(itemID, nodes) {
+        if (itemID == this._selectedSubgraph.id) {
+            this._selectedSubgraph = null;
+            this.nodeButtonsOff();
+        }
         for (var i = 0; i < nodes.length; i++) {
             this.removeNodelistItem(nodes[i].id);
         }
@@ -341,7 +353,7 @@ class GroupModeSidebar {
 
     addNewSubgraph(name, subgraphID, host) {
         var item = new GroupModelSubgraphView(name, subgraphID, host);
-        item.on('delete-me', (sender, cb) => {
+        item.on('delete-subgraph', (sender, cb) => {
             if (cb) {
                 this.removeSubgraph(subgraphID, item.nodes);
             }
@@ -535,7 +547,7 @@ class GroupModelSubgraphView {
         while (this._contentElement.childElementCount) {
             this._contentElement.removeChild(this._contentElement.lastChild);
         }
-        this._raise('delete-me', true);
+        this._raise('delete-subgraph', true);
     }
 
     get title() {
