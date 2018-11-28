@@ -8,7 +8,17 @@ openvino.ModelFactory = class {
 
     match(context) {
         var extension = context.identifier.split('.').pop().toLowerCase();
-        return extension == 'xml' || extension == 'dot';
+        if (extension === 'xml') {
+            if (context.text.includes('<net')) {
+                return true;
+            }
+        }
+        if (extension === 'dot') {
+            if (context.text.includes('layer_')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     open(context, host, callback) {
@@ -21,7 +31,7 @@ openvino.ModelFactory = class {
             var extension = context.identifier.split('.').pop().toLowerCase();
             var parsed = null;
             var model = null;
-            if (extension == 'xml') {
+            if (extension === 'xml') {
                 try {
                     parsed = openvino_parser.IrParser.parse(context.text);
                 } catch (error) {
@@ -36,9 +46,10 @@ openvino.ModelFactory = class {
                     return;
                 }
             }
-            else {
+
+            if (extension === 'dot') {
                 try {
-                    parsed = openvino_parser.DotParser.parse(text);
+                    parsed = openvino_parser.DotParser.parse(context.text);
                 } catch (error) {
                     callback(new openvino.Error('Failed to read OpenVINO Dot file.'), null);
                     return;
@@ -268,7 +279,10 @@ openvino.ir.Node = class extends openvino.AbstractNode {
         this._outputs = [];
 
         this.setInputs(layer.input, edges, layers);
-        this.setOutputs(layer[0].output, edges, layers);
+        if (layer.hasOwnProperty(0)) {
+             // meaning it has outputs 
+             this.setOutputs(layer[0].output, edges, layers);
+        }
 
         this._initializers = [];
         this._attributes = [];

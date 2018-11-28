@@ -7,6 +7,7 @@ var zip = zip || require('./zip');
 var gzip = gzip || require('./gzip');
 var tar = tar || require('./tar');
 
+<<<<<<< HEAD
 var caffe = caffe || require('./caffe');
 var caffe2 = caffe2 || require('./caffe2');
 var cntk = cntk || require('./cntk');
@@ -20,6 +21,8 @@ var sklearn = sklearn || require('./sklearn');
 var tf = tf || require('./tf');
 var tflite = tflite || require('./tflite');
 
+=======
+>>>>>>> 122bd6ffc082361a1eef59c01f4bda2bf97401f0
 var d3 = d3 || require('d3');
 var dagre = dagre || require('dagre');
 
@@ -34,8 +37,10 @@ view.View = class {
         this._showDetails = true;
         this._showNames = false;
         this._searchText = '';
+        this._zoomMode = 'd3';
+        this._modelFactoryService = new view.ModelFactoryService(this._host);
         document.documentElement.style.overflow = 'hidden';
-        document.body.scroll = 'no';        
+        document.body.scroll = 'no';
         document.getElementById('model-properties-button').addEventListener('click', (e) => {
             this.showModelProperties();
         });
@@ -54,6 +59,14 @@ view.View = class {
         document.addEventListener('keydown', (e) => {
             this.clearSelection();
         });
+        if (this._zoomMode == 'scroll') {
+            document.getElementById('graph-container').addEventListener('mousewheel', (e) => {
+                this._mouseWheelHandler(e);
+            });
+            document.getElementById('graph').addEventListener('mousewheel', (e) => {
+                this._mouseWheelHandler(e);
+            });
+        }
     }
     
     show(page) {
@@ -167,20 +180,56 @@ view.View = class {
     }
 
     zoomIn() {
-        if (this._zoom) {
-            this._zoom.scaleBy(d3.select(document.getElementById('graph')), 1.2);
+        switch (this._zoomMode) {
+            case 'd3':
+                if (this._zoom) {
+                    this._zoom.scaleBy(d3.select(document.getElementById('graph')), 1.2);
+                }
+                break;
+            case 'scroll':
+                if (this._zoom) {
+                    this._zoom = this._zoom * 1.05;
+                    if (this._zoom > 2) {
+                        this._zoom = 2;
+                    }
+                    this.applyZoom();
+                }
+                break;
         }
     }
 
     zoomOut() {
-        if (this._zoom) {
-            this._zoom.scaleBy(d3.select(document.getElementById('graph')), 0.8);
+        switch (this._zoomMode) {
+            case 'd3':
+                if (this._zoom) {
+                    this._zoom.scaleBy(d3.select(document.getElementById('graph')), 0.8);
+                }
+                break;
+            case 'scroll':
+                if (this._zoom) {
+                    this._zoom = this._zoom * 0.95;
+                    if (this._zoom < 0.1) {
+                        this._zoom = 0.1;
+                    }
+                    this.applyZoom();
+                }
+                break;
         }
     }
 
     resetZoom() { 
-        if (this._zoom) {
-            this._zoom.scaleTo(d3.select(document.getElementById('graph')), 1);
+        switch (this._zoomMode) {
+            case 'd3':
+                if (this._zoom) {
+                    this._zoom.scaleTo(d3.select(document.getElementById('graph')), 1);
+                }
+                break;
+            case 'scroll':
+                if (this._zoom) {
+                    this._zoom = 1;
+                    this.applyZoom();
+                }
+                break;
         }
     }
 
@@ -190,6 +239,39 @@ view.View = class {
         }
     }
 
+    applyZoom() {
+        var svgElement = document.getElementById('graph');
+        svgElement.setAttribute('style', 'zoom: ' + this._zoom + ';');
+        // svgElement.setAttribute('style', 'transform: scale(' + this._zoom + ',' + this._zoom + ')');
+        // svgElement.setAttribute('width', this._width * this._zoom);
+        // svgElement.setAttribute('height', this._height * this._zoom);
+    }
+
+    _mouseWheelHandler(e) {
+        if (e.shiftKey || e.ctrlKey) {
+            if (this._zoom) {
+                var oldWidth = this._width * this._zoom;
+                var oldHeight = this._height * this._zoom;
+                this._zoom = this._zoom + (e.wheelDelta * 1.0 / 6000.0);
+                if (this._zoom < 0.1) { this._zoom = 0.1; }
+                if (this._zoom > 2) { this._zoom = 2; }
+                this.applyZoom();
+
+                /* var svgElement = document.getElementById('graph');
+                va r newWidth = this._width * this._zoom;
+                var newHeight = this._height * this._zoom;
+                svgElement.setAttribute('width', newWidth);
+                svgElement.setAttribute('height', newHeight); */
+
+                // var dx = (oldWidth - newWidth) / 2;
+                // var dy = (oldHeight - newHeight) / 2;
+                // window.scrollBy(dx, dy);
+
+                e.preventDefault();
+            }
+        }
+    }
+    
     select(selection) {
         this.clearSelection();
         if (selection && selection.length > 0) {
@@ -224,11 +306,6 @@ view.View = class {
         }
     }
 
-    loadContext(context, callback) {
-        var modelFactoryService = new view.ModelFactoryService(this._host);
-        modelFactoryService.create(context, callback);
-    }
-
     error(message, err) {
         this._sidebar.close();
         this._host.exception(err, false);
@@ -240,7 +317,7 @@ view.View = class {
         this._host.event('Model', 'Open', 'Size', context.buffer.length);
         this._sidebar.close();
         setTimeout(() => {
-            this.loadContext(context, (err, model) => {
+            this._modelFactoryService.open(context, (err, model) => {
                 if (err) {
                     callback(err);
                 }
@@ -329,7 +406,18 @@ view.View = class {
                     graphElement.removeChild(graphElement.lastChild);
                 }
     
-                this._zoom = null;
+                switch (this._zoomMode) {
+                    case 'd3':
+                        this._zoom = null;
+                        graphElement.style.position = 'absolute';
+                        graphElement.style.margin = '0';
+                        break;
+                    case 'scroll':
+                        this._zoom = 0;
+                        graphElement.style.position = 'static';
+                        graphElement.style.margin = 'auto';
+                        break;
+                }
     
                 var groups = graph.groups;
     
@@ -498,13 +586,7 @@ view.View = class {
                             });
                             attributes.forEach((attribute) => {
                                 if (attribute.visible) {
-                                    var attributeValue = '';
-                                    if (attribute.tensor) {
-                                        attributeValue = '[...]';
-                                    }
-                                    else {
-                                        attributeValue = view.View.formatAttributeValue(attribute.value, attribute.type);
-                                    }
+                                    var attributeValue = view.View.formatAttributeValue(attribute.value, attribute.type);
                                     if (attributeValue && attributeValue.length > 25) {
                                         attributeValue = attributeValue.substring(0, 25) + '...';
                                     }
@@ -630,8 +712,10 @@ view.View = class {
                 // https://stackoverflow.com/questions/40887193/d3-js-zoom-is-not-working-with-mousewheel-in-safari
                 var backgroundElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 backgroundElement.setAttribute('id', 'background');
-                backgroundElement.setAttribute('width', '100%');
-                backgroundElement.setAttribute('height', '100%');
+                if (this._zoomMode == 'd3') {
+                    backgroundElement.setAttribute('width', '100%');
+                    backgroundElement.setAttribute('height', '100%');
+                }
                 backgroundElement.setAttribute('fill', 'none');
                 backgroundElement.setAttribute('pointer-events', 'all');
                 graphElement.appendChild(backgroundElement);
@@ -640,44 +724,76 @@ view.View = class {
                 originElement.setAttribute('id', 'origin');
                 graphElement.appendChild(originElement);
             
-                // Set up zoom support
-                var svg = d3.select(graphElement);
-                this._zoom = d3.zoom();
-                this._zoom(svg);
-                this._zoom.scaleExtent([0.1, 2]);
-                this._zoom.on('zoom', (e) => {
-                    originElement.setAttribute('transform', d3.event.transform.toString());
-                });
-                this._zoom.transform(svg, d3.zoomIdentity);
+                if (this._zoomMode == 'd3') {
+                    // Set up zoom support
+                    var svg = d3.select(graphElement);
+                    this._zoom = d3.zoom();
+                    this._zoom(svg);
+                    this._zoom.scaleExtent([0.1, 2]);
+                    this._zoom.on('zoom', (e) => {
+                        originElement.setAttribute('transform', d3.event.transform.toString());
+                    });
+                    this._zoom.transform(svg, d3.zoomIdentity);
+                }
 
                 setTimeout(() => {
                     try {
                         var graphRenderer = new grapher.Renderer(originElement);
                         graphRenderer.render(g);
             
-                        var svgSize = graphElement.getBoundingClientRect();
-            
                         var inputElements = graphElement.getElementsByClassName('graph-input');
-                        if (inputElements && inputElements.length > 0) {
-                            // Center view based on input elements
-                            var xs = [];
-                            var ys = [];
-                            for (var i = 0; i < inputElements.length; i++) {
-                                var inputTransform = inputElements[i].transform.baseVal.consolidate().matrix;
-                                xs.push(inputTransform.e);
-                                ys.push(inputTransform.f);
-                            }
-                            var x = xs[0];
-                            var y = ys[0];
-                            if (ys.every(y => y == ys[0])) {
-                                x = xs.reduce((a,b) => { return a + b; }) / xs.length;
-                            }
-                            this._zoom.transform(svg, d3.zoomIdentity.translate((svgSize.width / 2) - x, (svgSize.height / 4) - y));
-                        }
-                        else {
-                            this._zoom.transform(svg, d3.zoomIdentity.translate((svgSize.width - g.graph().width) / 2, (svgSize.height - g.graph().height) / 2));
-                        }
 
+                        switch (this._zoomMode) {
+                            case 'd3':
+                                var svgSize = graphElement.getBoundingClientRect();
+                                if (inputElements && inputElements.length > 0) {
+                                    // Center view based on input elements
+                                    var xs = [];
+                                    var ys = [];
+                                    for (var i = 0; i < inputElements.length; i++) {
+                                        var inputTransform = inputElements[i].transform.baseVal.consolidate().matrix;
+                                        xs.push(inputTransform.e);
+                                        ys.push(inputTransform.f);
+                                    }
+                                    var x = xs[0];
+                                    var y = ys[0];
+                                    if (ys.every(y => y == ys[0])) {
+                                        x = xs.reduce((a,b) => { return a + b; }) / xs.length;
+                                    }
+                                    this._zoom.transform(svg, d3.zoomIdentity.translate((svgSize.width / 2) - x, (svgSize.height / 4) - y));
+                                }
+                                else {
+                                    this._zoom.transform(svg, d3.zoomIdentity.translate((svgSize.width - g.graph().width) / 2, (svgSize.height - g.graph().height) / 2));
+                                }
+                                break;
+                            case 'scroll':
+                                var size = graphElement.getBBox();
+                                var graphMin = Math.min(size.width, size.height);
+                                var windowMin = Math.min(window.innerWidth, window.innerHeight);
+                                var delta = (Math.max(graphMin, windowMin) / 2.0) * 0.2;
+                                var width = Math.ceil(delta + size.width + delta);
+                                var height = Math.ceil(delta + size.height + delta);
+                                originElement.setAttribute('transform', 'translate(' + delta.toString() + ', ' + delta.toString() + ') scale(1)');
+                                backgroundElement.setAttribute('width', width);
+                                backgroundElement.setAttribute('height', height);
+                                this._width = width;
+                                this._height = height;
+                                this._zoom = 1;
+                                graphElement.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+                                graphElement.setAttribute('width', width / this._zoom);
+                                graphElement.setAttribute('height', height / this._zoom);        
+                                if (inputElements && inputElements.length > 0) {
+                                    // Center view based on input elements
+                                    for (var i = 0; i < inputElements.length; i++) {
+                                        inputElements[i].scrollIntoView({ behavior: 'instant' });
+                                        break;
+                                    }
+                                }
+                                else {
+                                    // this._zoom.transform(svg, d3.zoomIdentity.translate((svgSize.width - g.graph().width) / 2, (svgSize.height - g.graph().height) / 2));
+                                }
+                                break;
+                        }
                         callback(null);
                     }
                     catch (err) {
@@ -841,7 +957,7 @@ view.View = class {
         if (value && value.__isLong__) {
             return value.toString();
         }
-        if (value instanceof base.Int64 || value instanceof base.Uint64) {
+        if (value && (value instanceof base.Int64 || value instanceof base.Uint64)) {
             return value.toString();
         }
         if (Number.isNaN(value)) {
@@ -858,6 +974,9 @@ view.View = class {
         }
         if (type == 'graph[]') {
             return value.map((item) => item.toString()).join(', ');
+        }
+        if (type == 'tensor') {
+            return '[...]';
         }
         if (Array.isArray(value)) {
             return value.map((item) => {
@@ -958,31 +1077,86 @@ view.ModelFactoryService = class {
 
     constructor(host) {
         this._host = host;
-        this._factories = [
-            new onnx.ModelFactory(),
-            new mxnet.ModelFactory(),
-            new keras.ModelFactory(),
-            new coreml.ModelFactory(),
-            new caffe.ModelFactory(),
-            new caffe2.ModelFactory(), 
-            new pytorch.ModelFactory(),
-            new tflite.ModelFactory(),
-            new tf.ModelFactory(),
-            new sklearn.ModelFactory(),
-            new cntk.ModelFactory(),
-            new openvino.ModelFactory()
-        ];
+        this._extensions = [];
+        this.register('./onnx', [ '.onnx', '.pb', '.pbtxt', '.prototxt' ]);
+        this.register('./mxnet', [ '.model', '.json' ]);
+        this.register('./keras', [ '.h5', '.keras', '.hdf5', '.json' ]);
+        this.register('./coreml', [ '.mlmodel' ]);
+        this.register('./caffe', [ '.caffemodel', '.pbtxt', '.prototxt' ]);
+        this.register('./caffe2', [ 'predict_net.pb', 'predict_net.pbtxt', 'predict_net.prototxt' ]);
+        this.register('./pytorch', [ '.pt', '.pth', '.pkl', '.h5', '.model' ]);
+        this.register('./tflite', [ '.tflite', '.lite' ]);
+        this.register('./tf', [ '.pb', '.meta', '.pbtxt', '.prototxt' ]);
+        this.register('./sklearn', [ '.pkl', '.joblib' ]);
+        this.register('./cntk', [ '.model', '.cntk' ]);
+        this.register('./openvino', [ '.xml', '.dot' ]);
     }
 
-    some(context) {
-        return this._factories.some((factory) => factory.match(context, this._host));
+    register(id, extensions) {
+        extensions.forEach((extension) => {
+            this._extensions.push({ extension: extension, id: id });
+        });
     }
 
-    filter(context) {
-        return this._factories.filter((factory) => factory.match(context, this._host));        
+    open(context, callback) {
+        this._openArchive(context, (err, context) => {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+            var extension = context.identifier.split('.').pop().toLowerCase();
+            var modules = this._filter(context);
+            if (modules.length == 0) {
+                callback(new ModelError("Unsupported file extension '." + extension + "'."), null);
+                return;
+            }
+            var errors = [];
+            var matches = 0;
+            var nextModule = () => {
+                if (modules.length > 0) {
+                    var id = modules.shift();
+                    this._host.require(id, (err, module) => {
+                        if (err) {
+                            callback(err, null);
+                            return;
+                        }
+                        if (!module.ModelFactory) {
+                            callback(new ModelError("Failed to load module '" + id + "'."), null);
+                            return;
+                        }
+                        var modelFactory = new module.ModelFactory(); 
+                        if (!modelFactory.match(context, this._host)) {
+                            nextModule();
+                            return;
+                        }
+                        matches++;
+                        modelFactory.open(context, this._host, (err, model) => {
+                            if (err) {
+                                errors.push(err);
+                            }
+                            if (model || modules.length == 0) {
+                                if (!model && matches > 1 && errors.length > 1) {
+                                    callback(new ModelError(errors.map((err) => err.message).join('\n')), null);
+                                    return;
+                                }
+                                callback(err, model);
+                                return;
+                            }
+                            nextModule();
+                            return;
+                        });
+                    });
+                }
+                else {
+                    callback(new ModelError("Unsupported file content for extension '." + extension + "' in '" + context.identifier + "'."), null);
+                    return;
+                }
+            };
+            nextModule();
+        });
     }
 
-    create(context, callback) {
+    _openArchive(context, callback) {
         try {
             var extension;
             var archive;
@@ -1031,79 +1205,86 @@ view.ModelFactoryService = class {
                 });
                 var rootFolder = Object.keys(folders).length == 1 ? Object.keys(folders)[0] : '';
                 rootFolder = rootFolder == '/' ? '' : rootFolder;
-                var entries = archive.entries.filter((entry) => {
-                    if (entry.name.startsWith(rootFolder)) {
-                        var identifier = entry.name.substring(rootFolder.length);
-                        if (identifier.length > 0 && identifier.indexOf('/') < 0) {
-                            return this.some(new ArchiveContext(null, rootFolder, identifier, entry.data), this._host);
+                var matches = [];
+                var entries = archive.entries.slice();
+                var nextEntry = () => {
+                    if (entries.length > 0) {
+                        var entry = entries.shift();
+                        if (entry.name.startsWith(rootFolder)) {
+                            var identifier = entry.name.substring(rootFolder.length);
+                            if (identifier.length > 0 && identifier.indexOf('/') < 0) {
+                                var context = new ArchiveContext(null, rootFolder, entry.name, entry.data);
+                                var modules = this._filter(context);
+                                var nextModule = () => {
+                                    if (modules.length > 0) {
+                                        var id = modules.shift();
+                                        this._host.require(id, (err, module) => {
+                                            if (err) {
+                                                callback(err, null);
+                                                return;
+                                            }
+                                            if (!module.ModelFactory) {
+                                                callback(new ArchiveError("Failed to load module '" + id + "'.", null), null);
+                                            }
+                                            var factory = new module.ModelFactory();
+                                            if (factory.match(context, this._host)) {
+                                                matches.push(entry);
+                                                modules = [];
+                                            }
+                                            nextModule();
+                                            return;
+                                        });
+                                    }
+                                    else {
+                                        nextEntry();
+                                        return;
+                                    }
+                                };
+                                nextModule();
+                                return;
+                            }
                         }
+                        nextEntry();
                     }
-                    return false;
-                });
-                if (entries.length == 0) {
-                    callback(new ArchiveError('Root does not contain model file.'), null);
-                    return;
-                }
-                else if (entries.length > 1) {
-                    callback(new ArchiveError('Root contains multiple model files.'), null);
-                    return;
-                }
-                else {
-                    entry = entries[0];
-                    context = new ArchiveContext(entries, rootFolder, entry.name, entry.data);
-                }
+                    else {
+                        if (matches.length == 0) {
+                            callback(new ArchiveError('Root does not contain model file.'), null);
+                            return;
+                        }
+                        else if (matches.length > 1) {
+                            callback(new ArchiveError('Root contains multiple model files.'), null);
+                            return;
+                        }
+                        var match = matches[0];
+                        callback(null, new ArchiveContext(entries, rootFolder, match.name, match.data));
+                        return;
+                    }
+                };
+                nextEntry();
+                return;
             }
+            callback(null, context);
+            return;
         }
         catch (err) {
             callback(new ArchiveError(err.message), null);
             return;
         }
+    }
 
-        var errorList = [];
-        var factoryList = this.filter(context, this._host);
-        var factoryCount = factoryList.length;
-        var next = () => {
-            if (factoryList.length > 0) {
-                var modelFactory = factoryList.shift();
-                modelFactory.open(context, this._host, (err, model) => {
-                    if (err) {
-                        errorList.push(err);
-                    }
-                    if (model || factoryList.length == 0) {
-                        if (!model && factoryCount > 1 && errorList.length > 1) {
-                            callback(new ModelError(errorList.map((err) => err.message).join('\n')), null);
-                            return;
-                        }
-                        callback(err, model);
-                        return;
-                    }
-                    next();
-                    return;
-                });
-            }
-            else {
-                var extension = context.identifier.split('.').pop().toLowerCase();
-                switch (extension) {
-                    case 'json':
-                    case 'pb':
-                    case 'pbtxt':
-                    case 'prototxt':
-                    case 'pth':
-                    case 'h5':
-                    case 'hdf5':
-                    case 'cntk':
-                    case 'xml':
-                    case 'dot':
-                    case 'model':
-                        callback(new ModelError("Unsupported file content for extension '." + extension + "' in '" + context.identifier + "'."), null);
-                        break;
-                    default:
-                        callback(new ModelError("Unsupported file extension '." + extension + "'."), null);
-                        break;
+    _filter(context) {
+        var moduleList = [];
+        var moduleMap = {};
+        var identifier = context.identifier.toLowerCase();
+        this._extensions.forEach((extension) => {
+            if (identifier.endsWith(extension.extension)) {
+                if (!moduleMap[extension.id]) {
+                    moduleList.push(extension.id);
+                    moduleMap[extension.id] = true;
                 }
             }
-        };
-        next();
+        });
+        return moduleList;
     }
 };
 

@@ -6,3 +6,6 @@ third_party/*
 test/data/*
 package-lock.json
 *.pyc
+
+python_scripts/*
+user_json/*

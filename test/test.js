@@ -134,7 +134,7 @@ function loadModel(target, item, callback) {
     fs.closeSync(fd);
     var context = new TestContext(host, folder, identifier, buffer);
     var modelFactoryService = new view.ModelFactoryService(host);
-    modelFactoryService.create(context, (err, model) => {
+    modelFactoryService.open(context, (err, model) => {
         if (err) {
             callback(err, null);
             return;
@@ -164,11 +164,14 @@ function loadModel(target, item, callback) {
                     });
                 });
                 graph.nodes.forEach((node) => {
+                    var documentation = node.documentation;
+                    var category = node.category;
                     node.attributes.forEach((attribute) => {
                         var value = view.View.formatAttributeValue(attribute.value, attribute.type)
                         if (value && value.length > 1000) {
                             value = value.substring(0, 1000) + '...';
                         }
+                        value = value.split('<');
                     });
                     node.inputs.forEach((input) => {
                         input.connections.forEach((connection) => {
