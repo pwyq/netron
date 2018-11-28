@@ -472,11 +472,15 @@ view.View = class {
                             dagNodeOp = node._operator;
                             break;
                         default:
-                            console.log('NOT SUPPORTED YET');
+                            // console.log('NOT SUPPORTED YET');
+                            var msg = this._inputFileExtName + " format is not supported yet.";
+                            this._host.realError('Not Supported Model', msg);
                             break;
                     }
 
-                    dag.setNode(dagNodeID, { op: dagNodeOp });
+                    if (dagNodeID && dagNodeOp) {
+                        dag.setNode(dagNodeID, { op: dagNodeOp });
+                    }
 
                     function addOperator(view, formatter, node) {
                         if (node) {
