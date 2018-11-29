@@ -212,20 +212,35 @@ class GroupModeSidebar {
         var sortedArray = dagre.graphlib.alg.topsort(this._dag);
         var s = sortedArray.indexOf(this._startNode);
         var e = sortedArray.indexOf(this._endNode);
-        var c = e - s;
-        if (s >= e) {
+        var c = e - s + 1;
+        if (s > e) {
             this._host.realError('Invalid Error', 'Start Node must be before End Node.');
             return;
         }
-        for (s; s < e; s++) {
-            this.appendNode(sortedArray[s]);
+        var res = false;
+        var errMsg = '';
+        for (s; s <= e; s++) {
+            res = this.appendNode(sortedArray[s]);
+            if (!res) {
+                c -= 1;
+                errMsg += sortedArray[s] + '\n';
+            }
         }
-        if (c === 1) {
-            var msg = 'A node has been added to ' + this._selectedSubgraph.subgraphName;
+        if (errMsg !== '') {
+            errMsg += 'have been selected!';
+            this._host.realError('Invalid Error', errMsg);
+        }
+        if (c <= 0) {
+            this._host.info('No Node Added', 'No node was added :(');
+            return;
+        }
+        else if (c === 1) {
+            var msg = 'A node is added to \"' + this._selectedSubgraph.subgraphName + '\"';
         }
         else {
-            var msg = c + ' nodes have been added to ' + this._selectedSubgraph.subgraphName;
+            var msg = '\"' + c + '\" nodes are added to \"' + this._selectedSubgraph.subgraphName + '\"';
         }
+        msg += '\n\nHint: don\'t forget to SAVE your settings :)';
         this._host.info('Nodes Added', msg);
     }
 
@@ -262,7 +277,7 @@ class GroupModeSidebar {
 
         var json = JSON.stringify(graphObj, null , 2);
         fs.writeFileSync(this._filePath, json);
-        this._host.info('File Saved', 'Group settings is saved.');
+        this._host.info('File Saved', 'Group setting is saved.');
     }
 
     nodeButtonsOn() {
@@ -407,8 +422,6 @@ class GroupModeSidebar {
                 var itemID = 'nodelist-item-' + nodeName;
                 for (var i = 0; i < this._allNodes.length; i++) {
                     if (this._allNodes[i].id == itemID) {
-                        var errMsg = nodeName + ' has been selected';
-                        this._host.realError('Invalid Error', errMsg);
                         return false;
                     }
                 }
