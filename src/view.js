@@ -32,7 +32,9 @@ view.View = class {
         this._model = null;
         this._selection = [];
         this._sidebar = new Sidebar();
-        this._leftSidebar = new LeftSidebar();
+        var events = require('events');
+        this._eventEmitter = new events.EventEmitter();
+        this._leftSidebar = new LeftSidebar(this._eventEmitter);
         this._host.initialize(this);
         this._showDetails = true;
         this._showNames = false;
@@ -59,10 +61,6 @@ view.View = class {
         document.addEventListener('keydown', (event) => {
             this.clearSelection();
         });
-
-        var events = require('events');
-        this._eventEmitter = new events.EventEmitter();
-
 
         // FOLLOWING is example of detecting keyboard event + click event	
         // this.addMultiListener(document, 'keydown keyup click', function(event) {	
@@ -102,7 +100,6 @@ view.View = class {
     }
     
     show(page) {
-
         if (!page) {
             page = (!this._model && !this._activeGraph) ? 'Welcome' : 'Graph';
         }
@@ -207,16 +204,21 @@ view.View = class {
         if (this._activeGraph) {
             var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
             if (this._host.getIsDev()) {
-                var filePath    = path.join(__dirname, '../user_json/graph_grouping_json', outputFileName);
+                var filePath = path.join(__dirname, '../user_json/graph_grouping_json', outputFileName);
             }
             else {
-                var filePath    = path.join(process.resourcesPath, 'user_json/graph_grouping_json', outputFileName);
+                var filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', outputFileName);
             }          
 
             var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, this._graph);
             // var windowWidth = this.getSidebarWindowWidth();
             this._eventEmitter.on('share-node-id', (data) => {
                 view.appendNode(data)
+            });
+            this._eventEmitter.on('clean-group-node-mode', (data) => {
+                if (data) {
+                    view.clean();
+                }
             });
             this._leftSidebar.open(view.content, 'Group Nodes Mode', 500);
         }

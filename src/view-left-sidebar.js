@@ -3,7 +3,8 @@
 var Handlebars = Handlebars || require('handlebars');
 
 class LeftSidebar {
-    constructor() {
+    constructor(emitter) {
+        this._emitter = emitter;
         this._closeSidebarHandler = (e) => {
             this.close();
         };
@@ -60,6 +61,7 @@ class LeftSidebar {
             closeButtonElement.style.color = '#f8f8f8';
             sidebarElement.style.width = '0';
         }
+        this._emitter.emit('clean-group-node-mode', true);
     }
 }
 
@@ -210,6 +212,7 @@ class GroupModeSidebar {
         var sortedArray = dagre.graphlib.alg.topsort(this._dag);
         var s = sortedArray.indexOf(this._startNode);
         var e = sortedArray.indexOf(this._endNode);
+        var c = e - s;
         if (s >= e) {
             this._host.realError('Invalid Error', 'Start Node must be before End Node.');
             return;
@@ -217,6 +220,13 @@ class GroupModeSidebar {
         for (s; s < e; s++) {
             this.appendNode(sortedArray[s]);
         }
+        if (c === 1) {
+            var msg = 'A node has been added to ' + this._selectedSubgraph.subgraphName;
+        }
+        else {
+            var msg = c + ' nodes have been added to ' + this._selectedSubgraph.subgraphName;
+        }
+        this._host.info('Nodes Added', msg);
     }
 
     validate(name, id) {
@@ -283,6 +293,7 @@ class GroupModeSidebar {
     highlightOff(target) {
         target.style.background = document.getElementById('sidebar').style.backgroundColor;
         target.style.color = document.getElementById('sidebar').style.color;
+        this.clean();
         this.nodeButtonsOff();
     }
 
@@ -351,9 +362,7 @@ class GroupModeSidebar {
         }
         this._subgraphs.splice(this.findObjectIndex(this._subgraphs, itemID), 1);
         if (itemID == this._selectedSubgraph.id) {
-            this._selectedSubgraph = null;
-            this._startNode = null;
-            this._endNode = null;
+            this.clean();
             this.nodeButtonsOff();
         }
     }
@@ -416,6 +425,12 @@ class GroupModeSidebar {
             }
         }
         return false;
+    }
+
+    clean() {
+        this._selectedSubgraph = null;
+        this._startNode = null;
+        this._endNode = null;
     }
 
     get content() {

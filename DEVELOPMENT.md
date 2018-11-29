@@ -66,3 +66,5 @@ cd tools
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
 - add custom attr to the main box (the white one)
 - test white-space path
+- change a group's attributes
+- support multiple settings
