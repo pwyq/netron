@@ -62,7 +62,7 @@ view.View = class {
 
         var events = require('events');
         this._eventEmitter = new events.EventEmitter();
-        this._COLORS = this.generateRandomColors();
+
 
         // FOLLOWING is example of detecting keyboard event + click event	
         // this.addMultiListener(document, 'keydown keyup click', function(event) {	
@@ -91,7 +91,7 @@ view.View = class {
                 s: saturation * 100,
                 v: value * 100
             });
-            colors.push(x.hexString());
+            colors.push(x.hex());
             hue += 0.2;
         }
         return colors;
@@ -419,6 +419,7 @@ view.View = class {
                 this._inputFileName     = path.basename(this._inputFilePath);
                 this._inputFileBaseName = path.parse(this._inputFileName).name;
                 this._inputFileExtName  = path.extname(this._inputFileName);
+                this._COLORS = this.generateRandomColors();
     
                 this._zoom = null;
     
