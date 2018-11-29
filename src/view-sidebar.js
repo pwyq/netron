@@ -322,6 +322,8 @@ class NodeCustomAttributeSidebar {
 
     addCustomAttribute(name, attribute, attrList, fileName, filePath) {
         var customAttrView = new NodeCustomAttributeView(name, attribute, attrList, fileName, filePath);
+        // TODO: add checking, like `float point` cannot be run on `apex`
+        // TODO: combine attribute JSON file with grouping attribute JSON file
         this._attributeView.push(customAttrView);
         var item = new NameValueView(attribute.key, customAttrView);
         this._attributes.push(item);

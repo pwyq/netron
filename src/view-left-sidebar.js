@@ -114,7 +114,7 @@ class GroupModeSidebar {
 
         this._startNodeButtomElement = document.createElement('button');
         this._startNodeButtomElement.setAttribute('id', 'start-group-new-subgraph');
-        this._startNodeButtomElement.innerHTML = 'Start Node';
+        this._startNodeButtomElement.innerHTML = 'Start Node';  // TODO: add keyboard shortcut
         this._startNodeButtomElement.addEventListener('click', () => {
             if (!document.getElementById('left-sidebar-start-value-id')) {
                 this.startHandler();
@@ -211,10 +211,10 @@ class GroupModeSidebar {
         var s = sortedArray.indexOf(this._startNode);
         var e = sortedArray.indexOf(this._endNode);
         if (s >= e) {
-            this._host.realError('Invalid Error', 'Start Node must be before End Node');
+            this._host.realError('Invalid Error', 'Start Node must be before End Node.');
             return;
         }
-        for (s; s <= e; s++) {
+        for (s; s < e; s++) {
             this.appendNode(sortedArray[s]);
         }
     }
