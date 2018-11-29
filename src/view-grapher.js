@@ -228,19 +228,17 @@ grapher.Renderer = class {
 };
 
 grapher.NodeElement = class {
-
-    constructor(host, inputFileName) {
+    constructor(host, inputFileName, colors) {
         this._host = host;
         this._items = [];
         this._attributes = [];
+        this._colors = colors;
 
         var name = inputFileName + '_subgraph_grouping.json';
         if (this._host.getIsDev()) {
-            // var filePath = path.join(__dirname, '../user_json/config_json', 'airunner_config.json');
             this._filePath = path.join(__dirname, '../user_json/graph_grouping_json', name);
         }
         else {
-            // var filePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_config.json');
             this._filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', name);
         }
     }
@@ -461,7 +459,6 @@ grapher.NodeElement = class {
             var groupingObj = JSON.parse(raw);
             var keys = Object.keys(groupingObj);
             var obj = groupingObj[keys[0]];
-            var COLORS = ['black', 'yellow', 'blue', 'green', 'red'];
             // Supports (tested): .h5, .pb, .caffemodel, .onnx
             this._items.forEach((item) => {
                 if (item.identifier) {
@@ -469,7 +466,7 @@ grapher.NodeElement = class {
                 }
                 for (var i = 0; i < obj.length; i++) {
                     var nodes = obj[i].nodes;
-                    var x = COLORS.pop();
+                    var x = this._colors[i];
                     for (var j = 0; j < nodes.length; j++) {
                         if (nodes[j] == item.title) {
                             borderElement.style.setProperty('stroke', x);
@@ -478,20 +475,6 @@ grapher.NodeElement = class {
                     }
                 }
             });
-            // this._items.forEach((item) => {
-            //     if (x.red.includes(item.content)) {
-            //         borderElement.style.setProperty('stroke', 'red');
-            //         borderElement.style.setProperty('stroke-width', '5');
-            //     }
-            //     else if (x.blue.includes(item.content)) {
-            //         borderElement.style.setProperty('stroke', 'blue');
-            //         borderElement.style.setProperty('stroke-width', '5');
-            //     }
-            //     else if (x.green.includes(item.content)) {
-            //         borderElement.style.setProperty('stroke', 'green');
-            //         borderElement.style.setProperty('stroke-width', '5');
-            //     }
-            // });
         }
 
         rootElement.appendChild(borderElement);

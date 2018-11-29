@@ -62,6 +62,7 @@ view.View = class {
 
         var events = require('events');
         this._eventEmitter = new events.EventEmitter();
+        this._COLORS = this.generateRandomColors();
 
         // FOLLOWING is example of detecting keyboard event + click event	
         // this.addMultiListener(document, 'keydown keyup click', function(event) {	
@@ -71,6 +72,29 @@ view.View = class {
         //         console.log("ctrl key + right-click");	
         //     }	
         // });
+    }
+    
+    generateRandomColors() {
+        var color = require('color');
+        var ratio = 0.618033988749895;
+        var colors = [];
+
+        var hue = 0.1;
+        var saturation = 0.99;
+        var value = 0.99;
+        var x = null;
+        for (var i = 0; i < 100; i++) {
+            hue += ratio;
+            hue %= 1;
+            x = color({
+                h: hue * 360,
+                s: saturation * 100,
+                v: value * 100
+            });
+            colors.push(x.hexString());
+            hue += 0.2;
+        }
+        return colors;
     }
 
     addMultiListener(element, eventNames, listener) {
@@ -438,7 +462,7 @@ view.View = class {
                 }
 
                 nodes.forEach((node) => {
-                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName);
+                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName, this._COLORS);
 
                     if (node.function) {
                         formatter.addItem('+', null, [ 'node-item-function' ], null, () => { 
@@ -708,7 +732,7 @@ view.View = class {
                     });
                     var types = input.connections.map(connection => connection.type || '').join('\n');
     
-                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName);
+                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName, this._COLORS);
                     formatter.addItem(input.name, null, [ 'graph-item-input' ], types, () => {
                         this.showModelProperties();
                     });
@@ -726,7 +750,7 @@ view.View = class {
                     });
                     var types = output.connections.map(connection => connection.type || '').join('\n');
             
-                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName);
+                    var formatter = new grapher.NodeElement(this._host, this._inputFileBaseName, this._COLORS);
                     formatter.addItem(output.name, null, [ 'graph-item-output' ], types, () => {
                         this.showModelProperties();
                     });
