@@ -103,7 +103,7 @@ var _addNodeToSubgraph = function addNodeToSubgraph(data, graphName, subgraphNam
   var _subgraph = _findSubgraph(data, graphName, subgraphName);
   if (!_isObjectEmpty(_subgraph)) {
       var subgraph = _subgraph[0];
-      if (!subgraph.nodes.hasOwnProperty(node)) {
+      if (!subgraph.nodes.includes(node)) {
           subgraph.nodes.push(node);
           isAdded = true;
       }
@@ -223,43 +223,43 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
 // var json  = JSON.stringify(graphObj, null , 2);
 // fs.writeFileSync(inputPath, json);
 
-//========= TEST (layer grouping)
+// // ========= TEST (layer grouping)
 // const path = require('path');
 // var fs = require('fs');
-// var inputFileName = 'FREESPACE_graph';
+// var inputFileName = 'tttttttt';
 // var outputFileName = inputFileName + '_subgraph_grouping.json';
-// var inputPath = path.join('../graph_grouping_json', outputFileName);
+// var inputPath = path.join('test', outputFileName);
 
-// if (isGraphEmpty(inputPath)) {
-//     var graphObj = createGraph(inputFileName);
+// if (_isGraphEmpty(inputPath)) {
+//     var graphObj = _createGraph(inputFileName);
 // }
 // else {
 //     var raw = fs.readFileSync(inputPath);
 //     var graphObj = JSON.parse(raw);
 // }
 
-// addNewSubgraph(graphObj, inputFileName, 'defaultSubgraph_1');
-// addNewSubgraph(graphObj, inputFileName, 'defaultSubgraph_2');
-// addNewSubgraph(graphObj, inputFileName, 'defaultSubgraph_3');
-// addNewSubgraph(graphObj, inputFileName, 'defaultSubgraph_3');
+// _addNewSubgraph(graphObj, inputFileName, 'defaultSubgraph_1');
+// _addNewSubgraph(graphObj, inputFileName, 'defaultSubgraph_2');
+// _addNewSubgraph(graphObj, inputFileName, 'defaultSubgraph_3');
+// _addNewSubgraph(graphObj, inputFileName, 'defaultSubgraph_3');
 
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm/conv');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/maxpool/MaxPool');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm/conv');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/conv/BatchNorm/FusedBatchNorm');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_1', 'down1_1/maxpool/MaxPool');
 
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'down1_1/concat');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'nbottleneck1_2/conv_a_3x1/BiasAdd/conv');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'nbottleneck1_2/conv_a_3x1/BiasAdd/conv');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'nbottleneck1_2/conv_a_3x1/BiasAdd');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'nbottleneck1_2/conv_a_3x1/BiasAdd');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'down1_1/concat');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'nbottleneck1_2/conv_a_3x1/BiasAdd/conv');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'nbottleneck1_2/conv_a_3x1/BiasAdd/conv');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'nbottleneck1_2/conv_a_3x1/BiasAdd');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_2', 'nbottleneck1_2/conv_a_3x1/BiasAdd');
 
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_a_1x3/BatchNorm/FusedBatchNorm');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_a_1x3/BatchNorm/FusedBatchNorm');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_a_1x3/BatchNorm/FusedBatchNorm/conv');
-// addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_b_3x1/BiasAdd/conv');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_a_1x3/BatchNorm/FusedBatchNorm');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_a_1x3/BatchNorm/FusedBatchNorm');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_a_1x3/BatchNorm/FusedBatchNorm/conv');
+// _addNodeToSubgraph(graphObj, inputFileName, 'defaultSubgraph_3', 'nbottleneck1_2/conv_b_3x1/BiasAdd/conv');
 
 // var json = JSON.stringify(graphObj, null , 2);
 // fs.writeFileSync(inputPath, json);
