@@ -975,6 +975,7 @@ view.View = class {
             }
         }
 
+        jMan.mergeJSON(this._inputFileBaseName);
         var json = JSON.stringify(graphObj, null , 2);
         fs.writeFileSync(filePath, json);
     }

@@ -161,6 +161,7 @@ class GroupModeSidebar {
             return;
         }
         else {
+            jMan.splitJSON(this._fileName);
             var raw = fs.readFileSync(this._filePath);
             var graphObj = JSON.parse(raw);
         }
@@ -277,6 +278,7 @@ class GroupModeSidebar {
 
         var json = JSON.stringify(graphObj, null , 2);
         fs.writeFileSync(this._filePath, json);
+        jMan.mergeJSON(this._fileName);
         this._host.info('File Saved', 'Group setting is saved.');
     }
 

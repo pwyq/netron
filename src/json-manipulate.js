@@ -165,11 +165,29 @@ var _findNodeInFinal = function findNodeInFinal(finalList, nodeName) {
   return _res;
 }
 
+function isDev() {
+  var res = ('ELECTRON_IS_DEV' in process.env) ?
+  (parseInt(process.env.ELECTRON_IS_DEV, 10) === 1) :
+  (process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath));
+  return res;
+}
+
+function getPath(folder, file) {
+  var res = '';
+  if (isDev()) {
+    res = path.join(__dirname, folder, file);
+  }
+  else {
+    res = path.join(process.resourcesPath, folder, file);
+  }
+  return res;
+}
+
 var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
   var subPath = '';
   if (typeof(subFilePath) !== 'string') {
     var subgraphGroupFile = fileName + '_subgraph_grouping.json';
-    subPath = path.join('../user_json/graph_grouping_json', subgraphGroupFile);
+    subPath = getPath('../user_json/graph_grouping_json', subgraphGroupFile);
   }
   else {
     subPath = subFilePath;
@@ -178,7 +196,7 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
   var cusPath = '';
   if (typeof(cusFilePath) !== 'string') {
     var customAttrFile = fileName + '_custom_attributes.json';
-    cusPath = path.join('../user_json/custom_json', customAttrFile);
+    cusPath = getPath('../user_json/custom_json', customAttrFile);
   }
   else {
     cusPath = cusFilePath;
@@ -191,7 +209,7 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
   }
 
   var outputFileName = fileName + '_final.json';
-  var outPath = path.join('../user_json/final_json', outputFileName);
+  var outPath = getPath('../user_json/final_json', outputFileName);
   if (!fs.existsSync(path.dirname(outPath))) {
     fs.mkdirSync(path.dirname(outPath));
   }
@@ -253,7 +271,7 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
 
 var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
   var finalFile = fileName + '_final.json';
-  var finPath = path.join('../user_json/final_json', finalFile);
+  var finPath = getPath('../user_json/final_json', finalFile);
   if (_isGraphEmpty(finPath)) {
     return;
   }
@@ -261,7 +279,7 @@ var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
   var subOutPath = '';
   if (typeof(subFilePath) !== 'string') {
     var subgraphGroupFile = fileName + '_subgraph_grouping.json';
-    subOutPath = path.join('../user_json/graph_grouping_json', subgraphGroupFile);
+    subOutPath = getPath('../user_json/graph_grouping_json', subgraphGroupFile);
   }
   else {
     subOutPath = subFilePath;
@@ -273,7 +291,7 @@ var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
   var cusOutPath = '';
   if (typeof(cusFilePath) !== 'string') {
     var customAttrFile = fileName + '_custom_attributes.json';
-    cusOutPath = path.join('../user_json/custom_json', customAttrFile);
+    cusOutPath = getPath('../user_json/custom_json', customAttrFile);
   }
   else {
     cusOutPath = cusFilePath;
