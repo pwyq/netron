@@ -287,18 +287,20 @@ class NodeCustomAttributeSidebar {
 
     readJSON() {
         if (this._host.getIsDev()) {
-            var filePath = path.join(__dirname, '../user_json/config_json', 'airunner_custom_attributes.json');
+            var cusConfigFilePath = path.join(__dirname, '../user_json/config_json', 'airunner_custom_attributes.json');
+            // var checklistFilePath = path.join(__dirname, '../user_json/config_json', 'airunner_check_list.json');
         }
         else {
-            var filePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_custom_attributes.json');
+            var cusConfigFilePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_custom_attributes.json');
+            // var cusConfigFilePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_check_list.json');
         }
 
-        if (jMan.isGraphEmpty(filePath)) {
+        if (jMan.isGraphEmpty(cusConfigFilePath)) {
             this._host.realError('Invalid Error', '\"airunner_custom_attributes.json\" not exists!');
             return;
         }
         else {
-            var raw = fs.readFileSync(filePath);
+            var raw = fs.readFileSync(cusConfigFilePath);
             this._airunnerConfigObj = JSON.parse(raw);
         }
         this._airunnerConfigKeys = Object.keys(this._airunnerConfigObj);
@@ -323,7 +325,6 @@ class NodeCustomAttributeSidebar {
     addCustomAttribute(name, attribute, attrList, fileName, filePath) {
         var customAttrView = new NodeCustomAttributeView(name, attribute, attrList, fileName, filePath);
         // TODO: add checking, like `float point` cannot be run on `apex`
-        // TODO: combine attribute JSON file with grouping attribute JSON file
         this._attributeView.push(customAttrView);
         var item = new NameValueView(attribute.key, customAttrView);
         this._attributes.push(item);
@@ -388,7 +389,6 @@ class NodeCustomAttributeView {
             return val;
         }
         else {
-            jMan.splitJSON(this._fileName);
             var raw = fs.readFileSync(this._filePath);
             var graphObj = JSON.parse(raw);
         }
@@ -412,10 +412,16 @@ class NodeCustomAttributeView {
         return [ this._element ];
     }
 
+    test() {
+        // log current node custom settings
+
+    }
+
     toggle() {
         if (this._expander.innerText == '+') {
             this._expander.innerText = '-';
 
+            // TODO TODO: check list here
             var attrFullList = this._attrList;
             for (var i = 0; i < attrFullList.length; i++) { 
                 var attrLine = document.createElement('li');
