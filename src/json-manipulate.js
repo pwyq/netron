@@ -169,6 +169,178 @@ var _addAttribute = function addAttribute(data, graphName, nodeName, newAttr) {
   }
   return isAdded;
 }
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Merge & Split JSON
+// Merge: (subgraph grouping + custom attributes) -> final
+// Split: final -> (subgraph grouping + custom attributes)
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+var _findNodeInSubgraph = function findNodeInSubgraph(subgraphList, nodeName) {
+  for (var i = 0; i < subgraphList.length; i++) {
+    var nodeList = subgraphList[i].nodes;
+    if (nodeList.includes(nodeName)) {
+      return subgraphList[i].subgraphName;
+    }
+  }
+  return '';
+}
+
+var _findNodeInFinal = function findNodeInFinal(finalList, nodeName) {
+  // not including noGroup
+  var _res = [];
+  for (var i = 0; i < finalList.length; i++) {
+    _res = finalList[i].nodes.filter(function (el) {
+      return el.id == nodeName;
+    });
+  }
+  return _res;
+}
+
+var _mergeJSON = function mergeJSON(fileName) {
+  var subgraphGroupFile = fileName + '_subgraph_grouping.json';
+  var customAttrFile = fileName + '_custom_attributes.json';
+  var subPath = path.join('../user_json/graph_grouping_json', subgraphGroupFile);
+  var cusPath = path.join('../user_json/custom_json', customAttrFile);
+  var isSubEmpty = _isGraphEmpty(subPath);
+  var isCusEmpty = _isGraphEmpty(cusPath);
+  if (isSubEmpty && isCusEmpty) {
+    return;
+  }
+
+  var outputFileName = fileName + '_final.json';
+  var outPath = path.join('../user_json/final_json', outputFileName);
+  if (!fs.existsSync(path.dirname(outPath))) {
+    fs.mkdirSync(path.dirname(outPath));
+  }
+
+  if (!isSubEmpty && isCusEmpty) {
+    fs.copyFile(subPath, outPath, (err) => {
+      if (err) throw err;
+    });
+  }
+  else if (isSubEmpty && !isCusEmpty) {
+    var graphObj = _createGraph(fileName);
+    graphObj.noGroup = [];
+    var cusRaw = fs.readFileSync(cusPath);
+    var cusList = JSON.parse(cusRaw)[fileName];
+  
+    for (var i = 0; i < cusList.length; i++) {
+      graphObj.noGroup.push(cusList[i]);
+    }
+    var json  = JSON.stringify(graphObj, null , 2);
+    fs.writeFileSync(outPath, json);
+  }
+  else if (!isSubEmpty && !isCusEmpty) {
+    var graphObj = _createGraph(fileName);
+    graphObj.noGroup = [];
+    var cusRaw = fs.readFileSync(cusPath);
+    var subRaw = fs.readFileSync(subPath);
+    var cusList = JSON.parse(cusRaw)[fileName];
+    var subList = JSON.parse(subRaw)[fileName];
+  
+    for (var i = 0; i < cusList.length; i++) {
+      var res = _findNodeInSubgraph(subList, cusList[i].id);
+      if (res !== '') {
+        _addNewSubgraph(graphObj, fileName, res);
+        var mysub = _findSubgraph(graphObj, fileName, res)[0];
+        mysub.nodes.push(cusList[i]);
+      }
+      else {
+        graphObj.noGroup.push(cusList[i]);
+      }
+    }
+  
+    for (var i = 0; i < subList.length; i++) {
+      for (var j = 0; j < subList[i].nodes.length; j++) {
+        if (!graphObj.noGroup.includes(subList[i].nodes[j])) {
+          var res = _findNodeInFinal(graphObj[fileName], subList[i].nodes[j]);
+          if (res.length == 0) {
+            var newNode = { id: subList[i].nodes[j], attrs: {} };
+            _addNewSubgraph(graphObj, fileName, subList[i].subgraphName);
+            var mysub = _findSubgraph(graphObj, fileName, subList[i].subgraphName)[0];
+            mysub.nodes.push(newNode);
+          }
+        }
+      }
+    }
+    var json  = JSON.stringify(graphObj, null , 2);
+    fs.writeFileSync(outPath, json);
+  }
+}
+
+var _splitJSON = function splitJSON(fileName) {
+  var finalFile = fileName + '_final.json';
+  var finPath = path.join('../user_json/final_json', finalFile);
+  if (_isGraphEmpty(finPath)) {
+    return;
+  }
+
+  var subgraphGroupFile = fileName + '_subgraph_grouping.json';
+  var subOutPath = path.join('../user_json/graph_grouping_json', subgraphGroupFile);
+  if (!fs.existsSync(path.dirname(subOutPath))) {
+    fs.mkdirSync(path.dirname(subOutPath));
+  }
+
+  var customAttrFile = fileName + '_custom_attributes.json';
+  var cusOutPath = path.join('../user_json/custom_json', customAttrFile);
+  if (!fs.existsSync(path.dirname(cusOutPath))) {
+    fs.mkdirSync(path.dirname(cusOutPath));
+  }
+  
+  // Start spliting JSON
+  var finRaw = fs.readFileSync(finPath);
+  var finObj = JSON.parse(finRaw);
+
+  var graphLen = finObj[fileName].length;
+  var noGroupLen = (finObj.noGroup) ? finObj.noGroup.length : 0;
+  if (graphLen === 0 && noGroupLen === 0) {
+    return;
+  }
+  else if (graphLen === 0 && noGroupLen !== 0) {
+    var graphObj = _createGraph(fileName);
+    graphObj[fileName] = finObj.noGroup;
+    var json  = JSON.stringify(graphObj, null , 2);
+    fs.writeFileSync(cusOutPath, json);
+  }
+  else if (graphLen !== 0 && noGroupLen === 0) {
+    var graphObj = _createGraph(fileName);
+    var finList = finObj[fileName];
+    for (var i = 0; i < finList.length; i++) {
+      _addNewSubgraph(graphObj, fileName, finList[i].subgraphName);
+      var nodeList = finList[i].nodes;
+      for (var j = 0; j < nodeList.length; j++) {
+        _addNodeToSubgraph(graphObj, fileName, finList[i].subgraphName, nodeList[j].id);
+      }
+    }
+    var json  = JSON.stringify(graphObj, null , 2);
+    fs.writeFileSync(subOutPath, json);
+  }
+  else if (graphLen !== 0 && noGroupLen !== 0) {
+    // put everything in group to subJSON
+    // put everything that has attributes AND noGroup's node to cusJSON
+    var subObj = _createGraph(fileName);
+    var cusObj = _createGraph(fileName);
+    cusObj[fileName] = finObj.noGroup;
+    
+    var finList = finObj[fileName];
+    for (var i = 0; i < finList.length; i++) {
+      _addNewSubgraph(subObj, fileName, finList[i].subgraphName);
+      var nodeList = finList[i].nodes;
+      for (var j = 0; j < nodeList.length; j++) {
+        _addNodeToSubgraph(subObj, fileName, finList[i].subgraphName, nodeList[j].id);
+        if (!_isObjectEmpty(nodeList[j].attrs)) {
+          cusObj[fileName].push(nodeList[j]);
+        }
+      }
+    }
+    var subJSON = JSON.stringify(subObj, null, 2);
+    fs.writeFileSync(subOutPath, subJSON);
+    var cusJSON = JSON.stringify(cusObj, null, 2);
+    fs.writeFileSync(cusOutPath, cusJSON);
+  }
+}
+
   
 if (typeof module !== 'undefined' && typeof module.exports === 'object') {
   module.exports.createGraph       = _createGraph;
@@ -187,6 +359,9 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
 
   // module.exports.addNewConnection    = _addNewConnection;
   // module.exports.addNodeToConnection = _addNodeToConnection;
+
+  module.exports.mergeJSON = _mergeJSON;
+  module.exports.splitJSON = _splitJSON;
 }
   
   
@@ -263,3 +438,11 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
 
 // var json = JSON.stringify(graphObj, null , 2);
 // fs.writeFileSync(inputPath, json);
+
+// // ================================================ TEST
+// const path = require('path');
+// var fs = require('fs');
+// var inputFileName = 'model';
+// // _mergeJSON(inputFileName);
+// // mergeJSON('model');
+// _splitJSON('model');
