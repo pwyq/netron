@@ -203,12 +203,7 @@ view.View = class {
     groupNodeMode() {
         if (this._activeGraph) {
             var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
-            if (this._host.getIsDev()) {
-                var filePath = path.join(__dirname, '../user_json/graph_grouping_json', outputFileName);
-            }
-            else {
-                var filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', outputFileName);
-            }          
+            var filePath = this.getPath('user_json/graph_grouping_json', outputFileName);
 
             var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, this._graph);
             // var windowWidth = this.getSidebarWindowWidth();
@@ -422,6 +417,8 @@ view.View = class {
                 this._inputFileBaseName = path.parse(this._inputFileName).name;
                 this._inputFileExtName  = path.extname(this._inputFileName);
                 this._COLORS = this.generateRandomColors();
+
+                this._cleanFiles();
     
                 this._zoom = null;
     
@@ -668,7 +665,6 @@ view.View = class {
                                         attributeValue = attributeValue.substring(0, 25) + '...';
                                     }
                                     formatter.addAttribute(attribute.name, attributeValue, attribute.type);
-
                                     // TODO: load custom attribute here?
                                 }
                             });
@@ -856,12 +852,6 @@ view.View = class {
                     }
                 }
                 this._graph = dag;
-                /* // FOR DEBUGGING
-                var t = dagre.graphlib.json.write(this._graph);
-                var json  = JSON.stringify(t, null , 2);
-                var filePath = path.join(__dirname, '../user_json/dag_debug.json');
-                fs.writeFileSync(filePath, json);
-                */
             }
         }
         catch (err) {
@@ -934,14 +924,54 @@ view.View = class {
         }
     }
 
-    showCustomAttributes(node, nodeID) {
-        var outputFileName = this._inputFileBaseName + '_custom_attributes.json';
+    _cleanFiles() {
+        var subPath = this.getPath('user_json/graph_grouping_json');
+        fs.readdir(subPath, (err, files) => {
+            if (err) throw err;
+            for (const file of files) {
+                fs.unlink(path.join(subPath, file), err => {
+                    if (err) throw err;
+                });
+            }
+        });
+
+        var cusPath = this.getPath('user_json/custom_json');
+        fs.readdir(cusPath, (err, files) => {
+            if (err) throw err;
+            for (const file of files) {
+                fs.unlink(path.join(cusPath, file), err => {
+                    if (err) throw err;
+                });
+            }
+        });
+    }
+    
+    splitJSON(data) {
+        var file = path.basename(data).replace('_config.json', '');
+        // TODO, modify splitJSON so it takes path directly
+        console.log('file = ' + file);
+        console.log('data = ' + data);
+        jMan.splitJSON(file);
+        var msg = data + ' is loaded.';
+        this._host.info('Load Configuration', msg);
+    }
+
+    getPath(folder, file) {
+        var filePath = '';
+        var f = (file) ? file : '';
         if (this._host.getIsDev()) {
-            var filePath = path.join(__dirname, '../user_json/custom_json', outputFileName);
+            filePath = path.join(__dirname, '..', folder, f);
         }
         else {
-            var filePath = path.join(process.resourcesPath, 'user_json/custom_json', outputFileName);
+            // https://github.com/electron-userland/electron-builder/issues/751
+            filePath = path.join(process.resourcesPath, folder, f);
         }
+        return filePath;
+    }
+
+    showCustomAttributes(node, nodeID) {
+        var outputFileName = this._inputFileBaseName + '_custom_attributes.json';
+        var filePath = this.getPath('user_json/custom_json', outputFileName);
         if (node) {
             var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, this._inputFileBaseName, filePath);
             view.on('custom-attr-sidebar', (sender, cb) => {
@@ -975,7 +1005,6 @@ view.View = class {
             }
         }
 
-        jMan.mergeJSON(this._inputFileBaseName);
         var json = JSON.stringify(graphObj, null , 2);
         fs.writeFileSync(filePath, json);
     }
@@ -1088,13 +1117,7 @@ view.View = class {
             }
 
             var execFile = require('child_process').execFile;
-            if (this._host.getIsDev()) {
-                var exe_path = path.join(__dirname, '../python_scripts/dist', exeSubPath);
-            }
-            else {
-                // https://github.com/electron-userland/electron-builder/issues/751
-                var exe_path = path.join(process.resourcesPath, 'python_scripts/dist', exeSubPath)
-            }
+            var exe_path = this.getPath('python_scripts/dist', exeSubPath);
 
             if (extension == 'txt') {
                 var parameters = [outputFilePath, this._inputFilePath, 'txt'];    // TODO: 3rd arg is redundant

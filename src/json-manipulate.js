@@ -139,9 +139,9 @@ var _addAttribute = function addAttribute(data, graphName, nodeName, newAttr) {
 // Merge & Split JSON
 //  - Supports user defined grouping json/custom attr json paths;
 //    - if those are undefined, will use default paths
-//    - final-json always stores in /user_json/final_json
-// Merge: (subgraph grouping + custom attributes) -> final
-// Split: final -> (subgraph grouping + custom attributes)
+//    - config-json always stores in /user_json/model_config_json
+// Merge: (subgraph grouping + custom attributes) -> config
+// Split: config -> (subgraph grouping + custom attributes)
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 var _findNodeInSubgraph = function findNodeInSubgraph(subgraphList, nodeName) {
@@ -154,11 +154,11 @@ var _findNodeInSubgraph = function findNodeInSubgraph(subgraphList, nodeName) {
   return '';
 }
 
-var _findNodeInFinal = function findNodeInFinal(finalList, nodeName) {
+var _findNodeInConfig = function findNodeInConfig(configList, nodeName) {
   // not including noGroup
   var _res = [];
-  for (var i = 0; i < finalList.length; i++) {
-    _res = finalList[i].nodes.filter(function (el) {
+  for (var i = 0; i < configList.length; i++) {
+    _res = configList[i].nodes.filter(function (el) {
       return el.id == nodeName;
     });
   }
@@ -175,7 +175,7 @@ function isDev() {
 function getPath(folder, file) {
   var res = '';
   if (isDev()) {
-    res = path.join(__dirname, folder, file);
+    res = path.join(__dirname, '..', folder, file);
   }
   else {
     res = path.join(process.resourcesPath, folder, file);
@@ -187,7 +187,7 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
   var subPath = '';
   if (typeof(subFilePath) !== 'string') {
     var subgraphGroupFile = fileName + '_subgraph_grouping.json';
-    subPath = getPath('../user_json/graph_grouping_json', subgraphGroupFile);
+    subPath = getPath('user_json/graph_grouping_json', subgraphGroupFile);
   }
   else {
     subPath = subFilePath;
@@ -196,7 +196,7 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
   var cusPath = '';
   if (typeof(cusFilePath) !== 'string') {
     var customAttrFile = fileName + '_custom_attributes.json';
-    cusPath = getPath('../user_json/custom_json', customAttrFile);
+    cusPath = getPath('user_json/custom_json', customAttrFile);
   }
   else {
     cusPath = cusFilePath;
@@ -208,8 +208,8 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
     return;
   }
 
-  var outputFileName = fileName + '_final.json';
-  var outPath = getPath('../user_json/final_json', outputFileName);
+  var outputFileName = fileName + '_config.json';
+  var outPath = getPath('user_json/model_config_json', outputFileName);
   if (!fs.existsSync(path.dirname(outPath))) {
     fs.mkdirSync(path.dirname(outPath));
   }
@@ -254,7 +254,7 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
     for (var i = 0; i < subList.length; i++) {
       for (var j = 0; j < subList[i].nodes.length; j++) {
         if (!graphObj.noGroup.includes(subList[i].nodes[j])) {
-          var res = _findNodeInFinal(graphObj[fileName], subList[i].nodes[j]);
+          var res = _findNodeInConfig(graphObj[fileName], subList[i].nodes[j]);
           if (res.length == 0) {
             var newNode = { id: subList[i].nodes[j], attrs: {} };
             _addNewSubgraph(graphObj, fileName, subList[i].subgraphName);
@@ -270,8 +270,8 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
 }
 
 var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
-  var finalFile = fileName + '_final.json';
-  var finPath = getPath('../user_json/final_json', finalFile);
+  var configFile = fileName + '_config.json';
+  var finPath = getPath('user_json/model_config_json', configFile);
   if (_isGraphEmpty(finPath)) {
     return;
   }
@@ -279,7 +279,7 @@ var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
   var subOutPath = '';
   if (typeof(subFilePath) !== 'string') {
     var subgraphGroupFile = fileName + '_subgraph_grouping.json';
-    subOutPath = getPath('../user_json/graph_grouping_json', subgraphGroupFile);
+    subOutPath = getPath('user_json/graph_grouping_json', subgraphGroupFile);
   }
   else {
     subOutPath = subFilePath;
@@ -291,7 +291,7 @@ var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
   var cusOutPath = '';
   if (typeof(cusFilePath) !== 'string') {
     var customAttrFile = fileName + '_custom_attributes.json';
-    cusOutPath = getPath('../user_json/custom_json', customAttrFile);
+    cusOutPath = getPath('user_json/custom_json', customAttrFile);
   }
   else {
     cusOutPath = cusFilePath;

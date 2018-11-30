@@ -372,6 +372,13 @@ class Application {
                     submenu: menuRecentsTemplate
                 },
                 { type: 'separator' },
+                {
+                    id: 'file.load-config',
+                    label: 'Load &Configuration',
+                    accelerator: 'CmdOrCtrl+L',
+                    click: () => this.execute('load-config', null)
+                },
+                { type: 'separator' },
                 { 
                     id: 'file.export',
                     label: '&Export Picture',
@@ -548,6 +555,9 @@ class Application {
         });
 
         var commandTable = {};
+        commandTable['file.load-config'] = {
+            enabled: (context) => { return context.view && context.view.path ? true : false; }
+        };
         commandTable['file.export'] = {
             enabled: (context) => { return context.view && context.view.path ? true : false; }
         };

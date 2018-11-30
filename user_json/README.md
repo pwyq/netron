@@ -1,11 +1,11 @@
 # User JSON files
 
-## Configuration JSON files
+## AIRunner Configuration JSON files
 - Stores developer-defined configuration settings
 - Do not change the file name
 
-## Final JSON files
-- This directory stores final JSON files, where each file combines selected custom attributes JSON file and group grouping JSON file
+## Model Configuration JSON files
+- This directory stores model configuration JSONs, where each file combines selected custom attributes JSON file and group grouping JSON file
 
 ## Custom Attributes JSON files
 - Stores user-defined custom attributes settings

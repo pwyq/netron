@@ -71,6 +71,23 @@ host.ElectronHost = class {
         return this._isDev;
     }
 
+    _loadConfig() {
+        var showOpenDialogOptions = { 
+            properties: [ 'openFile' ], 
+            filters: [
+                { name: 'Load JSON Configuration',  extensions: [ 'json' ] }
+            ]
+        };
+        var {dialog} = electron.remote;
+        dialog.showOpenDialog(showOpenDialogOptions, (selectedFiles) => {
+            if (selectedFiles) {
+                selectedFiles.forEach((selectedFile) => {
+                    this._view.splitJSON(selectedFile);
+                });
+            }
+        });
+    }
+
     initialize(view) {
         this._view = view;
         this._view.show('Welcome');
@@ -78,6 +95,9 @@ host.ElectronHost = class {
         electron.ipcRenderer.on('open', (event, data) => {
             this._setFileName(data.file);
             this._openFile(data.file);
+        });
+        electron.ipcRenderer.on('load-config', (event, data) => {
+            this._loadConfig(data.file);
         });
         electron.ipcRenderer.on('export-pic', (event, data) => {
             this._view.export(data.file);

@@ -161,7 +161,6 @@ class GroupModeSidebar {
             return;
         }
         else {
-            jMan.splitJSON(this._fileName);
             var raw = fs.readFileSync(this._filePath);
             var graphObj = JSON.parse(raw);
         }
