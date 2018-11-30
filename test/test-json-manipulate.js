@@ -72,10 +72,13 @@
 // var json = JSON.stringify(graphObj, null , 2);
 // fs.writeFileSync(inputPath, json);
 
-// // ================================================ TEST
+// ================================================ TEST
 // const path = require('path');
 // var fs = require('fs');
+// var jMan = require('../src/json-manipulate');
 // var inputFileName = 'model';
-// // _mergeJSON(inputFileName);
-// // mergeJSON('model');
-// _splitJSON('model');
+// _mergeJSON(inputFileName);
+// mergeJSON('model');
+// jMan.mergeJSON('model');
+// jMan.splitJSON('model', './sub-a.json', './cus-a.json');
+// jMan.mergeJSON('model', './sub-a.json', './cus-a.json');

@@ -2,6 +2,9 @@
 
 // To test or debug this file, please use netron/test/test-json-manipulate.js
 
+// const path = require('path');
+// var fs = require('fs');
+
 var _createGraph = function createGraph(graphName) {
   var obj = {
     [graphName]: []
@@ -134,6 +137,9 @@ var _addAttribute = function addAttribute(data, graphName, nodeName, newAttr) {
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Merge & Split JSON
+//  - Supports user defined grouping json/custom attr json paths;
+//    - if those are undefined, will use default paths
+//    - final-json always stores in /user_json/final_json
 // Merge: (subgraph grouping + custom attributes) -> final
 // Split: final -> (subgraph grouping + custom attributes)
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -159,11 +165,25 @@ var _findNodeInFinal = function findNodeInFinal(finalList, nodeName) {
   return _res;
 }
 
-var _mergeJSON = function mergeJSON(fileName) {
-  var subgraphGroupFile = fileName + '_subgraph_grouping.json';
-  var customAttrFile = fileName + '_custom_attributes.json';
-  var subPath = path.join('../user_json/graph_grouping_json', subgraphGroupFile);
-  var cusPath = path.join('../user_json/custom_json', customAttrFile);
+var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
+  var subPath = '';
+  if (typeof(subFilePath) !== 'string') {
+    var subgraphGroupFile = fileName + '_subgraph_grouping.json';
+    subPath = path.join('../user_json/graph_grouping_json', subgraphGroupFile);
+  }
+  else {
+    subPath = subFilePath;
+  }
+
+  var cusPath = '';
+  if (typeof(cusFilePath) !== 'string') {
+    var customAttrFile = fileName + '_custom_attributes.json';
+    cusPath = path.join('../user_json/custom_json', customAttrFile);
+  }
+  else {
+    cusPath = cusFilePath;
+  }
+
   var isSubEmpty = _isGraphEmpty(subPath);
   var isCusEmpty = _isGraphEmpty(cusPath);
   if (isSubEmpty && isCusEmpty) {
@@ -231,21 +251,33 @@ var _mergeJSON = function mergeJSON(fileName) {
   }
 }
 
-var _splitJSON = function splitJSON(fileName) {
+var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
   var finalFile = fileName + '_final.json';
   var finPath = path.join('../user_json/final_json', finalFile);
   if (_isGraphEmpty(finPath)) {
     return;
   }
 
-  var subgraphGroupFile = fileName + '_subgraph_grouping.json';
-  var subOutPath = path.join('../user_json/graph_grouping_json', subgraphGroupFile);
+  var subOutPath = '';
+  if (typeof(subFilePath) !== 'string') {
+    var subgraphGroupFile = fileName + '_subgraph_grouping.json';
+    subOutPath = path.join('../user_json/graph_grouping_json', subgraphGroupFile);
+  }
+  else {
+    subOutPath = subFilePath;
+  }
   if (!fs.existsSync(path.dirname(subOutPath))) {
     fs.mkdirSync(path.dirname(subOutPath));
   }
 
-  var customAttrFile = fileName + '_custom_attributes.json';
-  var cusOutPath = path.join('../user_json/custom_json', customAttrFile);
+  var cusOutPath = '';
+  if (typeof(cusFilePath) !== 'string') {
+    var customAttrFile = fileName + '_custom_attributes.json';
+    cusOutPath = path.join('../user_json/custom_json', customAttrFile);
+  }
+  else {
+    cusOutPath = cusFilePath;
+  }
   if (!fs.existsSync(path.dirname(cusOutPath))) {
     fs.mkdirSync(path.dirname(cusOutPath));
   }
