@@ -234,12 +234,14 @@ grapher.NodeElement = class {
         this._attributes = [];
         this._colors = colors;
 
-        var name = inputFileName + '_subgraph_grouping.json';
-        if (this._host.getIsDev()) {
-            this._filePath = path.join(__dirname, '../user_json/graph_grouping_json', name);
-        }
-        else {
-            this._filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', name);
+        if (inputFileName) {
+            var name = inputFileName + '_subgraph_grouping.json';
+            if (this._host.getIsDev()) {
+                this._filePath = path.join(__dirname, '../user_json/graph_grouping_json', name);
+            }
+            else {
+                this._filePath = path.join(process.resourcesPath, 'user_json/graph_grouping_json', name);
+            }
         }
     }
 
@@ -300,7 +302,6 @@ grapher.NodeElement = class {
             var content = item.content;
             var handler = item.handler;
             var title = item.title;
-            // console.log('content = ' + content + ', handler = ' + handler + ', title = ' + title);
             if (item.classes) {
                 item.classes.forEach((className) => {
                     itemGroupClassList.push(className);
@@ -412,9 +413,6 @@ grapher.NodeElement = class {
             itemBox.path.setAttribute('d', this.roundedRect(0, 0, itemBox.width, itemBox.height, r1, r2, r3, r4));
             itemBox.text.setAttribute('x', itemBox.tx);
             itemBox.text.setAttribute('y', itemBox.ty);
-            // itemBox.group.setProperty('fill', 'yellow'); // error
-            // itemBox.path.style.setProperty('stroke', 'yellow');     // the vertical and the horizontal line... (and still see a black line)
-            // itemBox.path.style.setProperty('stroke-width', '5');
         });
 
         if (hasAttributes) {
@@ -423,9 +421,7 @@ grapher.NodeElement = class {
 
         itemBoxes.forEach((itemBox, index) => {
             if (index != 0) {
-                var lineElement = this.createElement('line');    // the vertical line that separate the upper and bottom part
-                // lineElement.style.setProperty('stroke', 'yellow');
-                // lineElement.style.setProperty('stroke-width', '5');
+                var lineElement = this.createElement('line');
                 lineElement.setAttribute('class', 'node');
                 lineElement.setAttribute('x1', itemBox.x);
                 lineElement.setAttribute('y1', 0);
@@ -435,9 +431,7 @@ grapher.NodeElement = class {
             }
         });
         if (hasAttributes) {
-            var lineElement = this.createElement('line');       // the horizontal line that separate the upper and bottom part
-            // lineElement.style.setProperty('stroke', 'yellow');
-            // lineElement.style.setProperty('stroke-width', '5');
+            var lineElement = this.createElement('line');
             lineElement.setAttribute('class', 'node');
             lineElement.setAttribute('x1', 0);
             lineElement.setAttribute('y1', itemHeight);
@@ -445,7 +439,6 @@ grapher.NodeElement = class {
             lineElement.setAttribute('y2', itemHeight);
             rootElement.appendChild(lineElement);
         }
-        // NOTE: try comment out and see; this just a boarder
         var borderElement = this.createElement('path');
         var borderClassList = [ 'node', 'border' ];
         if (this._controlDependencies) {

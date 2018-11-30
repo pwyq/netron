@@ -59,11 +59,11 @@ host.ElectronHost = class {
         return 'Electron';
     }
 
-    _setFileName(name) {
+    _setInputFilePath(name) {
         this._loadedFile = name;
     }
     
-    getFileName() {
+    getInputFilePath() {
         return this._loadedFile;
     }
 
@@ -93,11 +93,14 @@ host.ElectronHost = class {
         this._view.show('Welcome');
 
         electron.ipcRenderer.on('open', (event, data) => {
-            this._setFileName(data.file);
+            this._setInputFilePath(data.file);
             this._openFile(data.file);
         });
         electron.ipcRenderer.on('load-config', (event, data) => {
             this._loadConfig(data.file);
+        });
+        electron.ipcRenderer.on('clean-cache', (event, data) => {
+            this._view._cleanCache();
         });
         electron.ipcRenderer.on('export-pic', (event, data) => {
             this._view.export(data.file);

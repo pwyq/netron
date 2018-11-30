@@ -378,6 +378,11 @@ class Application {
                     accelerator: 'CmdOrCtrl+L',
                     click: () => this.execute('load-config', null)
                 },
+                {
+                    id: 'file.clean-cache',
+                    label: 'Clean &Cache',
+                    click: () => this.execute('clean-cache', null)
+                },
                 { type: 'separator' },
                 { 
                     id: 'file.export',
@@ -558,6 +563,9 @@ class Application {
         commandTable['file.load-config'] = {
             enabled: (context) => { return context.view && context.view.path ? true : false; }
         };
+        commandTable['file.clean-cache'] = {
+            enabled: (context) => { return context.view && context.view.path ? true : false; }
+        };
         commandTable['file.export'] = {
             enabled: (context) => { return context.view && context.view.path ? true : false; }
         };
@@ -620,7 +628,6 @@ class Application {
         }
         return file;
     }
-
 }
 
 class View {

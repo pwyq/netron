@@ -269,11 +269,11 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
   }
 }
 
-var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
-  var configFile = fileName + '_config.json';
-  var finPath = getPath('user_json/model_config_json', configFile);
+var _splitJSON = function splitJSON(filePath, subFilePath, cusFilePath) {
+  var fileName = path.basename(filePath).replace('_config.json', '');
+  var finPath = filePath;
   if (_isGraphEmpty(finPath)) {
-    return;
+    return false;
   }
 
   var subOutPath = '';
@@ -304,10 +304,10 @@ var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
   var finRaw = fs.readFileSync(finPath);
   var finObj = JSON.parse(finRaw);
 
-  var graphLen = finObj[fileName].length;
+  var graphLen = (finObj[fileName]) ? finObj[fileName].length: 0;
   var noGroupLen = (finObj.noGroup) ? finObj.noGroup.length : 0;
   if (graphLen === 0 && noGroupLen === 0) {
-    return;
+    return false;
   }
   else if (graphLen === 0 && noGroupLen !== 0) {
     var graphObj = _createGraph(fileName);
@@ -351,6 +351,7 @@ var _splitJSON = function splitJSON(fileName, subFilePath, cusFilePath) {
     var cusJSON = JSON.stringify(cusObj, null, 2);
     fs.writeFileSync(cusOutPath, cusJSON);
   }
+  return true;
 }
 
   

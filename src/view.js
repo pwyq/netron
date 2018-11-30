@@ -412,13 +412,10 @@ view.View = class {
                     graphElement.removeChild(graphElement.lastChild);
                 }
 
-                this._inputFilePath     = this._host.getFileName();
+                this._inputFilePath     = this._host.getInputFilePath();
                 this._inputFileName     = path.basename(this._inputFilePath);
-                this._inputFileBaseName = path.parse(this._inputFileName).name;
                 this._inputFileExtName  = path.extname(this._inputFileName);
                 this._COLORS = this.generateRandomColors();
-
-                this._cleanFiles();
     
                 this._zoom = null;
     
@@ -924,7 +921,7 @@ view.View = class {
         }
     }
 
-    _cleanFiles() {
+    _cleanCache() {
         var subPath = this.getPath('user_json/graph_grouping_json');
         fs.readdir(subPath, (err, files) => {
             if (err) throw err;
@@ -946,14 +943,17 @@ view.View = class {
         });
     }
     
-    splitJSON(data) {
-        var file = path.basename(data).replace('_config.json', '');
-        // TODO, modify splitJSON so it takes path directly
-        console.log('file = ' + file);
-        console.log('data = ' + data);
-        jMan.splitJSON(file);
-        var msg = data + ' is loaded.';
-        this._host.info('Load Configuration', msg);
+    splitJSON(inputPath) {
+        // THE CONFIGURATION FILE NAME MUST ENDED WITH '_config.json'
+        if (jMan.splitJSON(inputPath)) {
+            this._inputFileBaseName = path.basename(inputPath).replace('_config.json', '');
+            var msg = inputPath + ' is loaded.\nPlease refresh <F5> the page.';
+            this._host.info('Load Configuration', msg);
+        }
+        else {
+            var msg = 'Failed to load configuration file.\nPlease ensure file naming is correct and file is not empty.'
+            this._host.realError('Load Configuration Failed', msg);
+        }
     }
 
     getPath(folder, file) {
