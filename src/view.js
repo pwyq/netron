@@ -941,6 +941,7 @@ view.View = class {
                 });
             }
         });
+        this._host.info('Cache Cleaned', 'Cache cleaned successfully.');
     }
     
     splitJSON(inputPath) {

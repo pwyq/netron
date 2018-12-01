@@ -75,7 +75,7 @@ host.ElectronHost = class {
         var showOpenDialogOptions = { 
             properties: [ 'openFile' ], 
             filters: [
-                { name: 'Load JSON Configuration',  extensions: [ 'json' ] }
+                { name: 'JSON Config',  extensions: [ 'json' ] }
             ]
         };
         var {dialog} = electron.remote;

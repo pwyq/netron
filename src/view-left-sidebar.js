@@ -240,7 +240,7 @@ class GroupModeSidebar {
         else {
             var msg = '\"' + c + '\" nodes are added to \"' + this._selectedSubgraph.subgraphName + '\"';
         }
-        msg += '\n\nHint: don\'t forget to SAVE your settings :)';
+        msg += '\n\nHint: don\'t forget to "EXPORT"/"SAVE" your settings.';
         this._host.info('Nodes Added', msg);
     }
 
