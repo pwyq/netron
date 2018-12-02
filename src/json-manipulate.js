@@ -315,20 +315,7 @@ var _splitJSON = function splitJSON(filePath, subFilePath, cusFilePath) {
     var json  = JSON.stringify(graphObj, null , 2);
     fs.writeFileSync(cusOutPath, json);
   }
-  else if (graphLen !== 0 && noGroupLen === 0) {
-    var graphObj = _createGraph(fileName);
-    var finList = finObj[fileName];
-    for (var i = 0; i < finList.length; i++) {
-      _addNewSubgraph(graphObj, fileName, finList[i].subgraphName);
-      var nodeList = finList[i].nodes;
-      for (var j = 0; j < nodeList.length; j++) {
-        _addNodeToSubgraph(graphObj, fileName, finList[i].subgraphName, nodeList[j].id);
-      }
-    }
-    var json  = JSON.stringify(graphObj, null , 2);
-    fs.writeFileSync(subOutPath, json);
-  }
-  else if (graphLen !== 0 && noGroupLen !== 0) {
+  else if (graphLen !== 0) {
     // put everything in group to subJSON
     // put everything that has attributes AND noGroup's node to cusJSON
     var subObj = _createGraph(fileName);
