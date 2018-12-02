@@ -64,8 +64,8 @@ cd tools
 3. The configuration file naming must be `{your_preferred_filename}_config.json`; inside the `{}_config.json`, the first key name must also be the same as `{your_preferred_filename}`.
 
 # TODO
+- add NXP copyright
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
 - add custom attr to the main box (the white one)
 - test white-space path
 - change a group's attributes
-- support multiple settings

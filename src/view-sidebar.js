@@ -268,7 +268,6 @@ class NodeCustomAttributeSidebar {
             this.addHeader('Custom Attributes');
             attrList.forEach((attr) => {
                 var l = this._airunnerConfigObj[attr.key];
-                // this.addCustomAttribute(this._name, attr, l, this._fileName, this._filePath, this._forbigList);
                 this.addCustomAttribute(this._name, attr.key, l, this._fileName, this._filePath, this._forbigList);
             });
         }
@@ -577,7 +576,6 @@ class ValueTextView {
 }
 
 class NodeAttributeView {
-
     constructor(attribute) {
         this._attribute = attribute;
         this._element = document.createElement('div');

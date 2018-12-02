@@ -135,15 +135,14 @@ var _addAttribute = function addAttribute(data, graphName, nodeName, newAttr) {
   return isAdded;
 }
 
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Merge & Split JSON
-//  - Supports user defined grouping json/custom attr json paths;
-//    - if those are undefined, will use default paths
-//    - config-json always stores in /user_json/model_config_json
-// Merge: (subgraph grouping + custom attributes) -> config
-// Split: config -> (subgraph grouping + custom attributes)
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Merge & Split JSON
+  - Supports user defined grouping json/custom attr json paths;
+    - if those are undefined, will use default paths
+    - config-json always stores in /user_json/model_config_json
+  Merge: (subgraph grouping + custom attributes) -> config
+  Split: config -> (subgraph grouping + custom attributes)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 var _findNodeInSubgraph = function findNodeInSubgraph(subgraphList, nodeName) {
   for (var i = 0; i < subgraphList.length; i++) {
     var nodeList = subgraphList[i].nodes;

@@ -72,33 +72,350 @@ view.View = class {
         // });
     }
     
-    generateRandomColors() {
-        var color = require('color');
-        var ratio = 0.618033988749895;
-        var colors = [];
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Getter Methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-        var hue = 0.1;
-        var saturation = 0.99;
-        var value = 0.99;
-        var x = null;
-        for (var i = 0; i < 100; i++) {
-            hue += ratio;
-            hue %= 1;
-            x = color({
-                h: hue * 360,
-                s: saturation * 100,
-                v: value * 100
-            });
-            colors.push(x.hex());
-            hue += 0.2;
-        }
-        return colors;
+    get showNames() {
+        return this._showNames;
     }
 
-    addMultiListener(element, eventNames, listener) {
-        eventNames.split(' ').forEach(e => element.addEventListener(e, listener, false));
+    get showDetails() {
+        return this._showDetails;
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        File Manipulation methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    export(file) {
+        var extension = '';
+        var lastIndex = file.lastIndexOf('.');
+        if (lastIndex != -1) {
+            extension = file.substring(lastIndex + 1);
+        }
+        if (this._activeGraph && (extension == 'png' || extension == 'svg')) {
+            var graphElement = document.getElementById('graph');
+            var exportElement = graphElement.cloneNode(true);
+            this.applyStyleSheet(exportElement, 'view-grapher.css');
+            exportElement.setAttribute('id', 'export-pic');
+            exportElement.removeAttribute('width');
+            exportElement.removeAttribute('height');
+            exportElement.style.removeProperty('opacity');
+            exportElement.style.removeProperty('display');
+            var backgroundElement = exportElement.querySelector('#background');
+            var originElement = exportElement.querySelector('#origin');
+            originElement.setAttribute('transform', 'translate(0,0) scale(1)');
+            backgroundElement.removeAttribute('width');
+            backgroundElement.removeAttribute('height');
+    
+            var parentElement = graphElement.parentElement;
+            parentElement.insertBefore(exportElement, graphElement);
+            var size = exportElement.getBBox();
+            parentElement.removeChild(exportElement);
+            parentElement.removeChild(graphElement);
+            parentElement.appendChild(graphElement);
+
+            var delta = (Math.min(size.width, size.height) / 2.0) * 0.1;
+            var width = Math.ceil(delta + size.width + delta);
+            var height = Math.ceil(delta + size.height + delta);
+            originElement.setAttribute('transform', 'translate(' + delta.toString() + ', ' + delta.toString() + ') scale(1)');
+            exportElement.setAttribute('width', width);
+            exportElement.setAttribute('height', height);
+            backgroundElement.setAttribute('width', width);
+            backgroundElement.setAttribute('height', height);
+            backgroundElement.setAttribute('fill', '#fff');
+    
+            var data = new XMLSerializer().serializeToString(exportElement);
+    
+            if (extension == 'svg') {
+                this._host.export(file, new Blob([ data ], { type: 'image/svg' }));
+            }
+    
+            if (extension == 'png') {
+                var imageElement = new Image();
+                imageElement.onload = () => {
+                    var max = Math.max(width, height);
+                    var scale = ((max * 2.0) > 24000) ? (24000.0 / max) : 2.0;
+                    var canvas = document.createElement('canvas');
+                    canvas.width = Math.ceil(width * scale);
+                    canvas.height = Math.ceil(height * scale);    
+                    var context = canvas.getContext('2d');
+                    context.scale(scale, scale);
+                    context.drawImage(imageElement, 0, 0);
+                    document.body.removeChild(imageElement);
+                    canvas.toBlob((blob) => {
+                        this._host.export(file, blob);
+                    }, 'image/png');
+                };
+                imageElement.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(data)));
+                document.body.insertBefore(imageElement, document.body.firstChild);
+            }
+        }
+
+        if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
+            var outputFilePath = file;
+            var exeSubPath = '';
+            switch (this._inputFileExtName) {
+                case '.pb':
+                    exeSubPath = 'dumpPB/dumpPB.exe';
+                    break;
+                case '.onnx':
+                    exeSubPath = 'dumpONNX/dumpONNX.exe';
+                    break;
+                default:
+                    break;
+            }
+            if (exeSubPath == '') {
+                this._host.error('Invalid Error', 'Model Not Supported');
+                return;
+            }
+
+            var execFile = require('child_process').execFile;
+            var exe_path = this.getPath('python_scripts/dist', exeSubPath);
+
+            if (extension == 'txt') {
+                var parameters = [outputFilePath, this._inputFilePath, 'txt'];    // TODO: 3rd arg is redundant
+                execFile(exe_path, parameters, function(err, data) {
+                    if (err) {
+                        this._host.error('Python Error', err);
+                        return;
+                    }
+                    var msg = 'File has been exported to ' + outputFilePath;
+                    alert(msg);
+                });
+            }
+            if (extension == 'json') {
+                var parameters = [outputFilePath, this._inputFilePath, 'json'];   // TODO: 3rd arg is redundant
+                execFile(exe_path, parameters, function(err, data) {
+                    if (err) {
+                        this._host.error('Python Error', err);
+                        return;
+                    }
+                    var msg = 'File has been exported to ' + outputFilePath;
+                    alert(msg);
+                });
+            }
+        }
+    }
+
+    splitJSON(inputPath) {
+        // THE CONFIGURATION FILE NAME MUST ENDED WITH '_config.json'
+        if (jMan.splitJSON(inputPath)) {
+            this._inputFileBaseName = path.basename(inputPath).replace('_config.json', '');
+            var msg = inputPath + ' is loaded.\nPlease refresh <F5> the page.';
+            this._host.info('Load Configuration', msg);
+        }
+        else {
+            var msg = 'Failed to load configuration file.\nPlease ensure file naming is correct and file is not empty.'
+            this._host.realError('Load Configuration Failed', msg);
+        }
+    }
+
+    _cleanCache() {
+        var subPath = this.getPath('user_json/graph_grouping_json');
+        fs.readdir(subPath, (err, files) => {
+            if (err) throw err;
+            for (const file of files) {
+                fs.unlink(path.join(subPath, file), err => {
+                    if (err) throw err;
+                });
+            }
+        });
+
+        var cusPath = this.getPath('user_json/custom_json');
+        fs.readdir(cusPath, (err, files) => {
+            if (err) throw err;
+            for (const file of files) {
+                fs.unlink(path.join(cusPath, file), err => {
+                    if (err) throw err;
+                });
+            }
+        });
+        this._host.info('Cache Cleaned', 'Cache cleaned successfully.');
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        App Function methods
+            - better naming needed?
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    cut() {
+        document.execCommand('cut');
+    }
+
+    copy() {
+        document.execCommand('copy');
+    }
+
+    paste() {
+        document.execCommand('paste');
+    }
+
+    selectAll() {
+        document.execCommand('selectall');
+    }
+
+    zoomIn() {
+        if (this._zoom) {
+            this._zoom.scaleBy(d3.select(document.getElementById('graph')), 1.2);
+        }
+    }
+
+    zoomOut() {
+        if (this._zoom) {
+            this._zoom.scaleBy(d3.select(document.getElementById('graph')), 0.8);
+        }
+    }
+
+    resetZoom() { 
+        if (this._zoom) {
+            this._zoom.scaleTo(d3.select(document.getElementById('graph')), 1);
+        }
+    }
+
+    preventZoom(e) {
+        if (e.shiftKey || e.ctrlKey) {
+            e.preventDefault();
+        }
+    }
+
+    error(message, err) {
+        this._sidebar.close();
+        this._leftSidebar.close();
+        this._host.exception(err, false);
+        this._host.error(message, err.toString());
+        this.show('Welcome');
+    }
+
+    _on(event, callback) {
+        this._events = this._events || {};
+        this._events[event] = this._events[event] || [];
+        this._events[event].push(callback);
+    }
+
+    _raise(event, data) {
+        if (this._events && this._events[event]) {
+            this._events[event].forEach((callback) => {
+                callback(this, data);
+            });
+        }
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Find Mode related methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    find() {
+        if (this._activeGraph) {
+            this.clearSelection();
+            var graphElement = document.getElementById('graph');
+            var view = new FindSidebar(graphElement, this._activeGraph);
+            view.on('search-text-changed', (sender, text) => {
+                this._searchText = text;
+            });
+            view.on('select-channel', (sender, selection) => {
+                this._sidebar.close();
+                this.select(selection);
+            });
+            var windowWidth = this.getSidebarWindowWidth();
+            this._sidebar.open(view.content, 'Find', windowWidth.toString());
+            view.focus(this._searchText);
+        }
+    }
+
+    select(selection) {
+        this.clearSelection();
+        if (selection && selection.length > 0) {
+            var graphElement = document.getElementById('graph');
+            var graphRect = graphElement.getBoundingClientRect();
+            var x = 0;
+            var y = 0;
+            selection.forEach((element) => {
+                element.classList.add('select');
+                this._selection.push(element);
+                var box = element.getBBox();
+                var ex = box.x + (box.width / 2);
+                var ey = box.y + (box.height / 2);
+                var transform = element.transform.baseVal.consolidate();
+                if (transform) {
+                    ex = transform.matrix.e;
+                    ey = transform.matrix.f;
+                }
+                x += ex;
+                y += ey;
+            });
+            x = x / selection.length;
+            y = y / selection.length;
+            this._zoom.transform(d3.select(graphElement), d3.zoomIdentity.translate((graphRect.width / 2) - x, (graphRect.height / 2) - y));
+        }
+    }
+
+    clearSelection() {
+        while (this._selection.length > 0) {
+            var element = this._selection.pop();
+            element.classList.remove('select');
+        }
     }
     
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Custom Attributes related methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    saveCustomAttributes(item, filePath) {
+        var strs = item.split('-');	
+        var nodeId = strs[2];	
+        var customAttr = strs[1];	
+        var customVal = strs[3];
+        if (!fs.existsSync(path.dirname(filePath))) {
+            fs.mkdirSync(path.dirname(filePath));
+        }
+        if (jMan.isGraphEmpty(filePath)) {
+            var graphObj = jMan.createGraph(this._inputFileBaseName);
+        }
+        else {
+            var raw = fs.readFileSync(filePath);
+            var graphObj = JSON.parse(raw);
+        }
+        var customAttrObj = {};
+        customAttrObj[customAttr] = customVal;
+        if (!jMan.addNewNode(graphObj, this._inputFileBaseName, nodeId, customAttrObj)) {
+            if (!jMan.addAttribute(graphObj, this._inputFileBaseName, nodeId, customAttrObj)) {
+                assert(jMan.updateAttribute(graphObj, this._inputFileBaseName, nodeId, customAttrObj) === true);
+            }
+        }
+
+        var json = JSON.stringify(graphObj, null , 2);
+        fs.writeFileSync(filePath, json);
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Group Nodes Mode (Subgraph related) methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    groupNodeMode() {
+        if (this._activeGraph) {
+            var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
+            var filePath = this.getPath('user_json/graph_grouping_json', outputFileName);
+
+            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, this._graph);
+            // var windowWidth = this.getSidebarWindowWidth();
+            this._eventEmitter.on('share-node-id', (data) => {
+                view.appendNode(data)
+            });
+            this._eventEmitter.on('clean-group-node-mode', (data) => {
+                if (data) {
+                    view.clean();
+                }
+            });
+            this._leftSidebar.open(view.content, 'Group Nodes Mode', 500);
+        }
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Graph Rendering related methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
     show(page) {
         if (!page) {
             page = (!this._model && !this._activeGraph) ? 'Welcome' : 'Graph';
@@ -147,175 +464,10 @@ view.View = class {
             document.body.style.cursor = 'default';
         }
     }
-
-    cut() {
-        document.execCommand('cut');
-    }
-
-    copy() {
-        document.execCommand('copy');
-    }
-
-    paste() {
-        document.execCommand('paste');
-    }
-
-    selectAll() {
-        document.execCommand('selectall');
-    }
-
-    find() {
-        if (this._activeGraph) {
-            this.clearSelection();
-            var graphElement = document.getElementById('graph');
-            var view = new FindSidebar(graphElement, this._activeGraph);
-            view.on('search-text-changed', (sender, text) => {
-                this._searchText = text;
-            });
-            view.on('select-channel', (sender, selection) => {
-                this._sidebar.close();
-                this.select(selection);
-            });
-            var windowWidth = this.getSidebarWindowWidth();
-            this._sidebar.open(view.content, 'Find', windowWidth.toString());
-            view.focus(this._searchText);
-        }
-    }
-
-    getClientWindowResolution() {
-        var w = window,
-        d = document,
-        e = d.documentElement,
-        g = d.getElementsByTagName('body')[0],
-        x = w.innerWidth || e.clientWidth || g.clientWidth,
-        y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-        return [x, y];
-    }
-
-    getSidebarWindowWidth() {
-        var x = this.getClientWindowResolution()[0] * 0.3;
-        if (x > 500) {
-            x = 500;
-        }
-        return x;
-    }
-
-    groupNodeMode() {
-        if (this._activeGraph) {
-            var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
-            var filePath = this.getPath('user_json/graph_grouping_json', outputFileName);
-
-            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, this._graph);
-            // var windowWidth = this.getSidebarWindowWidth();
-            this._eventEmitter.on('share-node-id', (data) => {
-                view.appendNode(data)
-            });
-            this._eventEmitter.on('clean-group-node-mode', (data) => {
-                if (data) {
-                    view.clean();
-                }
-            });
-            this._leftSidebar.open(view.content, 'Group Nodes Mode', 500);
-        }
-    }
-
-    toggleDetails() {
-        this._showDetails = !this._showDetails;
-        this.show('Spinner');
-        this.updateGraph(this._model, this._activeGraph, (err) => {
-            if (err) {
-                this.error('Graph update failed.', err);
-            }
-        });
-    }
-
-    get showDetails() {
-        return this._showDetails;
-    }
-
-    toggleNames() {
-        this._showNames = !this._showNames;
-        this.show('Spinner');
-        this.updateGraph(this._model, this._activeGraph, (err) => {
-            if (err) {
-                this.error('Graph update failed.', err);
-            }
-        });
-    }
-
-    get showNames() {
-        return this._showNames;
-    }
-
-    zoomIn() {
-        if (this._zoom) {
-            this._zoom.scaleBy(d3.select(document.getElementById('graph')), 1.2);
-        }
-    }
-
-    zoomOut() {
-        if (this._zoom) {
-            this._zoom.scaleBy(d3.select(document.getElementById('graph')), 0.8);
-        }
-    }
-
-    resetZoom() { 
-        if (this._zoom) {
-            this._zoom.scaleTo(d3.select(document.getElementById('graph')), 1);
-        }
-    }
-
-    preventZoom(e) {
-        if (e.shiftKey || e.ctrlKey) {
-            e.preventDefault();
-        }
-    }
-
-    select(selection) {
-        this.clearSelection();
-        if (selection && selection.length > 0) {
-            var graphElement = document.getElementById('graph');
-            var graphRect = graphElement.getBoundingClientRect();
-            var x = 0;
-            var y = 0;
-            selection.forEach((element) => {
-                element.classList.add('select');
-                this._selection.push(element);
-                var box = element.getBBox();
-                var ex = box.x + (box.width / 2);
-                var ey = box.y + (box.height / 2);
-                var transform = element.transform.baseVal.consolidate();
-                if (transform) {
-                    ex = transform.matrix.e;
-                    ey = transform.matrix.f;
-                }
-                x += ex;
-                y += ey;
-            });
-            x = x / selection.length;
-            y = y / selection.length;
-            this._zoom.transform(d3.select(graphElement), d3.zoomIdentity.translate((graphRect.width / 2) - x, (graphRect.height / 2) - y));
-        }
-    }
-
-    clearSelection() {
-        while (this._selection.length > 0) {
-            var element = this._selection.pop();
-            element.classList.remove('select');
-        }
-    }
-
+    
     loadContext(context, callback) {
         var modelFactoryService = new view.ModelFactoryService(this._host);
         modelFactoryService.create(context, callback);
-    }
-
-    error(message, err) {
-        this._sidebar.close();
-        this._leftSidebar.close();
-        this._host.exception(err, false);
-        this._host.error(message, err.toString());
-        this.show('Welcome');
     }
 
     openContext(context, callback) {
@@ -857,159 +1009,6 @@ view.View = class {
         }
     }
 
-    getTempID(node) {
-        var _id = '';
-        for (let [_key, _value] of Object.entries(node.outputs[0])) {
-            for (var i = 0; i < _value.length; i++) {
-                if (typeof(_value[i]) == 'object') {
-                    for (let [k, v] of Object.entries(_value[i])) {
-                        if (k == 'id' || k == '_id') {
-                            _id = v;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return _id;
-    }
-
-    nodeElementClickHandler(button, params) {
-        // params = [node, input, id, strs];
-        var node = params[0];
-        var input = params[1];
-        var id = params[2];
-        var strs = params[3];   // `strs` is for debugging
-        var name = node.name;
-        if (name) {
-            var nodeName = name;
-        }
-        else {
-            var nodeName = id.toString();
-        }
-        console.log("\n[nodeElementClickHandler] You clicked: " + nodeName);
-        switch (button) {
-            case 0:
-                this._eventEmitter.emit('share-node-id', nodeName);
-                // console.log(strs + " left click");
-                this.showNodeProperties(node, input, id);
-                break;
-            case 1:
-                // console.log(strs + " middle click");
-                break;
-            case 2:
-                // console.log(strs + " right click");
-                this.showCustomAttributes(node, id);
-                break;
-            default:
-                this.showNodeProperties(node, input, id);
-                break;
-        }
-    }
-
-    _on(event, callback) {
-        this._events = this._events || {};
-        this._events[event] = this._events[event] || [];
-        this._events[event].push(callback);
-    }
-
-    _raise(event, data) {
-        if (this._events && this._events[event]) {
-            this._events[event].forEach((callback) => {
-                callback(this, data);
-            });
-        }
-    }
-
-    _cleanCache() {
-        var subPath = this.getPath('user_json/graph_grouping_json');
-        fs.readdir(subPath, (err, files) => {
-            if (err) throw err;
-            for (const file of files) {
-                fs.unlink(path.join(subPath, file), err => {
-                    if (err) throw err;
-                });
-            }
-        });
-
-        var cusPath = this.getPath('user_json/custom_json');
-        fs.readdir(cusPath, (err, files) => {
-            if (err) throw err;
-            for (const file of files) {
-                fs.unlink(path.join(cusPath, file), err => {
-                    if (err) throw err;
-                });
-            }
-        });
-        this._host.info('Cache Cleaned', 'Cache cleaned successfully.');
-    }
-    
-    splitJSON(inputPath) {
-        // THE CONFIGURATION FILE NAME MUST ENDED WITH '_config.json'
-        if (jMan.splitJSON(inputPath)) {
-            this._inputFileBaseName = path.basename(inputPath).replace('_config.json', '');
-            var msg = inputPath + ' is loaded.\nPlease refresh <F5> the page.';
-            this._host.info('Load Configuration', msg);
-        }
-        else {
-            var msg = 'Failed to load configuration file.\nPlease ensure file naming is correct and file is not empty.'
-            this._host.realError('Load Configuration Failed', msg);
-        }
-    }
-
-    getPath(folder, file) {
-        var filePath = '';
-        var f = (file) ? file : '';
-        if (this._host.getIsDev()) {
-            filePath = path.join(__dirname, '..', folder, f);
-        }
-        else {
-            // https://github.com/electron-userland/electron-builder/issues/751
-            filePath = path.join(process.resourcesPath, folder, f);
-        }
-        return filePath;
-    }
-
-    showCustomAttributes(node, nodeID) {
-        var outputFileName = this._inputFileBaseName + '_custom_attributes.json';
-        var filePath = this.getPath('user_json/custom_json', outputFileName);
-        if (node) {
-            var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, this._inputFileBaseName, filePath);
-            view.on('custom-attr-sidebar', (sender, cb) => {
-                this.saveCustomAttributes(cb, filePath);
-            });
-            var windowWidth = this.getSidebarWindowWidth();
-            this._sidebar.open(view.elements, 'Node Custom Attributes', windowWidth.toString());
-        }
-    }
-    
-    saveCustomAttributes(item, filePath) {
-        var strs = item.split('-');	
-        var nodeId = strs[2];	
-        var customAttr = strs[1];	
-        var customVal = strs[3];
-        if (!fs.existsSync(path.dirname(filePath))) {
-            fs.mkdirSync(path.dirname(filePath));
-        }
-        if (jMan.isGraphEmpty(filePath)) {
-            var graphObj = jMan.createGraph(this._inputFileBaseName);
-        }
-        else {
-            var raw = fs.readFileSync(filePath);
-            var graphObj = JSON.parse(raw);
-        }
-        var customAttrObj = {};
-        customAttrObj[customAttr] = customVal;
-        if (!jMan.addNewNode(graphObj, this._inputFileBaseName, nodeId, customAttrObj)) {
-            if (!jMan.addAttribute(graphObj, this._inputFileBaseName, nodeId, customAttrObj)) {
-                assert(jMan.updateAttribute(graphObj, this._inputFileBaseName, nodeId, customAttrObj) === true);
-            }
-        }
-
-        var json = JSON.stringify(graphObj, null , 2);
-        fs.writeFileSync(filePath, json);
-    }
-
     applyStyleSheet(element, name) {
         var rules = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
@@ -1034,114 +1033,20 @@ view.View = class {
         }
     }
 
-    export(file) {
-        var extension = '';
-        var lastIndex = file.lastIndexOf('.');
-        if (lastIndex != -1) {
-            extension = file.substring(lastIndex + 1);
-        }
-        if (this._activeGraph && (extension == 'png' || extension == 'svg')) {
-            var graphElement = document.getElementById('graph');
-            var exportElement = graphElement.cloneNode(true);
-            this.applyStyleSheet(exportElement, 'view-grapher.css');
-            exportElement.setAttribute('id', 'export-pic');
-            exportElement.removeAttribute('width');
-            exportElement.removeAttribute('height');
-            exportElement.style.removeProperty('opacity');
-            exportElement.style.removeProperty('display');
-            var backgroundElement = exportElement.querySelector('#background');
-            var originElement = exportElement.querySelector('#origin');
-            originElement.setAttribute('transform', 'translate(0,0) scale(1)');
-            backgroundElement.removeAttribute('width');
-            backgroundElement.removeAttribute('height');
-    
-            var parentElement = graphElement.parentElement;
-            parentElement.insertBefore(exportElement, graphElement);
-            var size = exportElement.getBBox();
-            parentElement.removeChild(exportElement);
-            parentElement.removeChild(graphElement);
-            parentElement.appendChild(graphElement);
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        "show" & "toggle"
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-            var delta = (Math.min(size.width, size.height) / 2.0) * 0.1;
-            var width = Math.ceil(delta + size.width + delta);
-            var height = Math.ceil(delta + size.height + delta);
-            originElement.setAttribute('transform', 'translate(' + delta.toString() + ', ' + delta.toString() + ') scale(1)');
-            exportElement.setAttribute('width', width);
-            exportElement.setAttribute('height', height);
-            backgroundElement.setAttribute('width', width);
-            backgroundElement.setAttribute('height', height);
-            backgroundElement.setAttribute('fill', '#fff');
-    
-            var data = new XMLSerializer().serializeToString(exportElement);
-    
-            if (extension == 'svg') {
-                this._host.export(file, new Blob([ data ], { type: 'image/svg' }));
-            }
-    
-            if (extension == 'png') {
-                var imageElement = new Image();
-                imageElement.onload = () => {
-                    var max = Math.max(width, height);
-                    var scale = ((max * 2.0) > 24000) ? (24000.0 / max) : 2.0;
-                    var canvas = document.createElement('canvas');
-                    canvas.width = Math.ceil(width * scale);
-                    canvas.height = Math.ceil(height * scale);    
-                    var context = canvas.getContext('2d');
-                    context.scale(scale, scale);
-                    context.drawImage(imageElement, 0, 0);
-                    document.body.removeChild(imageElement);
-                    canvas.toBlob((blob) => {
-                        this._host.export(file, blob);
-                    }, 'image/png');
-                };
-                imageElement.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(data)));
-                document.body.insertBefore(imageElement, document.body.firstChild);
-            }
-        }
-
-        if (this._activeGraph && (extension == 'txt' || extension == 'json')) {
-            var outputFilePath = file;
-            var exeSubPath = '';
-            switch (this._inputFileExtName) {
-                case '.pb':
-                    exeSubPath = 'dumpPB/dumpPB.exe';
-                    break;
-                case '.onnx':
-                    exeSubPath = 'dumpONNX/dumpONNX.exe';
-                    break;
-                default:
-                    break;
-            }
-            if (exeSubPath == '') {
-                this._host.error('Invalid Error', 'Model Not Supported');
-                return;
-            }
-
-            var execFile = require('child_process').execFile;
-            var exe_path = this.getPath('python_scripts/dist', exeSubPath);
-
-            if (extension == 'txt') {
-                var parameters = [outputFilePath, this._inputFilePath, 'txt'];    // TODO: 3rd arg is redundant
-                execFile(exe_path, parameters, function(err, data) {
-                    if (err) {
-                        this._host.error('Python Error', err);
-                        return;
-                    }
-                    var msg = 'File has been exported to ' + outputFilePath;
-                    alert(msg);
-                });
-            }
-            if (extension == 'json') {
-                var parameters = [outputFilePath, this._inputFilePath, 'json'];   // TODO: 3rd arg is redundant
-                execFile(exe_path, parameters, function(err, data) {
-                    if (err) {
-                        this._host.error('Python Error', err);
-                        return;
-                    }
-                    var msg = 'File has been exported to ' + outputFilePath;
-                    alert(msg);
-                });
-            }
+    showCustomAttributes(node, nodeID) {
+        var outputFileName = this._inputFileBaseName + '_custom_attributes.json';
+        var filePath = this.getPath('user_json/custom_json', outputFileName);
+        if (node) {
+            var view = new NodeCustomAttributeSidebar(node, nodeID, this._host, this._inputFileBaseName, filePath);
+            view.on('custom-attr-sidebar', (sender, cb) => {
+                this.saveCustomAttributes(cb, filePath);
+            });
+            var windowWidth = this.getSidebarWindowWidth();
+            this._sidebar.open(view.elements, 'Node Custom Attributes', windowWidth.toString());
         }
     }
 
@@ -1197,6 +1102,142 @@ view.View = class {
             this._sidebar.open(view.elements, 'Documentation', windowWidth.toString());
         }
     }
+
+    toggleDetails() {
+        this._showDetails = !this._showDetails;
+        this.show('Spinner');
+        this.updateGraph(this._model, this._activeGraph, (err) => {
+            if (err) {
+                this.error('Graph update failed.', err);
+            }
+        });
+    }
+
+    toggleNames() {
+        this._showNames = !this._showNames;
+        this.show('Spinner');
+        this.updateGraph(this._model, this._activeGraph, (err) => {
+            if (err) {
+                this.error('Graph update failed.', err);
+            }
+        });
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Helper methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    addMultiListener(element, eventNames, listener) {
+        eventNames.split(' ').forEach(e => element.addEventListener(e, listener, false));
+    }
+
+    nodeElementClickHandler(button, params) {
+        // params = [node, input, id, strs];
+        var node = params[0];
+        var input = params[1];
+        var id = params[2];
+        var strs = params[3];   // `strs` is for debugging
+        var name = node.name;
+        if (name) {
+            var nodeName = name;
+        }
+        else {
+            var nodeName = id.toString();
+        }
+        console.log("\n[nodeElementClickHandler] You clicked: " + nodeName);
+        switch (button) {
+            case 0:
+                this._eventEmitter.emit('share-node-id', nodeName);
+                // console.log(strs + " left click");
+                this.showNodeProperties(node, input, id);
+                break;
+            case 1:
+                // console.log(strs + " middle click");
+                break;
+            case 2:
+                // console.log(strs + " right click");
+                this.showCustomAttributes(node, id);
+                break;
+            default:
+                this.showNodeProperties(node, input, id);
+                break;
+        }
+    }
+
+    getClientWindowResolution() {
+        var w = window,
+        d = document,
+        e = d.documentElement,
+        g = d.getElementsByTagName('body')[0],
+        x = w.innerWidth || e.clientWidth || g.clientWidth,
+        y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+        return [x, y];
+    }
+
+    getSidebarWindowWidth() {
+        var x = this.getClientWindowResolution()[0] * 0.3;
+        if (x > 500) {
+            x = 500;
+        }
+        return x;
+    }
+
+    getTempID(node) {
+        var _id = '';
+        for (let [_key, _value] of Object.entries(node.outputs[0])) {
+            for (var i = 0; i < _value.length; i++) {
+                if (typeof(_value[i]) == 'object') {
+                    for (let [k, v] of Object.entries(_value[i])) {
+                        if (k == 'id' || k == '_id') {
+                            _id = v;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return _id;
+    }
+
+    getPath(folder, file) {
+        var filePath = '';
+        var f = (file) ? file : '';
+        if (this._host.getIsDev()) {
+            filePath = path.join(__dirname, '..', folder, f);
+        }
+        else {
+            // https://github.com/electron-userland/electron-builder/issues/751
+            filePath = path.join(process.resourcesPath, folder, f);
+        }
+        return filePath;
+    }
+
+    generateRandomColors() {
+        var color = require('color');
+        var ratio = 0.618033988749895;
+        var colors = [];
+
+        var hue = 0.1;
+        var saturation = 0.99;
+        var value = 0.99;
+        var x = null;
+        for (var i = 0; i < 100; i++) {
+            hue += ratio;
+            hue %= 1;
+            x = color({
+                h: hue * 360,
+                s: saturation * 100,
+                v: value * 100
+            });
+            colors.push(x.hex());
+            hue += 0.2;
+        }
+        return colors;
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Static methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
     static formatAttributeValue(value, type) {
         if (typeof value === 'function') {
