@@ -100,6 +100,18 @@ class GroupModeSidebar {
         this._readGroupingJSON();
     }
 
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Getter methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    get content() {
+        return this._contentElement;
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Private methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
     _addButtons() {
         this._newSubgraphButtonElement = document.createElement('button');
         this._newSubgraphButtonElement.setAttribute('id', 'group-new-subgraph');
@@ -180,6 +192,10 @@ class GroupModeSidebar {
         this._exportButtomElement.innerHTML = 'Save';
     }
 
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Handler methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
     startHandler() {
         var start = document.createElement('div');
         start.setAttribute('class', 'left-sidebar-name');
@@ -206,6 +222,60 @@ class GroupModeSidebar {
         end.appendChild(endText);
         var ref = document.getElementById('left-sidebar-full-list');
         this._contentElement.insertBefore(end, ref);
+    }
+
+    exportHandler() {
+        if (!fs.existsSync(path.dirname(this._filePath))) {
+            fs.mkdirSync(path.dirname(this._filePath));
+        }
+        if (!jMan.isGraphEmpty(this._filePath)) {
+            fs.unlinkSync(this._filePath);
+        }
+        var graphObj = jMan.createGraph(this._fileName);
+
+        for (var i = 0; i < this._subgraphs.length; i++) {
+            var sg = this._subgraphs[i].subgraphName;
+            jMan.addNewSubgraph(graphObj, this._fileName, sg);
+            for (var j = 0; j < this._subgraphs[i]._nodes.length; j++) {
+                var x = this._subgraphs[i]._nodes[j].id;
+                var nodeName = x.split('-').pop();
+                jMan.addNodeToSubgraph(graphObj, this._fileName, sg, nodeName);
+            }
+        }
+
+        var json = JSON.stringify(graphObj, null , 2);
+        fs.writeFileSync(this._filePath, json);
+        jMan.mergeJSON(this._fileName);
+        this._host.info('File Saved', 'Group setting is saved.');
+    }
+
+    highlightHandler(target) {
+        var tmp = target.id;
+        if (tmp.split('-').shift() == 'list') {
+            var idx = this.findObjectIndex(this._subgraphs, target.id);
+            var t = this._subgraphs[idx];
+            if (t == this._selectedSubgraph || this._selectedSubgraph == null) {
+                // same graph
+                if (!t.selected) {
+                    t.selected = true;
+                    this._selectedSubgraph = t;
+                    this.highlightOn(target);
+                }
+                else {
+                    t.selected = false;
+                    this._selectedSubgraph = null;
+                    this.highlightOff(target);
+                }
+            }
+            else {
+                // different graph
+                this._selectedSubgraph.selected = false;
+                this.highlightOff(this._selectedSubgraph.title);
+                t.selected = true;
+                this.highlightOn(target);
+                this._selectedSubgraph = t;
+            }
+        }
     }
 
     traverseHandler() {
@@ -244,126 +314,9 @@ class GroupModeSidebar {
         this._host.info('Nodes Added', msg);
     }
 
-    validate(name, id) {
-        for (var i = 0; i < this._subgraphs.length; i++) {
-            if (name == this._subgraphs[i].subgraphName) {
-                name += '_new';
-            }
-            if (id == this._subgraphs[i].id) {
-                id += '_new';
-            }
-        }
-        return [name, id];
-    }
-
-    exportHandler() {
-        if (!fs.existsSync(path.dirname(this._filePath))) {
-            fs.mkdirSync(path.dirname(this._filePath));
-        }
-        if (!jMan.isGraphEmpty(this._filePath)) {
-            fs.unlinkSync(this._filePath);
-        }
-        var graphObj = jMan.createGraph(this._fileName);
-
-        for (var i = 0; i < this._subgraphs.length; i++) {
-            var sg = this._subgraphs[i].subgraphName;
-            jMan.addNewSubgraph(graphObj, this._fileName, sg);
-            for (var j = 0; j < this._subgraphs[i]._nodes.length; j++) {
-                var x = this._subgraphs[i]._nodes[j].id;
-                var nodeName = x.split('-').pop();
-                jMan.addNodeToSubgraph(graphObj, this._fileName, sg, nodeName);
-            }
-        }
-
-        var json = JSON.stringify(graphObj, null , 2);
-        fs.writeFileSync(this._filePath, json);
-        jMan.mergeJSON(this._fileName);
-        this._host.info('File Saved', 'Group setting is saved.');
-    }
-
-    nodeButtonsOn() {
-        this._startNodeButtomElement.style.visibility = 'visible';
-        this._endNodeButtomElement.style.visibility = 'visible';
-    }
-
-    nodeButtonsOff() {
-        this._startNodeButtomElement.style.visibility = 'hidden';
-        this._endNodeButtomElement.style.visibility = 'hidden';
-        this._findNodeButtomElement.style.visibility = 'hidden';
-        var x = document.getElementById('left-sidebar-start-name-id');
-        if (x) {
-            this._contentElement.removeChild(x);
-        }
-        var y = document.getElementById('left-sidebar-end-name-id');
-        if (y) {
-            this._contentElement.removeChild(y);
-        }
-    }
-
-    highlightOn(target) {
-        target.style.background = "#e6e6ff";
-        //   target.style.color = "#ffffff";
-        this.nodeButtonsOn();
-    }
-
-    highlightOff(target) {
-        target.style.background = document.getElementById('sidebar').style.backgroundColor;
-        target.style.color = document.getElementById('sidebar').style.color;
-        this.clean();
-        this.nodeButtonsOff();
-    }
-
-    highlightHandler(target) {
-        var tmp = target.id;
-        if (tmp.split('-').shift() == 'list') {
-            var idx = this.findObjectIndex(this._subgraphs, target.id);
-            var t = this._subgraphs[idx];
-            if (t == this._selectedSubgraph || this._selectedSubgraph == null) {
-                // same graph
-                if (!t.selected) {
-                    t.selected = true;
-                    this._selectedSubgraph = t;
-                    this.highlightOn(target);
-                }
-                else {
-                    t.selected = false;
-                    this._selectedSubgraph = null;
-                    this.highlightOff(target);
-                }
-            }
-            else {
-                // different graph
-                this._selectedSubgraph.selected = false;
-                this.highlightOff(this._selectedSubgraph.title);
-                t.selected = true;
-                this.highlightOn(target);
-                this._selectedSubgraph = t;
-            }
-        }
-    }
-
-    findObjectIndex(array, subgraphID) {
-        if (subgraphID == null) {
-            return null;
-        }
-        var targetID = '';
-        if (subgraphID.includes('list-')) {
-            targetID = subgraphID.replace('list-', '');
-        }
-        else if (subgraphID.includes('object-')) {
-            targetID = subgraphID.replace('object-', '');
-        }
-        else {
-            targetID = subgraphID;
-        }
-
-        for (var i = 0; i < array.length; i++) {
-            if (array[i].id == targetID) {
-                return i;
-            }
-        }
-        return null;
-    }
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Subgraph & Node Manipulation (Add/Delete) methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
     removeSubgraph(itemID, nodes) {
         for (var i = 0; i < nodes.length; i++) {
@@ -441,14 +394,81 @@ class GroupModeSidebar {
         return false;
     }
 
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Helper methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    validate(name, id) {
+        for (var i = 0; i < this._subgraphs.length; i++) {
+            if (name == this._subgraphs[i].subgraphName) {
+                name += '_new';
+            }
+            if (id == this._subgraphs[i].id) {
+                id += '_new';
+            }
+        }
+        return [name, id];
+    }
+
+    nodeButtonsOn() {
+        this._startNodeButtomElement.style.visibility = 'visible';
+        this._endNodeButtomElement.style.visibility = 'visible';
+    }
+
+    nodeButtonsOff() {
+        this._startNodeButtomElement.style.visibility = 'hidden';
+        this._endNodeButtomElement.style.visibility = 'hidden';
+        this._findNodeButtomElement.style.visibility = 'hidden';
+        var x = document.getElementById('left-sidebar-start-name-id');
+        if (x) {
+            this._contentElement.removeChild(x);
+        }
+        var y = document.getElementById('left-sidebar-end-name-id');
+        if (y) {
+            this._contentElement.removeChild(y);
+        }
+    }
+
+    highlightOn(target) {
+        target.style.background = "#e6e6ff";
+        //   target.style.color = "#ffffff";
+        this.nodeButtonsOn();
+    }
+
+    highlightOff(target) {
+        target.style.background = document.getElementById('sidebar').style.backgroundColor;
+        target.style.color = document.getElementById('sidebar').style.color;
+        this.clean();
+        this.nodeButtonsOff();
+    }
+
+    findObjectIndex(array, subgraphID) {
+        if (subgraphID == null) {
+            return null;
+        }
+        var targetID = '';
+        if (subgraphID.includes('list-')) {
+            targetID = subgraphID.replace('list-', '');
+        }
+        else if (subgraphID.includes('object-')) {
+            targetID = subgraphID.replace('object-', '');
+        }
+        else {
+            targetID = subgraphID;
+        }
+
+        for (var i = 0; i < array.length; i++) {
+            if (array[i].id == targetID) {
+                return i;
+            }
+        }
+        return null;
+    }
+
     clean() {
         this._selectedSubgraph = null;
         this._startNode = null;
         this._endNode = null;
-    }
-
-    get content() {
-        return this._contentElement;
     }
 
     on(event, callback) {
@@ -519,6 +539,46 @@ class GroupModelSubgraphView {
         this._contentElement.appendChild(this._nodelistElement);
     }
 
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Getter methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    get title() {
+        return this._subgraphNameElement;
+    }
+
+    get content() {
+        return this._contentElement;
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    get selected() {
+        return this._isSelected;
+    }
+
+    get nodes() {
+        return this._nodes;
+    }
+
+    get subgraphName() {
+        return this._name;
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Setter methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    set selected(bool) {
+        this._isSelected = bool;
+    }
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Subgraph & Node Manipulation methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
     deleteNode(nodeID) {
         for (var i = 0; i < this._nodes.length; i++) {
             if (this._nodes[i].id == nodeID) {
@@ -585,34 +645,10 @@ class GroupModelSubgraphView {
         }
         this._raise('delete-subgraph', true);
     }
-
-    get title() {
-        return this._subgraphNameElement;
-    }
-
-    get content() {
-        return this._contentElement;
-    }
-
-    get id() {
-        return this._id;
-    }
-
-    set selected(bool) {
-        this._isSelected = bool;
-    }
-
-    get selected() {
-        return this._isSelected;
-    }
-
-    get nodes() {
-        return this._nodes;
-    }
-
-    get subgraphName() {
-        return this._name;
-    }
+    
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        Helper methods
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
     on(event, callback) {
         this._events = this._events || {};
