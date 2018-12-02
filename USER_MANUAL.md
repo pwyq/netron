@@ -1,5 +1,6 @@
 # User Manual
 
+| Info | Info |
 |:---:|:---:|
 | Created by | Yanqing Wu <yanqing.wu@nxp.com> |
 | Updated by | Yanqing Wu <yanqing.wu@nxp.com> |
