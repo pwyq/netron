@@ -160,6 +160,7 @@ class GroupModeSidebar {
         });
 
         this._buttonsElement = document.createElement('div');
+        this._buttonsElement.setAttribute('style', 'position: fixed; top: 40px; background: #999999;');
         this._buttonsElement.setAttribute('class', 'left-sidebar-buttons');
         this._buttonsElement.appendChild(this._newSubgraphButtonElement);
         this._buttonsElement.appendChild(this._startNodeButtomElement);
@@ -466,6 +467,7 @@ class GroupModeSidebar {
     }
 
     clean() {
+        this._buttonsElement.style.visibility = 'hidden';
         this._selectedSubgraph = null;
         this._startNode = null;
         this._endNode = null;
