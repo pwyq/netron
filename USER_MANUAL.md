@@ -1,7 +1,9 @@
 # User Manual
-- Created by: Yanqing Wu <yanqing.wu@nxp.com>
-- Updated by: Yanqing Wu <yanqing.wu@nxp.com>
-- Last updated: Dec 3rd, 2018
+
+|:---:|:---:|
+| Created by | Yanqing Wu <yanqing.wu@nxp.com> |
+| Updated by | Yanqing Wu <yanqing.wu@nxp.com> |
+| Last Updated | Dec 3rd, 2018 |
 
 __This file introduces the new features which added for AIRunner on Netron.__
 
@@ -32,7 +34,7 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 
 #### Features
 - Allows user to set custom attributes of specific nodes, and _automatically_ saves custom setting to local `.json` file
-- Netron will import custom settings if corresponding custom-attribute-setting `.json` file is available
+- _deprecated_ ~Netron will import custom settings if corresponding custom-attribute-setting `.json` file is available~
 	- `{Netron root}/user_json/custom_json/{model_name}_custom_attributes.json`
 - Allows developers/users to modify available attributes in the configuration file:
 	- `{Netron root}/user_json/config_json/airunner_custom_attributes.json`
@@ -49,7 +51,7 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 
 #### Features
 - Allows user to group nodes (i.e. layers) into subgraphs, and exports/saves the group setting to local `.json` file
-- Netron will import group settings if corresponding nodes-grouping `.json` file is available
+- _deprecated_ ~Netron will import group settings if corresponding nodes-grouping `.json` file is available~
 	- `{Netron root}/user_json/graph_grouping_json/{model_name}_subgraph_grouping.json`
 - Allows user to edit group settings on Netron
 	- Add/Delete/Rename sub-graphs
