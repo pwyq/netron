@@ -359,6 +359,7 @@ class Application {
             });
         }
         
+        // possible TODO: add `save config as` ? so to rename the config files
         menuTemplate.push({
             label: '&File',
             submenu: [

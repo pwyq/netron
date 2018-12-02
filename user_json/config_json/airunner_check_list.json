@@ -1,14 +1,14 @@
 {
   "forbid": [
     {
-      "HARDWARE_TARGET": "APEX",
-      "QUANTIZATION_TYPE": "Float_Point",
-      "TEST_ATTR_1": "ATTR_2"
+      "HARDWARE_TARGET": ["APEX"],
+      "QUANTIZATION_TYPE": ["Float_Point"],
+      "TEST_ATTR_1": ["ATTR_1", "ATTR_2"]
     },
     {
-      "HARDWARE_TARGET": "HW1",
-      "QUANTIZATION_TYPE": "Quant1",
-      "TEST_ATTR_1": "ATTR_3"
+      "HARDWARE_TARGET": ["HW1"],
+      "QUANTIZATION_TYPE": ["Quant1"],
+      "TEST_ATTR_1": ["ATTR_3"]
     }
   ]
 }

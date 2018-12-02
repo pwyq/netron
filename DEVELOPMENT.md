@@ -60,7 +60,8 @@ cd tools
 
 # Note
 1. Ask user to use no white-space paths
-3. Only tested on Windows OS
+2. Only tested on Windows OS
+3. The configuration file naming must be `{your_preferred_filename}_config.json`; inside the `{}_config.json`, the first key name must also be the same as `{your_preferred_filename}`.
 
 # TODO
 - only add stuff to local client, haven't changed `view-browser.js` (webpage client) 

@@ -253,6 +253,7 @@ class NodeCustomAttributeSidebar {
         this._airunnerConfigObj = null;
         this._airunnerConfigKeys = [];
         this.readJSON();
+        this._forbigList = this.readForbidList();
 
         var operatorElement = document.createElement('div');
         operatorElement.className = 'sidebar-view-title';
@@ -265,9 +266,10 @@ class NodeCustomAttributeSidebar {
         var attrList = attributes.attributeList;
         if (attributes && attrList.length > 0) {
             this.addHeader('Custom Attributes');
-            attrList.forEach((attribute) => {
-                var l = this._airunnerConfigObj[attribute.key];
-                this.addCustomAttribute(this._name, attribute, l, this._fileName, this._filePath);
+            attrList.forEach((attr) => {
+                var l = this._airunnerConfigObj[attr.key];
+                // this.addCustomAttribute(this._name, attr, l, this._fileName, this._filePath, this._forbigList);
+                this.addCustomAttribute(this._name, attr.key, l, this._fileName, this._filePath, this._forbigList);
             });
         }
 
@@ -285,24 +287,36 @@ class NodeCustomAttributeSidebar {
         }
     }
 
-    readJSON() {
+    readForbidList() {
+        var p = this.getPath('user_json/config_json',  'airunner_check_list.json');
+        if (jMan.isGraphEmpty(p)) {
+            return;
+        }
+        var raw = fs.readFileSync(p);
+        var obj = JSON.parse(raw);
+        return obj.forbid;
+    }
+
+    getPath(folder, file) {
+        var res = '';
         if (this._host.getIsDev()) {
-            var cusConfigFilePath = path.join(__dirname, '../user_json/config_json', 'airunner_custom_attributes.json');
-            // var checklistFilePath = path.join(__dirname, '../user_json/config_json', 'airunner_check_list.json');
+          res = path.join(__dirname, '..', folder, file);
         }
         else {
-            var cusConfigFilePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_custom_attributes.json');
-            // var cusConfigFilePath = path.join(process.resourcesPath, 'user_json/config_json', 'airunner_check_list.json');
+          res = path.join(process.resourcesPath, folder, file);
         }
+        return res;
+      }
+
+    readJSON() {
+        var cusConfigFilePath = this.getPath('user_json/config_json', 'airunner_custom_attributes.json');
 
         if (jMan.isGraphEmpty(cusConfigFilePath)) {
             this._host.realError('Invalid Error', '\"airunner_custom_attributes.json\" not exists!');
             return;
         }
-        else {
-            var raw = fs.readFileSync(cusConfigFilePath);
-            this._airunnerConfigObj = JSON.parse(raw);
-        }
+        var raw = fs.readFileSync(cusConfigFilePath);
+        this._airunnerConfigObj = JSON.parse(raw);
         this._airunnerConfigKeys = Object.keys(this._airunnerConfigObj);
     }
 
@@ -322,11 +336,10 @@ class NodeCustomAttributeSidebar {
         this._elements.push(item.element);
     }
 
-    addCustomAttribute(name, attribute, attrList, fileName, filePath) {
-        var customAttrView = new NodeCustomAttributeView(name, attribute, attrList, fileName, filePath);
-        // TODO: add checking, like `float point` cannot be run on `apex`
+    addCustomAttribute(name, attribute, attrList, fileName, filePath, fbList) {
+        var customAttrView = new NodeCustomAttributeView(name, attribute, attrList, fileName, filePath, fbList);
         this._attributeView.push(customAttrView);
-        var item = new NameValueView(attribute.key, customAttrView);
+        var item = new NameValueView(attribute, customAttrView);
         this._attributes.push(item);
         this._elements.push(item.element);
     }
@@ -347,12 +360,13 @@ class NodeCustomAttributeSidebar {
 }
 
 class NodeCustomAttributeView {
-    constructor(name, attribute, attrList, fileName, filePath) {
+    constructor(name, attribute, attrList, fileName, filePath, fbList) {
         this._name = name;
-        this._fileName = fileName;
-        this._filePath = filePath;
         this._attribute = attribute;
         this._attrList = attrList;
+        this._fileName = fileName;
+        this._filePath = filePath;
+        this._forbidList = fbList;
         this._element = document.createElement('div');
         this._element.className = 'sidebar-view-item-value';
 
@@ -368,7 +382,7 @@ class NodeCustomAttributeView {
         this._value = (tmpValue == '') ? 'undefined' : tmpValue;
         this.valueLine = document.createElement('div');
         this.valueLine.className = 'sidebar-view-item-value-line';
-        var valueID = 'value-' + this._attribute.key + this._name;
+        var valueID = 'value-' + this._attribute + this._name;
         this.valueLine.setAttribute('id', valueID);
         this.valueLine.innerHTML = (this._value ? this._value : '&nbsp;');
         this._element.appendChild(this.valueLine);
@@ -388,15 +402,13 @@ class NodeCustomAttributeView {
         if (jMan.isGraphEmpty(this._filePath)) {
             return val;
         }
-        else {
-            var raw = fs.readFileSync(this._filePath);
-            var graphObj = JSON.parse(raw);
-        }
 
+        var raw = fs.readFileSync(this._filePath);
+        var graphObj = JSON.parse(raw);
         if (jMan.isNodeExist(graphObj, this._fileName, this._name)) {
             var targetNode = jMan.findNode(graphObj, this._fileName, this._name)[0];
-            if (targetNode.attrs.hasOwnProperty(this._attribute.key)) {
-                val = targetNode.attrs[this._attribute.key];
+            if (targetNode.attrs.hasOwnProperty(this._attribute)) {
+                val = targetNode.attrs[this._attribute];
             }
         }
         return val;
@@ -412,21 +424,68 @@ class NodeCustomAttributeView {
         return [ this._element ];
     }
 
-    test() {
-        // log current node custom settings
+    getCurrConfig() {
+        if (jMan.isGraphEmpty(this._filePath)) {
+            return;
+        }
 
+        var raw = fs.readFileSync(this._filePath);
+        var graphObj = JSON.parse(raw);
+        if (jMan.isNodeExist(graphObj, this._fileName, this._name)) {
+            return jMan.findNode(graphObj, this._fileName, this._name)[0].attrs;
+        }
+    }
+
+    validateList(list) {
+        var attrObj = this.getCurrConfig();
+        if (!attrObj) {
+            return list;
+        }
+        var keys = Object.keys(attrObj);
+        for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            if (k == this._attribute) {
+                continue;
+            }
+            var itemToRemove = this.validateEachEntry(attrObj[k]);
+            if (itemToRemove) {
+                var idx = list.indexOf(itemToRemove.toString());
+                if (idx > -1) {
+                    list.splice(idx, 1);
+                }
+            }
+        }
+        return list;
+    }
+
+    validateEachEntry(v) {
+        for (var i = 0; i < this._forbidList.length; i++) {
+            var obj = this._forbidList[i];  // i-th objs
+            var keys = Object.keys(obj);    // i-th objs' keys
+            for (var j = 0; j < keys.length; j++) {
+                var k = keys[j];            // i-th objs' j-th key
+                if (k == this._attribute) {
+                    continue;
+                }
+                // if the entry value is in the forbid list (i.e be matched with i-th objs' j-th key value(s))
+                if (obj[k].includes(v)) {
+                    return obj[this._attribute];
+                }
+            }
+        }
     }
 
     toggle() {
         if (this._expander.innerText == '+') {
             this._expander.innerText = '-';
 
-            // TODO TODO: check list here
-            var attrFullList = this._attrList;
+            var tmpList = this._attrList.slice(0);   // duplicate array value instead of reference
+            var attrFullList = this.validateList(tmpList);
+
             for (var i = 0; i < attrFullList.length; i++) { 
                 var attrLine = document.createElement('li');
                 attrLine.className = 'sidebar-view-item-value-line-border attr-choose';
-                var attrId = 'dpl-' + this._attribute.key + '-' + this._name + '-' + attrFullList[i]; 
+                var attrId = 'dpl-' + this._attribute + '-' + this._name + '-' + attrFullList[i]; 
                 attrLine.setAttribute('id', attrId);
                 attrLine.innerHTML = '<code><b>' + attrFullList[i] + '</b></code>';
                 this._dropdownListElement.appendChild(attrLine);
