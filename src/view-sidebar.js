@@ -150,6 +150,12 @@ class NodeSidebar {
         return this._elements;
     }
 
+    addAttribute(name, attribute) {
+        var item = new NameValueView(name, new NodeAttributeView(attribute));
+        this._attributes.push(item);
+        this._elements.push(item.element);
+    }
+
     addHeader(title) {
         var headerElement = document.createElement('div');
         headerElement.className = 'sidebar-view-header';
@@ -159,12 +165,6 @@ class NodeSidebar {
 
     addProperty(name, value) {
         var item = new NameValueView(name, value);
-        this._elements.push(item.element);
-    }
-
-    addAttribute(name, attribute) {
-        var item = new NameValueView(name, new NodeAttributeView(attribute));
-        this._attributes.push(item);
         this._elements.push(item.element);
     }
 
@@ -222,20 +222,20 @@ class customAttributes {
         });
     }
 
-    addAttribute(_key, _value) {
-        // value is not in use
-        this._attributes.push({
-            key: _key,
-            value: _value,
-        });
-    }
-
     get nodeName() {
         return this._name;
     }
 
     get attributeList() {
         return this._attributes;
+    }
+
+    addAttribute(_key, _value) {
+        // value is not in use
+        this._attributes.push({
+            key: _key,
+            value: _value,
+        });
     }
 }
 
@@ -286,41 +286,16 @@ class NodeCustomAttributeSidebar {
         }
     }
 
-    readForbidList() {
-        var p = this.getPath('user_json/config_json',  'airunner_check_list.json');
-        if (jMan.isGraphEmpty(p)) {
-            return;
-        }
-        var raw = fs.readFileSync(p);
-        var obj = JSON.parse(raw);
-        return obj.forbid;
-    }
-
-    getPath(folder, file) {
-        var res = '';
-        if (this._host.getIsDev()) {
-          res = path.join(__dirname, '..', folder, file);
-        }
-        else {
-          res = path.join(process.resourcesPath, folder, file);
-        }
-        return res;
-      }
-
-    readJSON() {
-        var cusConfigFilePath = this.getPath('user_json/config_json', 'airunner_custom_attributes.json');
-
-        if (jMan.isGraphEmpty(cusConfigFilePath)) {
-            this._host.realError('Invalid Error', '\"airunner_custom_attributes.json\" not exists!');
-            return;
-        }
-        var raw = fs.readFileSync(cusConfigFilePath);
-        this._airunnerConfigObj = JSON.parse(raw);
-        this._airunnerConfigKeys = Object.keys(this._airunnerConfigObj);
-    }
-
     get elements() {
         return this._elements;
+    }
+
+    addCustomAttribute(name, attribute, attrList, fileName, filePath, fbList) {
+        var customAttrView = new NodeCustomAttributeView(name, attribute, attrList, fileName, filePath, fbList);
+        this._attributeView.push(customAttrView);
+        var item = new NameValueView(attribute, customAttrView);
+        this._attributes.push(item);
+        this._elements.push(item.element);
     }
 
     addHeader(title) {
@@ -335,12 +310,37 @@ class NodeCustomAttributeSidebar {
         this._elements.push(item.element);
     }
 
-    addCustomAttribute(name, attribute, attrList, fileName, filePath, fbList) {
-        var customAttrView = new NodeCustomAttributeView(name, attribute, attrList, fileName, filePath, fbList);
-        this._attributeView.push(customAttrView);
-        var item = new NameValueView(attribute, customAttrView);
-        this._attributes.push(item);
-        this._elements.push(item.element);
+    getPath(folder, file) {
+        var res = '';
+        if (this._host.getIsDev()) {
+          res = path.join(__dirname, '..', folder, file);
+        }
+        else {
+          res = path.join(process.resourcesPath, folder, file);
+        }
+        return res;
+    }
+
+    readForbidList() {
+        var p = this.getPath('user_json/config_json',  'airunner_check_list.json');
+        if (jMan.isGraphEmpty(p)) {
+            return;
+        }
+        var raw = fs.readFileSync(p);
+        var obj = JSON.parse(raw);
+        return obj.forbid;
+    }
+
+    readJSON() {
+        var cusConfigFilePath = this.getPath('user_json/config_json', 'airunner_custom_attributes.json');
+
+        if (jMan.isGraphEmpty(cusConfigFilePath)) {
+            this._host.realError('Invalid Error', '\"airunner_custom_attributes.json\" not exists!');
+            return;
+        }
+        var raw = fs.readFileSync(cusConfigFilePath);
+        this._airunnerConfigObj = JSON.parse(raw);
+        this._airunnerConfigKeys = Object.keys(this._airunnerConfigObj);
     }
 
     on(event, callback) {
@@ -396,6 +396,22 @@ class NodeCustomAttributeView {
         this._element.appendChild(this._dropdownListElement);
     }
 
+    get elements() {
+        return [ this._element ];
+    }
+
+    getCurrConfig() {
+        if (jMan.isGraphEmpty(this._filePath)) {
+            return;
+        }
+
+        var raw = fs.readFileSync(this._filePath);
+        var graphObj = JSON.parse(raw);
+        if (jMan.isNodeExist(graphObj, this._fileName, this._name)) {
+            return jMan.findNode(graphObj, this._fileName, this._name)[0].attrs;
+        }
+    }
+
     readJSON() {
         var val = ''
         if (jMan.isGraphEmpty(this._filePath)) {
@@ -412,27 +428,35 @@ class NodeCustomAttributeView {
         }
         return val;
     }
+    
+    toggle() {
+        if (this._expander.innerText == '+') {
+            this._expander.innerText = '-';
+
+            var tmpList = this._attrList.slice(0);   // duplicate array value instead of reference
+            var attrFullList = this.validateList(tmpList);
+
+            for (var i = 0; i < attrFullList.length; i++) { 
+                var attrLine = document.createElement('li');
+                attrLine.className = 'sidebar-view-item-value-line-border attr-choose';
+                var attrId = 'dpl-' + this._attribute + '-' + this._name + '-' + attrFullList[i]; 
+                attrLine.setAttribute('id', attrId);
+                attrLine.innerHTML = '<code><b>' + attrFullList[i] + '</b></code>';
+                this._dropdownListElement.appendChild(attrLine);
+            }
+        }
+        else {
+            this._expander.innerText = '+';
+            while (this._dropdownListElement.childElementCount) {
+                this._dropdownListElement.removeChild(this._dropdownListElement.lastChild);
+            }
+        }
+    }
 
     updateValue(id) {
         this.valueLine.innerHTML = '';
         this.valueLine.innerHTML = id.split('-')[3];
         this.toggle();
-    }
-
-    get elements() {
-        return [ this._element ];
-    }
-
-    getCurrConfig() {
-        if (jMan.isGraphEmpty(this._filePath)) {
-            return;
-        }
-
-        var raw = fs.readFileSync(this._filePath);
-        var graphObj = JSON.parse(raw);
-        if (jMan.isNodeExist(graphObj, this._fileName, this._name)) {
-            return jMan.findNode(graphObj, this._fileName, this._name)[0].attrs;
-        }
     }
 
     validateList(list) {
@@ -470,30 +494,6 @@ class NodeCustomAttributeView {
                 if (obj[k].includes(v)) {
                     return obj[this._attribute];
                 }
-            }
-        }
-    }
-
-    toggle() {
-        if (this._expander.innerText == '+') {
-            this._expander.innerText = '-';
-
-            var tmpList = this._attrList.slice(0);   // duplicate array value instead of reference
-            var attrFullList = this.validateList(tmpList);
-
-            for (var i = 0; i < attrFullList.length; i++) { 
-                var attrLine = document.createElement('li');
-                attrLine.className = 'sidebar-view-item-value-line-border attr-choose';
-                var attrId = 'dpl-' + this._attribute + '-' + this._name + '-' + attrFullList[i]; 
-                attrLine.setAttribute('id', attrId);
-                attrLine.innerHTML = '<code><b>' + attrFullList[i] + '</b></code>';
-                this._dropdownListElement.appendChild(attrLine);
-            }
-        }
-        else {
-            this._expander.innerText = '+';
-            while (this._dropdownListElement.childElementCount) {
-                this._dropdownListElement.removeChild(this._dropdownListElement.lastChild);
             }
         }
     }
