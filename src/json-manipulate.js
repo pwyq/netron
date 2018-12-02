@@ -1,9 +1,14 @@
 /*jshint esversion: 6 */
 
 // To test or debug this file, please use netron/test/test-json-manipulate.js
+// TODO: some function can be combined
 
 // const path = require('path');
 // var fs = require('fs');
+
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Manipulation methods
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 var _createGraph = function createGraph(graphName) {
   var obj = {
@@ -11,50 +16,7 @@ var _createGraph = function createGraph(graphName) {
   };
   return obj;
 }
-  
-var _isGraphEmpty = function isGraphEmpty(filePath) {
-  var isEmpty = true;
-  if (fs.existsSync(filePath) && fs.statSync(filePath).size > 0) {
-    isEmpty = false;
-  }
-  return isEmpty;
-}
-  
-// TODO: some function can be combined
-var _isNodeExist = function isNodeExist(data, graphName, nodeName) {
-  var isExist = false;
-  var _node = _findNode(data, graphName, nodeName);
-  if (_node.length === 1) {  // ensure identical nodes exist
-    isExist = true;
-  }
-  return isExist;
-}
 
-var _isSubgraphExist = function isSubgraphExist(data, graphName, subgraphName) {
-  var isExist = false;
-  var _subgraph = _findSubgraph(data, graphName, subgraphName);
-  if (_subgraph.length === 1) {
-      isExist = true;
-  }
-  return isExist;
-}
-  
-var _findNode = function findNode(data, graphName, nodeName) {
-  var _node = [];
-  _node = data[graphName].filter(function (el) {
-    return el.id == nodeName;
-  });
-  return _node;
-}
-
-var _findSubgraph = function findSubgraph(data, graphName, subgraphName) {
-  var _subgraph = [];
-  _subgraph = data[graphName].filter(function (el) {
-      return el.subgraphName == subgraphName;
-  });
-  return _subgraph;
-}
-  
 var _addNewNode = function addNewNode(data, graphName, nodeName, attributes) {
   var isAdded = false;
   if (!_isNodeExist(data, graphName, nodeName)) {
@@ -98,14 +60,6 @@ var _addNodeToSubgraph = function addNodeToSubgraph(data, graphName, subgraphNam
   }
   return isAdded;
 }
-
-var _isObjectEmpty = function isObjectEmpty(obj) {
-  var isEmpty = false;
-  if (Object.keys(obj).length === 0) {
-    isEmpty = true;
-  }
-  return isEmpty;
-}
   
 var _updateAttribute = function updateAttribute(data, graphName, nodeName, newAttr) {
   var isUpdated = false;
@@ -136,6 +90,44 @@ var _addAttribute = function addAttribute(data, graphName, nodeName, newAttr) {
 }
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Boolean methods
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+var _isObjectEmpty = function isObjectEmpty(obj) {
+  var isEmpty = false;
+  if (Object.keys(obj).length === 0) {
+    isEmpty = true;
+  }
+  return isEmpty;
+}
+
+var _isNodeExist = function isNodeExist(data, graphName, nodeName) {
+  var isExist = false;
+  var _node = _findNode(data, graphName, nodeName);
+  if (_node.length === 1) {  // ensure identical nodes exist
+    isExist = true;
+  }
+  return isExist;
+}
+
+var _isSubgraphExist = function isSubgraphExist(data, graphName, subgraphName) {
+  var isExist = false;
+  var _subgraph = _findSubgraph(data, graphName, subgraphName);
+  if (_subgraph.length === 1) {
+      isExist = true;
+  }
+  return isExist;
+}
+
+var _isGraphEmpty = function isGraphEmpty(filePath) {
+  var isEmpty = true;
+  if (fs.existsSync(filePath) && fs.statSync(filePath).size > 0) {
+    isEmpty = false;
+  }
+  return isEmpty;
+}
+
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Merge & Split JSON
   - Supports user defined grouping json/custom attr json paths;
     - if those are undefined, will use default paths
@@ -143,6 +135,7 @@ var _addAttribute = function addAttribute(data, graphName, nodeName, newAttr) {
   Merge: (subgraph grouping + custom attributes) -> config
   Split: config -> (subgraph grouping + custom attributes)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
 var _findNodeInSubgraph = function findNodeInSubgraph(subgraphList, nodeName) {
   for (var i = 0; i < subgraphList.length; i++) {
     var nodeList = subgraphList[i].nodes;
@@ -162,24 +155,6 @@ var _findNodeInConfig = function findNodeInConfig(configList, nodeName) {
     });
   }
   return _res;
-}
-
-function isDev() {
-  var res = ('ELECTRON_IS_DEV' in process.env) ?
-  (parseInt(process.env.ELECTRON_IS_DEV, 10) === 1) :
-  (process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath));
-  return res;
-}
-
-function getPath(folder, file) {
-  var res = '';
-  if (isDev()) {
-    res = path.join(__dirname, '..', folder, file);
-  }
-  else {
-    res = path.join(process.resourcesPath, folder, file);
-  }
-  return res;
 }
 
 var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
@@ -340,17 +315,60 @@ var _splitJSON = function splitJSON(filePath, subFilePath, cusFilePath) {
   return true;
 }
 
-  
-if (typeof module !== 'undefined' && typeof module.exports === 'object') {
-  module.exports.createGraph       = _createGraph;
-  module.exports.isGraphEmpty      = _isGraphEmpty;
-  module.exports.isNodeExist       = _isNodeExist;
-  module.exports.findNode          = _findNode;
-  module.exports.addNewNode        = _addNewNode;
-  module.exports.isObjectEmpty     = _isObjectEmpty;
-  module.exports.updateAttribute   = _updateAttribute;
-  module.exports.addAttribute      = _addAttribute;
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Helper methods
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
+var _findNode = function findNode(data, graphName, nodeName) {
+  var _node = [];
+  _node = data[graphName].filter(function (el) {
+    return el.id == nodeName;
+  });
+  return _node;
+}
+
+var _findSubgraph = function findSubgraph(data, graphName, subgraphName) {
+  var _subgraph = [];
+  _subgraph = data[graphName].filter(function (el) {
+      return el.subgraphName == subgraphName;
+  });
+  return _subgraph;
+}
+
+function isDev() {
+  var res = ('ELECTRON_IS_DEV' in process.env) ?
+  (parseInt(process.env.ELECTRON_IS_DEV, 10) === 1) :
+  (process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath));
+  return res;
+}
+
+function getPath(folder, file) {
+  var res = '';
+  if (isDev()) {
+    res = path.join(__dirname, '..', folder, file);
+  }
+  else {
+    res = path.join(process.resourcesPath, folder, file);
+  }
+  return res;
+}
+
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Export
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+if (typeof module !== 'undefined' && typeof module.exports === 'object') {
+  // Right-sidebar (custom attributes)
+  module.exports.createGraph     = _createGraph;
+  module.exports.isGraphEmpty    = _isGraphEmpty;
+  module.exports.isNodeExist     = _isNodeExist;
+  module.exports.findNode        = _findNode;
+  module.exports.addNewNode      = _addNewNode;
+  module.exports.isObjectEmpty   = _isObjectEmpty;
+  module.exports.updateAttribute = _updateAttribute;
+  module.exports.addAttribute    = _addAttribute;
+
+  // Left-sidebar (group nodes mode)
   module.exports.isSubgraphExist   = _isSubgraphExist;
   module.exports.findSubgraph      = _findSubgraph;
   module.exports.addNewSubgraph    = _addNewSubgraph;
