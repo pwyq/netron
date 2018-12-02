@@ -65,7 +65,6 @@ cd tools
 
 # TODO
 - add NXP copyright
-- only add stuff to local client, haven't changed `view-browser.js` (webpage client) 
-- add custom attr to the main box (the white one)
+- only add stuff to local client, haven't changed `view-browser.js` (webpage client)
 - test white-space path
 - change a group's attributes
