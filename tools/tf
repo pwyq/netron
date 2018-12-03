@@ -105,4 +105,3 @@ while [ "$#" != 0 ]; do
         "metadata") metadata;;
     esac
 done
-

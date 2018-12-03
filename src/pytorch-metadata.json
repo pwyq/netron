@@ -162,7 +162,8 @@
       "attributes": [
         {
           "default": false,
-          "name": "inplace"
+          "name": "inplace",
+          "visible": false
         },
         {
           "default": 0,
@@ -368,6 +369,29 @@
         }
       ],
       "category": "Normalization",
+      "inputs": [
+        {
+          "name": "input"
+        },
+        {
+          "name": "weight"
+        },
+        {
+          "name": "bias"
+        },
+        {
+          "name": "running_mean",
+          "visible": false
+        },
+        {
+          "name": "running_var",
+          "visible": false
+        },
+        {
+          "name": "num_batches_tracked",
+          "visible": false
+        }
+      ],
       "package": "torch.nn.modules.batchnorm"
     }
   },
@@ -384,7 +408,8 @@
       "attributes": [
         {
           "default": false,
-          "name": "inplace"
+          "name": "inplace",
+          "visible": false
         },
         {
           "default": 0.5,
@@ -401,7 +426,8 @@
       "attributes": [
         {
           "default": false,
-          "name": "inplace"
+          "name": "inplace",
+          "visible": false
         },
         {
           "default": 0.5,
@@ -449,6 +475,43 @@
         }
       ],
       "category": "Layer",
+      "inputs": [
+        {
+          "name": "input"
+        },
+        {
+          "name": "weight_ih_l0",
+          "visible": false
+        },
+        {
+          "name": "weight_hh_l0",
+          "visible": false
+        },
+        {
+          "name": "bias_ih_l0",
+          "visible": false
+        },
+        {
+          "name": "bias_hh_l0",
+          "visible": false
+        },
+        {
+          "name": "weight_ih_l1",
+          "visible": false
+        },
+        {
+          "name": "weight_hh_l1",
+          "visible": false
+        },
+        {
+          "name": "bias_ih_l1",
+          "visible": false
+        },
+        {
+          "name": "bias_hh_l1",
+          "visible": false
+        }
+      ],
       "package": "torch.nn.modules.rnn"
     }
   },

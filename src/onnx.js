@@ -9,7 +9,7 @@ onnx.ModelFactory = class {
 
     match(context, host) {
         var identifier = context.identifier;
-        var extension = context.identifier.split('.').pop().toLowerCase();
+        var extension = identifier.split('.').pop().toLowerCase();
         if (extension == 'onnx' || extension == 'pb') {
             if (identifier.endsWith('saved_model.pb')) {
                 return false;
@@ -846,7 +846,7 @@ onnx.Tensor = class {
                             context.count++;
                             break;
                         case onnx.proto.TensorProto.DataType.UINT8:
-                            results.push(context.rawData.getUInt8(context.index, true));
+                            results.push(context.rawData.getUint8(context.index, true));
                             context.index++;
                             context.count++;
                             break;
@@ -975,6 +975,7 @@ onnx.Tensor = class {
         }
         switch (type.value) {
             case 'tensor_type':
+            case 'sparse_tensor_type':
                 var shape = [];
                 if (type.tensor_type.shape && type.tensor_type.shape.dim) {
                     shape = type.tensor_type.shape.dim.map((dim) => {
@@ -987,7 +988,7 @@ onnx.Tensor = class {
             case 'sequence_type':
                 return new onnx.SequenceType(onnx.Tensor._formatType(type.sequence_type.elem_type, imageFormat), denotation);
             case 'opaque_type':
-                return new onnx.OpaqueType(type.opaque_type.domain, type.opaque_type.name, type.opaque_type.parameters.map((parameter) => onnx.Tensor._formatType(parameter, imageFormat)));
+                return new onnx.OpaqueType(type.opaque_type.domain, type.opaque_type.name);
         }
         return null;
     }
@@ -1083,11 +1084,11 @@ onnx.OpaqueType = class {
     constructor(domain, name, parameters) {
         this._domain = domain;
         this._name = name;
-        this._parameters = parameters;
     }
 
     toString() {
-        return (this._name ? this._name : 'opaque') + '<' + this._parameters.map((parameter) => parameter.toString()).join(',') + '>';
+        var name = (this._domain ? (this._domain + '.') : '') + this._name;
+        return 'opaque<' + name + '>';
     }
 };
 

@@ -8,7 +8,7 @@ src=${root}/src
 tools=${root}/tools
 third_party=${root}/third_party
 
-identifier=coremltools
+identifier=paddle
 virtualenv=${root}/build/virtualenv/${identifier}
 
 if [ $(which python3) ] && [ $(which pip3) ]; then
@@ -30,22 +30,22 @@ git_sync () {
         git -C "${third_party}/${1}" reset --quiet --hard origin/master
     else
         echo "Clone ${2}..."
-        git -C "${third_party}" clone --recursive ${2}
+        git -C "${third_party}" clone --recursive ${2} ${1}
     fi
 }
 
 clean() {
-    bold "coreml clean"
-    rm -rf ${third_party}/coremltools
+    bold "paddle clean"
+    rm -rf ${third_party}/paddle
 }
 
 sync() {
-    bold "coreml sync"
-    git_sync coremltools https://github.com/apple/coremltools.git
+    bold "paddle sync"
+    git_sync paddle https://github.com/PaddlePaddle/Paddle.git
 }
 
 install() {
-    bold "coreml install"
+    bold "paddle install"
     virtualenv --quiet -p ${python} ${virtualenv}
     source ${virtualenv}/bin/activate
     ${pip} install --quiet ${third_party}/${identifier}
@@ -53,18 +53,8 @@ install() {
 }
 
 schema() {
-    bold "coreml schema"
-    ${node_modules}/protobufjs/bin/pbjs -t static-module -w closure --no-encode --no-delimited --no-comments --keep-case -r coreml -o ${src}/coreml-proto.js ${third_party}/${identifier}/mlmodel/format/Model.proto
-    node ${tools}/update_pbjs.js array ${src}/coreml-proto.js floatValue float 2
-}
-
-convert() {
-    bold "coreml convert"
-    source ${virtualenv}/bin/activate
-    ${pip} install --quiet onnx
-    ${pip} install --quiet sklearn
-    ${python} ${tools}/coreml-script.py convert ${1}
-    deactivate
+    bold "paddle schema"
+    ${node_modules}/protobufjs/bin/pbjs -t static-module -w closure --no-encode --no-delimited --no-comments --keep-case -r paddle -o ${src}/paddle-proto.js ${third_party}/${identifier}/paddle/fluid/framework/framework.proto
 }
 
 while [ "$#" != 0 ]; do
@@ -74,6 +64,5 @@ while [ "$#" != 0 ]; do
         "sync") sync;;
         "install") install;;
         "schema") schema;;
-        "convert") convert ${1} && shift;;
     esac
 done

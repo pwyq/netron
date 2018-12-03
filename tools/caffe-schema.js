@@ -88,12 +88,24 @@ update(
   optional YoloV3LossParameter yolo_v3_loss_param = 3199; // 199
   optional BoxOutputParameter box_output_param = 4151; // 151 in gdlg/panoramic-object-detection
   optional RingPadParameter ring_pad_param = 4158; // 158 in gdlg/panoramic-object-detection
+  optional UpsampleParameter upsample_param = 5137; // 137 in alexgkendall/caffe-segnet
+  optional DenseImageDataParameter dense_image_data_param = 5138; // 138 in alexgkendall/caffe-segnet
   optional bool force_backward = 4000; // ???
   optional SmoothL1LossParameter smooth_l1_loss_param = 5148; // 148 in mahyarnajibi/caffe-ssh
 }`);
 
 update(
-`  optional uint32 crop_size = 3 [default = 0];
+`// Message that stores parameters used to apply transformation
+// to the data layer's data
+message TransformationParameter {
+  // For data pre-processing, we can do simple scaling and subtracting the
+  // data mean, if provided. Note that the mean subtraction is always carried
+  // out before scaling.
+  optional float scale = 1 [default = 1];
+  // Specify if we want to randomly mirror data.
+  optional bool mirror = 2 [default = false];
+  // Specify if we would like to randomly crop an image.
+  optional uint32 crop_size = 3 [default = 0];
   // mean_file and mean_value cannot be specified at the same time
   optional string mean_file = 4;
   // if specified can be repeated once (would subtract it from all the channels)
@@ -105,13 +117,20 @@ update(
   // Force the decoded image to have 1 color channels.
   optional bool force_gray = 7 [default = false];
 }`,
-`  optional uint32 crop_size = 3 [default = 0];
-  optional uint32 crop_h = 11 [default = 0];
-  optional uint32 crop_w = 12 [default = 0];
-
+`// Message that stores parameters used to apply transformation
+// to the data layer's data
+message TransformationParameter {
+  // For data pre-processing, we can do simple scaling and subtracting the
+  // data mean, if provided. Note that the mean subtraction is always carried
+  // out before scaling.
+  optional float scale = 1 [default = 1];
+  // Specify if we want to randomly mirror data.
+  optional bool mirror = 2 [default = false];
+  // Specify if we would like to randomly crop an image.
+  optional uint32 crop_size = 3 [default = 0];
   // mean_file and mean_value cannot be specified at the same time
   optional string mean_file = 4;
-  // if specified can be repeated once (would substract it from all the channels)
+  // if specified can be repeated once (would subtract it from all the channels)
   // or can be repeated the same number of times as channels
   // (would subtract them from the corresponding channel)
   repeated float mean_value = 5;
@@ -119,24 +138,34 @@ update(
   optional bool force_color = 6 [default = false];
   // Force the decoded image to have 1 color channels.
   optional bool force_gray = 7 [default = false];
-  // Resize policy
+
   optional ResizeParameter resize_param = 8;
-  // Noise policy
   optional NoiseParameter noise_param = 9;
-  // Distortion policy
-  optional DistortionParameter distort_param = 13;
-  // Expand policy
-  optional ExpansionParameter expand_param = 14;
-  // Constraint for emitting the annotation after transformation.
   optional EmitConstraint emit_constraint = 10;
-  // Resize the input randomly
+  optional uint32 crop_h = 11 [default = 0];
+  optional uint32 crop_w = 12 [default = 0];
+  optional DistortionParameter distort_param = 13;
+  optional ExpansionParameter expand_param = 14;
   optional RandomResizeParameter random_resize_param = 15;
   optional RandomAspectRatioParameter random_aspect_ratio_param = 16;
-
-    //will flip x flow if flow image input
   optional bool flow = 17 [default = false];
-
   optional bool bgr2rgb = 18 [ default = false ];
+
+  optional float min_scaling_factor = 108 [default = 0.75]; // 8 in twtygqyy/caffe-augmentation
+  optional float max_scaling_factor = 109 [default = 1.50]; // 9 in twtygqyy/caffe-augmentation
+  optional uint32 max_rotation_angle = 110 [default = 0]; // 10 in twtygqyy/caffe-augmentation
+  optional bool contrast_brightness_adjustment = 111 [default = false]; // 11 in twtygqyy/caffe-augmentation
+  optional bool smooth_filtering = 112 [default = false]; // 12 in twtygqyy/caffe-augmentation
+  optional float min_contrast = 114 [default = 0.8]; // 14 in twtygqyy/caffe-augmentation
+  optional float max_contrast = 115 [default = 1.2]; // 15 in twtygqyy/caffe-augmentation
+  optional uint32 max_brightness_shift = 116 [default = 5]; // 16 in twtygqyy/caffe-augmentation
+  optional float max_smooth = 117 [default = 6]; // 17 in twtygqyy/caffe-augmentation
+  optional uint32 max_color_shift = 120 [default = 0]; // 20 in twtygqyy/caffe-augmentation
+  optional uint32 min_side_min = 113 [default = 0]; // 13 in twtygqyy/caffe-augmentation
+  optional uint32 min_side_max = 121 [default = 0]; // 21 in twtygqyy/caffe-augmentation
+  optional uint32 min_side = 122 [default = 0]; // 22 in twtygqyy/caffe-augmentation
+  optional float apply_probability = 118 [default = 0.5]; // 18 in twtygqyy/caffe-augmentation
+  optional bool debug_params = 119 [default = false]; // 19 in twtygqyy/caffe-augmentation
 }
 
 // Message that stores parameters used by data transformer for transformation
@@ -264,6 +293,14 @@ message BNParameter {
     CUDNN = 2;
   }
   optional Engine engine = 6 [default = DEFAULT];
+
+  optional FillerParameter scale_filler = 101; // 3 in alexgkendall/caffe-segnet
+  optional FillerParameter shift_filler = 102; // 3 in alexgkendall/caffe-segnet
+  enum BNMode {
+    LEARN = 0;
+    INFERENCE = 1;
+  }
+  optional BNMode bn_mode = 103 [default = LEARN]; // 3 in alexgkendall/caffe-segnet
 }
 
 message BatchReductionParameter {
@@ -1276,6 +1313,50 @@ message SmoothL1LossParameter {
   //   |x| - 0.5 / sigma / sigma -- otherwise
   optional float sigma = 1 [default = 1];
 }
+
+message UpsampleParameter {
+  // DEPRECATED. No need to specify upsampling scale factors when
+  // exact output shape is given by upsample_h, upsample_w parameters.
+  optional uint32 scale = 1 [default = 2];
+  // DEPRECATED. No need to specify upsampling scale factors when
+  // exact output shape is given by upsample_h, upsample_w parameters.
+  optional uint32 scale_h = 2;
+  // DEPRECATED. No need to specify upsampling scale factors when
+  // exact output shape is given by upsample_h, upsample_w parameters.
+  optional uint32 scale_w = 3;
+  // DEPRECATED. Specify exact output height using upsample_h. This
+  // parameter only works when scale is 2
+  optional bool pad_out_h = 4 [default = false];
+  // DEPRECATED. Specify exact output width using upsample_w. This
+  // parameter only works when scale is 2
+  optional bool pad_out_w = 5 [default = false];
+  optional uint32 upsample_h = 6;
+  optional uint32 upsample_w = 7;
+}
+
+message DenseImageDataParameter {
+  // Specify the data source file.
+  optional string source = 1;
+  // Specify the batch size.
+  optional uint32 batch_size = 2;
+  // The rand_skip variable is for the data layer to skip a few data points
+  // to avoid all asynchronous sgd clients to start at the same point. The skip
+  // point would be set as rand_skip * rand(0,1). Note that rand_skip should not
+  // be larger than the number of keys in the database.
+  optional uint32 rand_skip = 3 [default = 0];
+  // Whether or not ImageLayer should shuffle the list of files at every epoch.
+  optional bool shuffle = 4 [default = false];
+  // It will also resize images if new_height or new_width are not zero.
+  optional uint32 new_height = 5 [default = 0];
+  optional uint32 new_width = 6 [default = 0];
+  // Specify if the images are color or gray
+  optional bool is_color = 7 [default = true];
+  optional string mean_file = 8;
+  optional string root_folder = 9 [default = ""];
+  optional bool mirror = 10 [default = false];
+  optional uint32 crop_width = 11 [default = 0];
+  optional uint32 crop_height = 12 [default = 0];
+}
 `);
 
 update(
@@ -1308,8 +1389,7 @@ update(
     TANH = 23;
     WINDOW_DATA = 24;
     THRESHOLD = 31;
-  }
-`,
+  }`,
 `    SLICE = 33;
     TANH = 23;
     WINDOW_DATA = 24;
@@ -1317,5 +1397,38 @@ update(
     IMAGE_SEG_DATA = 139; // 39 in cdmh/deeplab-public
   }
 `);
+
+update(
+`  // Path to caffemodel file(s) with pretrained weights to initialize finetuning.
+  // Tha same as command line --weights parameter for caffe train command.
+  // If command line --weights parameter is specified, it has higher priority
+  // and overwrites this one(s).
+  // If --snapshot command line parameter is specified, this one(s) are ignored.
+  // If several model files are expected, they can be listed in a one 
+  // weights parameter separated by ',' (like in a command string) or
+  // in repeated weights parameters separately.
+  repeated string weights = 42;
+}`,
+`  // Path to caffemodel file(s) with pretrained weights to initialize finetuning.
+  // Tha same as command line --weights parameter for caffe train command.
+  // If command line --weights parameter is specified, it has higher priority
+  // and overwrites this one(s).
+  // If --snapshot command line parameter is specified, this one(s) are ignored.
+  // If several model files are expected, they can be listed in a one 
+  // weights parameter separated by ',' (like in a command string) or
+  // in repeated weights parameters separately.
+  repeated string weights = 42;
+
+  // Evaluation type.
+  optional string eval_type = 52 [default = "classification"]; // eric612/Caffe-YOLOv3-Windows
+  // ap_version: different ways of computing Average Precision.
+  //    Check https://sanchom.wordpress.com/tag/average-precision/ for details.
+  //    11point: the 11-point interpolated average precision. Used in VOC2007.
+  //    MaxIntegral: maximally interpolated AP. Used in VOC2012/ILSVRC.
+  //    Integral: the natural integral of the precision-recall curve.
+  optional string ap_version = 53 [default = "Integral"];
+  // If true, display per class result.
+  optional bool show_per_class_result = 44 [default = false];
+}`,)
 
 fs.writeFileSync(file, data, 'utf-8');
