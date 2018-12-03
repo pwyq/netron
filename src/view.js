@@ -201,7 +201,7 @@ view.View = class {
             var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
             var filePath = this.getPath('user_json/graph_grouping_json', outputFileName);
 
-            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, this._graph);
+            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, this._graph, this._loadedConfigFile);
             this._eventEmitter.on('share-node-id', (data) => {
                 view.appendNode(data)
             });
@@ -1057,7 +1057,8 @@ view.View = class {
     splitJSON(inputPath) {
         // THE CONFIGURATION FILE NAME MUST ENDED WITH '_config.json'
         if (jMan.splitJSON(inputPath)) {
-            this._inputFileBaseName = path.basename(inputPath).replace('_config.json', '');
+            this._loadedConfigFile = path.basename(inputPath);
+            this._inputFileBaseName = this._loadedConfigFile.replace('_config.json', '');
             var msg = inputPath + ' is loaded.\nPlease refresh <F5> the page.';
             this._host.info('Load Configuration', msg);
         }

@@ -76,9 +76,8 @@
 
 .left-sidebar-layer { white-space: pre; word-wrap: normal; overflow: auto; display: block; }
 #group-new-subgraph, #export-group-new-subgraph, #start-group-new-subgraph, #end-group-new-subgraph, #find-group-new-subgraph {
-    background-color: #b3b3b3;
+    background-color: #f2f2f2;
     border: none;
-    color: white;
     padding: 5px 10px;
     text-align: center;
     text-decoration: none;

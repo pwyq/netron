@@ -66,7 +66,7 @@ class LeftSidebar {
 }
 
 class GroupModeSidebar {
-    constructor(host, fileName, filePath, dag) {
+    constructor(host, fileName, filePath, dag, loadedConfigName) {
         this._host = host;
         this._subgraphs = [];
         this._allNodes = [];
@@ -88,12 +88,25 @@ class GroupModeSidebar {
             this.highlightHandler(e.target);
         });
 
+        var loadConfigName = document.createElement('div');
+        loadConfigName.setAttribute('class', 'left-sidebar-name');
+        loadConfigName.innerHTML = 'Loaded Configuration: ';
+        var loadConfigNameText = document.createElement('div');
+        loadConfigNameText.setAttribute('class', 'left-sidebar-value');
+        loadConfigNameText.innerHTML = loadedConfigName;
+        loadConfigName.appendChild(loadConfigNameText);
+        
         this._addButtons();
-
+        
         var divider = document.createElement('div');
-        divider.setAttribute('style', 'margin-bottom: 20px');
-
-        this._contentElement.appendChild(this._buttonsElement);
+        divider.setAttribute('style', 'margin-bottom: 80px');
+        
+        this._topInfoElement = document.createElement('div');
+        this._topInfoElement.setAttribute('id', 'left-sidebar-top-section')
+        this._topInfoElement.setAttribute('style', 'position: fixed; top: 50px; background: #00cc00; border-radius: 15px; padding: 10px');
+        this._topInfoElement.appendChild(loadConfigName);
+        this._topInfoElement.appendChild(this._buttonsElement);
+        this._contentElement.appendChild(this._topInfoElement);
         this._contentElement.appendChild(divider);
         this._contentElement.appendChild(this._fullListElement);
 
@@ -160,7 +173,6 @@ class GroupModeSidebar {
         });
 
         this._buttonsElement = document.createElement('div');
-        this._buttonsElement.setAttribute('style', 'position: fixed; top: 40px; background: #999999;');
         this._buttonsElement.setAttribute('class', 'left-sidebar-buttons');
         this._buttonsElement.appendChild(this._newSubgraphButtonElement);
         this._buttonsElement.appendChild(this._startNodeButtomElement);
@@ -467,7 +479,8 @@ class GroupModeSidebar {
     }
 
     clean() {
-        this._buttonsElement.style.visibility = 'hidden';
+        this._topInfoElement.style.visibility = 'hidden';
+        this.nodeButtonsOff();
         this._selectedSubgraph = null;
         this._startNode = null;
         this._endNode = null;
