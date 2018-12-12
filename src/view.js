@@ -581,6 +581,8 @@ view.View = class {
 
                     if (dagNodeID && dagNodeOp) {
                         dag.setNode(dagNodeID, { op: dagNodeOp });
+                        console.log('dag = ' + dagNodeID + ', node = ' + nodeId);
+                        // TODO, match dag node id and the numerical id
                     }
 
                     function addOperator(view, formatter, node, ext) {
@@ -749,15 +751,8 @@ view.View = class {
                         g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + name });
                     }
                     else {
-                        if (nodeId != 3) {
-                            g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + id.toString() });
-                            id++;
-                        }
-                        else {
-                            console.log('hide 3');
-                        }
-                        // g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + id.toString() });
-                        // id++;
+                        g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + id.toString() });
+                        id++;
                     }
             
                     function createCluster(name) {
@@ -815,13 +810,7 @@ view.View = class {
                     formatter.addItem(input.name, null, [ 'graph-item-input' ], types, () => {
                         this.showModelProperties();
                     });
-                    // g.setNode(nodeId++, { label: formatter.format(graphElement), class: 'graph-input' } );
-                    if (nodeId != 3) {
-                        g.setNode(nodeId++, { label: formatter.format(graphElement), class: 'graph-input' } );
-                    }
-                    else {
-                        console.log('hide 3');
-                    }
+                    g.setNode(nodeId++, { label: formatter.format(graphElement), class: 'graph-input' } );
                 });
             
                 graph.outputs.forEach((output) => {
@@ -839,13 +828,7 @@ view.View = class {
                     formatter.addItem(output.name, null, [ 'graph-item-output' ], types, () => {
                         this.showModelProperties();
                     });
-                    // g.setNode(nodeId++, { label: formatter.format(graphElement) } ); 
-                    if (nodeId != 3) {
-                        g.setNode(nodeId++, { label: formatter.format(graphElement) } ); 
-                    }
-                    else {
-                        console.log('hide 3');
-                    }
+                    g.setNode(nodeId++, { label: formatter.format(graphElement) } );
                 });
             
                 Object.keys(edgeMap).forEach((edge) => {
@@ -905,6 +888,7 @@ view.View = class {
 
                 setTimeout(() => {
                     try {
+                        // TODO, pass list to renderer
                         var graphRenderer = new grapher.Renderer(originElement);
                         graphRenderer.render(g);
             

@@ -8,6 +8,7 @@ grapher.Renderer = class {
 
     constructor(svgElement) {
         this._svgElement = svgElement;
+        // TODO get list here
     }
 
     render(graph) {
@@ -42,9 +43,8 @@ grapher.Renderer = class {
         this._svgElement.appendChild(svgNodeGroup);
 
         graph.nodes().forEach((nodeId) => {
-            console.log('node id = ' + nodeId);
-            // if (graph.children(nodeId).length == 0) {
-            if (graph.children(nodeId).length == 0 && nodeId != 3) {
+            // TODO: if nodeId is not in the list, then don't render it
+            if (graph.children(nodeId).length == 0) {
                 var node = graph.node(nodeId);
                 var element = this.createElement('g');
                 if (node.id) {
@@ -99,8 +99,8 @@ grapher.Renderer = class {
         dagre.layout(graph);
 
         graph.nodes().forEach((nodeId) => {
-            // if (graph.children(nodeId).length == 0) {
-            if (graph.children(nodeId).length == 0 && nodeId != 3) {
+            // TODO: if nodeId is not in the list, then don't render it
+            if (graph.children(nodeId).length == 0) {
                 var node = graph.node(nodeId);
                 var element = node.element;
                 element.setAttribute('transform', 'translate(' + node.x + ',' + node.y + ')');
@@ -138,9 +138,11 @@ grapher.Renderer = class {
         marker.appendChild(markerPath);
 
         graph.edges().forEach((edgeId) => {
-            console.log('edge Id = ' + edgeId);
             var edge = graph.edge(edgeId);
             var edgePath = grapher.Renderer._computeCurvePath(edge, graph.node(edgeId.v), graph.node(edgeId.w));
+            if (edgePath.includes('NaN')) {
+                return;
+            }
             var edgeElement = this.createElement('path');
             edgeElement.setAttribute('class', edge.hasOwnProperty('class') ? ('edge-path ' + edge.class) : 'edge-path');
             edgeElement.setAttribute('d', edgePath);
