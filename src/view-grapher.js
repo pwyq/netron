@@ -42,7 +42,9 @@ grapher.Renderer = class {
         this._svgElement.appendChild(svgNodeGroup);
 
         graph.nodes().forEach((nodeId) => {
-            if (graph.children(nodeId).length == 0) {
+            console.log('node id = ' + nodeId);
+            // if (graph.children(nodeId).length == 0) {
+            if (graph.children(nodeId).length == 0 && nodeId != 3) {
                 var node = graph.node(nodeId);
                 var element = this.createElement('g');
                 if (node.id) {
@@ -97,7 +99,8 @@ grapher.Renderer = class {
         dagre.layout(graph);
 
         graph.nodes().forEach((nodeId) => {
-            if (graph.children(nodeId).length == 0) {
+            // if (graph.children(nodeId).length == 0) {
+            if (graph.children(nodeId).length == 0 && nodeId != 3) {
                 var node = graph.node(nodeId);
                 var element = node.element;
                 element.setAttribute('transform', 'translate(' + node.x + ',' + node.y + ')');
@@ -128,17 +131,14 @@ grapher.Renderer = class {
         marker.setAttribute('markerWidth', 8);
         marker.setAttribute('markerHeight', 6);
         marker.setAttribute('orient', 'auto');
-        // marker.style.setProperty('fill`', 'red');    // useless
         edgePathGroupDefs.appendChild(marker);
         var markerPath = this.createElement('path');
         markerPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 L 4 5 z');
-        // markerPath.style.setProperty('stroke-width', 1);    // useless
         markerPath.style.setProperty('stroke-dasharray', '1,0');
-        // markerPath.style.setProperty('stroke', 'red');   // use-less
-        // markerPath.style.setProperty('fill', 'red');    // this change the arrow color
         marker.appendChild(markerPath);
 
         graph.edges().forEach((edgeId) => {
+            console.log('edge Id = ' + edgeId);
             var edge = graph.edge(edgeId);
             var edgePath = grapher.Renderer._computeCurvePath(edge, graph.node(edgeId.v), graph.node(edgeId.w));
             var edgeElement = this.createElement('path');
@@ -188,12 +188,14 @@ grapher.Renderer = class {
         var path = new Path();
         var curve = new Curve(path);
         points.forEach((point, index) => {
-            if (index == 0) {
-                curve.lineStart();
-            }
-            curve.point(point.x, point.y);
-            if (index == points.length - 1) {
-                curve.lineEnd();
+            if (point) {
+                if (index == 0) {
+                    curve.lineStart();
+                }
+                curve.point(point.x, point.y);
+                if (index == points.length - 1) {
+                    curve.lineEnd();
+                }
             }
         });
 
@@ -201,30 +203,32 @@ grapher.Renderer = class {
     }
     
     static intersectRect(node, point) {
-        var x = node.x;
-        var y = node.y;
-        var dx = point.x - x;
-        var dy = point.y - y;
-        var w = node.width / 2;
-        var h = node.height / 2;
-        var sx;
-        var sy;
-        if (Math.abs(dy) * w > Math.abs(dx) * h) {
-        if (dy < 0) {
-            h = -h;
-        }
-        sx = dy === 0 ? 0 : h * dx / dy;
-        sy = h;
-        }
-        else {
-            if (dx < 0) {
-                w = -w;
+        if (node) {
+            var x = node.x;
+            var y = node.y;
+            var dx = point.x - x;
+            var dy = point.y - y;
+            var w = node.width / 2;
+            var h = node.height / 2;
+            var sx;
+            var sy;
+            if (Math.abs(dy) * w > Math.abs(dx) * h) {
+            if (dy < 0) {
+                h = -h;
             }
-            sx = w;
-            sy = dx === 0 ? 0 : w * dy / dx;
-        }      
-        return {x: x + sx, y: y + sy};
-      }    
+            sx = dy === 0 ? 0 : h * dx / dy;
+            sy = h;
+            }
+            else {
+                if (dx < 0) {
+                    w = -w;
+                }
+                sx = w;
+                sy = dx === 0 ? 0 : w * dy / dx;
+            }      
+            return {x: x + sx, y: y + sy};
+        }
+    }
 };
 
 grapher.NodeElement = class {

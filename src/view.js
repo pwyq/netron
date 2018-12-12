@@ -749,8 +749,15 @@ view.View = class {
                         g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + name });
                     }
                     else {
-                        g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + id.toString() });
-                        id++;
+                        if (nodeId != 3) {
+                            g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + id.toString() });
+                            id++;
+                        }
+                        else {
+                            console.log('hide 3');
+                        }
+                        // g.setNode(nodeId, { label: formatter.format(graphElement), id: 'node-' + id.toString() });
+                        // id++;
                     }
             
                     function createCluster(name) {
@@ -808,7 +815,13 @@ view.View = class {
                     formatter.addItem(input.name, null, [ 'graph-item-input' ], types, () => {
                         this.showModelProperties();
                     });
-                    g.setNode(nodeId++, { label: formatter.format(graphElement), class: 'graph-input' } ); 
+                    // g.setNode(nodeId++, { label: formatter.format(graphElement), class: 'graph-input' } );
+                    if (nodeId != 3) {
+                        g.setNode(nodeId++, { label: formatter.format(graphElement), class: 'graph-input' } );
+                    }
+                    else {
+                        console.log('hide 3');
+                    }
                 });
             
                 graph.outputs.forEach((output) => {
@@ -826,7 +839,13 @@ view.View = class {
                     formatter.addItem(output.name, null, [ 'graph-item-output' ], types, () => {
                         this.showModelProperties();
                     });
-                    g.setNode(nodeId++, { label: formatter.format(graphElement) } ); 
+                    // g.setNode(nodeId++, { label: formatter.format(graphElement) } ); 
+                    if (nodeId != 3) {
+                        g.setNode(nodeId++, { label: formatter.format(graphElement) } ); 
+                    }
+                    else {
+                        console.log('hide 3');
+                    }
                 });
             
                 Object.keys(edgeMap).forEach((edge) => {
@@ -945,6 +964,7 @@ view.View = class {
                         callback(null);
                     }
                     catch (err) {
+                        console.log(err);
                         callback(err);
                     }
                 }, 20);
@@ -962,8 +982,8 @@ view.View = class {
             }
         }
         catch (err) {
-            callback(err);
             console.log(err);
+            callback(err);
         }
     }
 
