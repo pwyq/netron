@@ -1,10 +1,10 @@
 # User Manual
 
-| Info | Info |
+| Info | ... |
 |:---:|:---:|
 | Created by | Yanqing Wu <yanqing.wu@nxp.com> |
 | Updated by | Yanqing Wu <yanqing.wu@nxp.com> |
-| Last Updated | Dec 3rd, 2018 |
+| Last Updated | Dec. 15th, 2018 |
 
 __This file introduces the new features which added for AIRunner on Netron.__
 
@@ -12,9 +12,9 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 
 ## Load Configuration
 - Allows users to load own configuration files
-	- Please ensure file name ended with `{your_filename}_config.json`
-	- In the config JSON, please ensure the first key value matches with `{your_filename}`
-- The file will auto create upon `Export`/`Save` on `Group Nodes Mode`
+	- __Important__: Please ensure file name ended with `{your_filename}_config.json`
+	- __Important__: In the config JSON, please ensure the first key value matches with `{your_filename}`
+- The `_config.json` file will auto create upon `Export`/`Save` on `Group Nodes Mode`
 	- The file combines `{}_custom_attributes.json` and `{}_subgraph_grouping.json`, which can be modified separately
 - For developers: there are script's methods to merge/split user's configuration JSON in `{Netron root}/src/json-manipulate.json`
 

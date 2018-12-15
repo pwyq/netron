@@ -66,12 +66,14 @@ class LeftSidebar {
 }
 
 class GroupModeSidebar {
-    constructor(host, fileName, filePath, dag, loadedConfigName) {
+    constructor(host, fileName, filePath, modelPath, cusPath, dag, loadedConfigName) {
         this._host = host;
         this._subgraphs = [];
         this._allNodes = [];
         this._fileName = fileName;
         this._filePath = filePath;
+        this._modelPath = modelPath;
+        this._cusPath = cusPath;
         this._dag = dag;
         this._selectedSubgraph = null;
         this._startOn = false;
@@ -111,6 +113,8 @@ class GroupModeSidebar {
         this._contentElement.appendChild(this._fullListElement);
 
         this._readGroupingJSON();
+        this._dfObj = this._readDefaultAttrJSON();
+        this._cusObj = this._readCustomAttrJSON();
     }
 
     /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -205,6 +209,28 @@ class GroupModeSidebar {
         this._exportButtomElement.innerHTML = 'Save';
     }
 
+    _readDefaultAttrJSON() {
+        if (jMan.isGraphEmpty(this._modelPath)) {
+            return;
+        }
+        else {
+            var raw = fs.readFileSync(this._modelPath);
+            var dfObj = JSON.parse(raw);
+        }
+        return dfObj;
+    }
+
+    _readCustomAttrJSON() {
+        if (jMan.isGraphEmpty(this._cusPath)) {
+            var cusObj = jMan.createGraph(this._inputFileBaseName);
+        }
+        else {
+            var raw = fs.readFileSync(this._cusPath);
+            var cusObj = JSON.parse(raw);
+        }
+        return cusObj;
+    }
+
     /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         Handler methods
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -246,20 +272,37 @@ class GroupModeSidebar {
         }
         var graphObj = jMan.createGraph(this._fileName);
 
-        for (var i = 0; i < this._subgraphs.length; i++) {
-            var sg = this._subgraphs[i].subgraphName;
-            jMan.addNewSubgraph(graphObj, this._fileName, sg);
-            for (var j = 0; j < this._subgraphs[i]._nodes.length; j++) {
-                var x = this._subgraphs[i]._nodes[j].id;
-                var nodeName = x.split('-').pop();
-                jMan.addNodeToSubgraph(graphObj, this._fileName, sg, nodeName);
-            }
-        }
+        if (this._subgraphs.length) {
+            for (var i = 0; i < this._subgraphs.length; i++) {
+                var sg = this._subgraphs[i].subgraphName;
+                jMan.addNewSubgraph(graphObj, this._fileName, sg);
+                for (var j = 0; j < this._subgraphs[i]._nodes.length; j++) {
+                    var x = this._subgraphs[i]._nodes[j].id;
+                    var nodeName = x.split('-').pop();
+                    jMan.addNodeToSubgraph(graphObj, this._fileName, sg, nodeName);
 
-        var json = JSON.stringify(graphObj, null , 2);
-        fs.writeFileSync(this._filePath, json);
-        jMan.mergeJSON(this._fileName);
-        this._host.info('File Saved', 'Group setting is saved.');
+                    // [VSKY-1438] 1. read the default_attrs in dfObj
+                    var x = jMan.findNode(this._dfObj, this._fileName, nodeName);
+                    if (x.length) {
+                        // 2. write to cusObj
+                        jMan.addNewNode(this._cusObj, this._fileName, nodeName, '');
+                        jMan.addDefaultAttribute(this._cusObj, this._fileName, nodeName, x[0].default_attrs);
+                
+                        var json = JSON.stringify(this._cusObj, null , 2);
+                        fs.writeFileSync(this._cusPath, json);
+                    }
+                }
+            }
+    
+            var json = JSON.stringify(graphObj, null , 2);
+            fs.writeFileSync(this._filePath, json);
+            jMan.mergeJSON(this._fileName);
+            this._host.info('File Saved', 'Group setting is saved.');
+        }
+        else {
+            jMan.mergeJSON(this._fileName);
+            this._host.info('WARNING', 'Empty group setting.');
+        }
     }
 
     highlightHandler(target) {
@@ -297,7 +340,7 @@ class GroupModeSidebar {
         var e = sortedArray.indexOf(this._endNode);
         var c = e - s + 1;
         if (s > e) {
-            this._host.realError('Invalid Error', 'Start Node must be before End Node.');
+            this._host.realError('Invalid Error', 'Start-Node must be before End-Node.');
             return;
         }
         var res = false;
@@ -446,6 +489,7 @@ class GroupModeSidebar {
         target.style.background = "#e6e6ff";
         //   target.style.color = "#ffffff";
         this.nodeButtonsOn();
+        this._topInfoElement.style.visibility = 'visible';
     }
 
     highlightOff(target) {

@@ -17,3 +17,4 @@ python_scripts/*.spec
 user_json/custom_json/*.json
 user_json/graph_grouping_json/*.json
 user_json/model_config_json/*.json
+user_json/default_attr_json/*.json

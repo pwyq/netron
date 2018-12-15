@@ -13,6 +13,12 @@ var dagre = dagre || require('dagre');
 var assert = require('assert');
 const jMan = require('./json-manipulate');
 
+/*  Long-term TODO:
+        - Since some models are really large and deep (its JSON file could over 500MB), may consider use database (SQL)
+        - As discussed with Dong, may implement a command line version
+        - rename user config's file
+        - Optimization (huge optimization room)
+*/
 view.View = class {
     constructor(host) {
         this._host = host;
@@ -25,6 +31,7 @@ view.View = class {
         this._host.initialize(this);
         this._showDetails = true;
         this._showNames = false;
+        this._isSplit = false;
         this._searchText = '';
         this._zoomMode = 'd3';
         this._modelFactoryService = new view.ModelFactoryService(this._host);
@@ -198,10 +205,15 @@ view.View = class {
 
     groupNodeMode() {
         if (this._activeGraph) {
+            // TODO: optimize file passing after vSKY-1438
             var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
             var filePath = this.getPath('user_json/graph_grouping_json', outputFileName);
+            var dfAttrFileName = this._modelName + '_default_attributes.json';
+            var modelPath = this.getPath('user_json/default_attr_json', dfAttrFileName);
+            var cusFileName = this._inputFileBaseName + '_custom_attributes.json';
+            var cusPath = this.getPath('user_json/custom_json', cusFileName);
 
-            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, this._graph, this._loadedConfigFile);
+            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, modelPath, cusPath, this._graph, this._loadedConfigFile);
             this._eventEmitter.on('share-node-id', (data) => {
                 view.appendNode(data)
             });
@@ -480,7 +492,16 @@ view.View = class {
                 this._inputFilePath     = this._host.getInputFilePath();
                 this._inputFileName     = path.basename(this._inputFilePath);
                 this._inputFileExtName  = path.extname(this._inputFileName);
-                this._COLORS = this.generateRandomColors();
+                this._modelName = path.parse(this._inputFileName).name
+                this._COLORS    = this.generateRandomColors();
+
+                // JSON initialization
+                if (!this._inputFileBaseName) {
+                    this._inputFileBaseName = 'defaultNaming'
+                }
+                var outputFileName = this._inputFileBaseName + '_custom_attributes.json';
+                var filePath = this.getPath('user_json/custom_json', outputFileName);
+                var graphObj = this.initJSON(filePath);
     
                 switch (this._zoomMode) {
                     case 'd3':
@@ -546,7 +567,7 @@ view.View = class {
                     var dagNodeID = null;
                     var dagNodeOp = null;
                     switch (this._inputFileExtName) {
-                        case '.pb':
+                        case '.pb': // TensorFlow
                             if (node._node) {
                                 dagNodeID = node._node.name;
                                 dagNodeOp = node._node.op;
@@ -564,7 +585,7 @@ view.View = class {
                             dagNodeID = node._name;
                             dagNodeOp = node._type;
                             break;
-                        case '.h5':
+                        case '.h5': // Keras
                             dagNodeID = node._config.name;
                             dagNodeOp = node._operator;
                             break;
@@ -581,8 +602,9 @@ view.View = class {
 
                     if (dagNodeID && dagNodeOp) {
                         dag.setNode(dagNodeID, { op: dagNodeOp });
-                        console.log('dag = ' + dagNodeID + ', node = ' + nodeId);
-                        // TODO, match dag node id and the numerical id
+                        if (!this._isSplit) {
+                            jMan.addNewNode(graphObj, this._inputFileBaseName, dagNodeID, '');
+                        }
                     }
 
                     function addOperator(view, formatter, node, ext) {
@@ -739,8 +761,14 @@ view.View = class {
                                     if (attributeValue && attributeValue.length > 25) {
                                         attributeValue = attributeValue.substring(0, 25) + '...';
                                     }
+                                    if (dagNodeID) {
+                                        var defaultAttrObj = {};
+                                        defaultAttrObj[attribute.name] = attributeValue;
+                                        jMan.addDefaultAttribute(graphObj, this._inputFileBaseName, dagNodeID, defaultAttrObj); // TODO: to optimize; have redundant calls
+                                    }
+
                                     formatter.addAttribute(attribute.name, attributeValue, attribute.type);
-                                    // TODO: load custom attribute here?
+                                    // TODO: load custom attribute to formatter?
                                 }
                             });
                         }
@@ -963,6 +991,16 @@ view.View = class {
                     }
                 }
                 this._graph = dag;
+
+                // save JSON
+                var json = JSON.stringify(graphObj, null , 2);
+                fs.writeFileSync(filePath, json);
+                if (!this._isSplit) {
+                    // save default attributes json
+                    var dfOutputFileName = this._modelName + '_default_attributes.json';
+                    var dfFilePath = this.getPath('user_json/default_attr_json', dfOutputFileName);
+                    fs.writeFileSync(dfFilePath, json)
+                }
             }
         }
         catch (err) {
@@ -1036,6 +1074,7 @@ view.View = class {
     }
 
     _cleanCache() {
+        // Delete everything in /graph_grouping_json and /custom_json
         var subPath = this.getPath('user_json/graph_grouping_json');
         fs.readdir(subPath, (err, files) => {
             if (err) throw err;
@@ -1060,10 +1099,12 @@ view.View = class {
     
     splitJSON(inputPath) {
         // THE CONFIGURATION FILE NAME MUST ENDED WITH '_config.json'
+        // This method is called upon user `Load Configuration <Ctrl+L>`
         if (jMan.splitJSON(inputPath)) {
+            this._isSplit = true;
             this._loadedConfigFile = path.basename(inputPath);
             this._inputFileBaseName = this._loadedConfigFile.replace('_config.json', '');
-            var msg = inputPath + ' is loaded.\nPlease refresh <F5> the page.';
+            var msg = inputPath + ' is loaded.\n\nPlease refresh <F5> the page.';
             this._host.info('Load Configuration', msg);
         }
         else {
@@ -1083,6 +1124,20 @@ view.View = class {
             filePath = path.join(process.resourcesPath, folder, f);
         }
         return filePath;
+    }
+
+    initJSON(filePath) {
+        if (!fs.existsSync(path.dirname(filePath))) {
+            fs.mkdirSync(path.dirname(filePath));
+        }
+        if (jMan.isGraphEmpty(filePath)) {
+            var graphObj = jMan.createGraph(this._inputFileBaseName);
+        }
+        else {
+            var raw = fs.readFileSync(filePath);
+            var graphObj = JSON.parse(raw);
+        }
+        return graphObj;
     }
 
     showCustomAttributes(node, nodeID) {
@@ -1209,6 +1264,7 @@ view.View = class {
                         this._host.export(file, blob);
                     }, 'image/png');
                 };
+                // TODO: show msg when export is done
                 imageElement.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(data)));
                 document.body.insertBefore(imageElement, document.body.firstChild);
             }

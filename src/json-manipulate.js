@@ -18,10 +18,12 @@ var _createGraph = function createGraph(graphName) {
 }
 
 var _addNewNode = function addNewNode(data, graphName, nodeName, attributes) {
+  // TODO: now only supporting add to attrs, add supports for directly to add to default_attrs; after VSKY-1438
   var isAdded = false;
   if (!_isNodeExist(data, graphName, nodeName)) {
     var newNode = {
       id: nodeName,
+      default_attrs: {},
       attrs: {}
     };
     var keys = Object.keys(attributes);
@@ -73,6 +75,22 @@ var _updateAttribute = function updateAttribute(data, graphName, nodeName, newAt
     }
   }
   return isUpdated;
+}
+
+var _addDefaultAttribute = function addDefaultAttribute(data, graphName, nodeName, newAttr) {
+  var isAdded = false;
+  var _node = _findNode(data, graphName, nodeName);
+  if (!_isObjectEmpty(_node)) {
+    var node = _node[0];
+    var keys = Object.keys(newAttr);
+    for (var i = 0; i < keys.length; i++) {
+      if (!node.default_attrs.hasOwnProperty(keys[i])) {
+        node.default_attrs[keys[i]] = newAttr[keys[i]];
+        isAdded = true;
+      }
+    }
+  }
+  return isAdded;
 }
   
 var _addAttribute = function addAttribute(data, graphName, nodeName, newAttr) {
@@ -150,9 +168,10 @@ var _findNodeInConfig = function findNodeInConfig(configList, nodeName) {
   // not including noGroup
   var _res = [];
   for (var i = 0; i < configList.length; i++) {
-    _res = configList[i].nodes.filter(function (el) {
+    var tmp = configList[i].nodes.filter(function (el) {
       return el.id == nodeName;
     });
+    _res = _res.concat(tmp);
   }
   return _res;
 }
@@ -196,11 +215,17 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
   else if (isSubEmpty && !isCusEmpty) {
     var graphObj = _createGraph(fileName);
     graphObj.noGroup = [];
+    graphObj.customed = [];
     var cusRaw = fs.readFileSync(cusPath);
     var cusList = JSON.parse(cusRaw)[fileName];
   
     for (var i = 0; i < cusList.length; i++) {
-      graphObj.noGroup.push(cusList[i]);
+      if (_isObjectEmpty(cusList[i].attrs)) {
+        graphObj.noGroup.push(cusList[i]);
+      }
+      else {
+        graphObj.customed.push(cusList[i]);
+      }
     }
     var json  = JSON.stringify(graphObj, null , 2);
     fs.writeFileSync(outPath, json);
@@ -208,6 +233,7 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
   else if (!isSubEmpty && !isCusEmpty) {
     var graphObj = _createGraph(fileName);
     graphObj.noGroup = [];
+    graphObj.customed = [];
     var cusRaw = fs.readFileSync(cusPath);
     var subRaw = fs.readFileSync(subPath);
     var cusList = JSON.parse(cusRaw)[fileName];
@@ -221,16 +247,22 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
         mysub.nodes.push(cusList[i]);
       }
       else {
-        graphObj.noGroup.push(cusList[i]);
+        if (_isObjectEmpty(cusList[i].attrs)) {
+          graphObj.noGroup.push(cusList[i]);
+        }
+        else {
+          graphObj.customed.push(cusList[i]);
+        }
       }
     }
   
+    // may delete following (after VSKY-1438)
     for (var i = 0; i < subList.length; i++) {
       for (var j = 0; j < subList[i].nodes.length; j++) {
         if (!graphObj.noGroup.includes(subList[i].nodes[j])) {
           var res = _findNodeInConfig(graphObj[fileName], subList[i].nodes[j]);
           if (res.length == 0) {
-            var newNode = { id: subList[i].nodes[j], attrs: {} };
+            var newNode = { id: subList[i].nodes[j], default_attrs: {}, attrs: {} };
             _addNewSubgraph(graphObj, fileName, subList[i].subgraphName);
             var mysub = _findSubgraph(graphObj, fileName, subList[i].subgraphName)[0];
             mysub.nodes.push(newNode);
@@ -245,6 +277,7 @@ var _mergeJSON = function mergeJSON(fileName, subFilePath, cusFilePath) {
 
 var _splitJSON = function splitJSON(filePath, subFilePath, cusFilePath) {
   var fileName = path.basename(filePath).replace('_config.json', '');
+  // `fin` stands for `final`; same below
   var finPath = filePath;
   if (_isGraphEmpty(finPath)) {
     return false;
@@ -279,23 +312,30 @@ var _splitJSON = function splitJSON(filePath, subFilePath, cusFilePath) {
   var finObj = JSON.parse(finRaw);
 
   var graphLen = (finObj[fileName]) ? finObj[fileName].length: 0;
+  var customedLen = (finObj.customed) ? finObj.customed.length : 0;
   var noGroupLen = (finObj.noGroup) ? finObj.noGroup.length : 0;
-  if (graphLen === 0 && noGroupLen === 0) {
+  if (graphLen === 0 && noGroupLen === 0 && customedLen == 0) {
     return false;
   }
-  else if (graphLen === 0 && noGroupLen !== 0) {
+  else if (graphLen === 0 && noGroupLen !== 0 || customedLen !== 0) {
     var graphObj = _createGraph(fileName);
-    graphObj[fileName] = finObj.noGroup;
+    graphObj[fileName] = finObj.noGroup;  // fully copy noGroup section
+
+    var cusNodeList = finObj.customed;
+    for (var i = 0; i < cusNodeList.length; i++) {
+      graphObj[fileName].push(cusNodeList[i]);
+    }
     var json  = JSON.stringify(graphObj, null , 2);
     fs.writeFileSync(cusOutPath, json);
   }
   else if (graphLen !== 0) {
     // put everything in group to subJSON
-    // put everything that has attributes AND noGroup's node to cusJSON
+    // put everything in group that has attributes AND customed node to cusJSON
     var subObj = _createGraph(fileName);
     var cusObj = _createGraph(fileName);
-    cusObj[fileName] = finObj.noGroup;
+    cusObj[fileName] = finObj.customed;
     
+    // Following are grouped nodes
     var finList = finObj[fileName];
     for (var i = 0; i < finList.length; i++) {
       _addNewSubgraph(subObj, fileName, finList[i].subgraphName);
@@ -367,13 +407,14 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
   module.exports.isObjectEmpty   = _isObjectEmpty;
   module.exports.updateAttribute = _updateAttribute;
   module.exports.addAttribute    = _addAttribute;
-
+  
   // Left-sidebar (group nodes mode)
   module.exports.isSubgraphExist   = _isSubgraphExist;
   module.exports.findSubgraph      = _findSubgraph;
   module.exports.addNewSubgraph    = _addNewSubgraph;
   module.exports.addNodeToSubgraph = _addNodeToSubgraph;
-
+  
   module.exports.mergeJSON = _mergeJSON;
   module.exports.splitJSON = _splitJSON;
+  module.exports.addDefaultAttribute    = _addDefaultAttribute;
 }
