@@ -14,9 +14,10 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 - [Load Configuration](#load-configuration)
 - [Export Text File](#export-text-file)
 - [Custom Attributes](#custom-attributes)
-- [Group-Nodes-Mode](#group-nodes-mode)
-- [Hide-Node](#hide-node)
+- [Group Nodes Mode](#group-nodes-mode)
+- [Hide Node](#hide-node)
 
+<a name="load-configuration"></a>
 ## Load Configuration
 - Allows users to load own configuration files
 	- __Important__: Please ensure file name ended with `{your_filename}_config.json`
@@ -28,6 +29,7 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 	- There are script's methods to merge/split user's configuration JSON in `{Netron root}/src/json-manipulate.json`
 	- When being loaded, `*_config.json` will be splitted into `*_custom_attributes.json` and `*_subgraph_grouping.json` for further operations
 
+<a name="export-text-file"></a>
 ## Export Text File
 ![alt text][text_export]
 
@@ -40,6 +42,7 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 #### To Use
 - `File` -> `Export Text File` (or `Ctrl/Cmd + Shift + J`)
 
+<a name="custom-attributes"></a>
 ## Custom Attributes
 ![alt text][custom_attr]
 
@@ -55,6 +58,7 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 #### To Use
 - Use mouse to right-click on your target node
 
+<a name="group-nodes-mode"></a>
 ## Group Nodes Mode
 ![alt text][group_node_mode]
 
@@ -96,6 +100,7 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 - __Color groups__:
 	- After you saved your group settings, press `F5`
 
+<a name="hide-node"></a>
 ## Hide Node
 - Allows user to only render (show) supported operations on GUI
 	- Config: `{Netron root}/user_json/config_json/airunner_supported_operations.json`

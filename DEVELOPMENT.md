@@ -55,12 +55,12 @@ __Note Following is added by Yanqing__
     - pyinstaller warning `lib not found` can be safely ignored (I don't find it affect anything so far)
 4. use `execFile` command in `.js`
 
-# Note
+## Note
 1. Ask user to use no white-space paths
 2. Only tested on Windows OS
 3. The configuration file naming must be `{your_preferred_filename}_config.json`; inside the `{}_config.json`, the first key name must also be the same as `{your_preferred_filename}`.
 
-# TODO
+## TODO
 - Add NXP copyright
 - Test on Linux, macOS
 - Modify `view-browser.js` (webpage client)
