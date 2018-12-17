@@ -5,10 +5,14 @@ var grapher = grapher || {};
 var dagre = dagre || require('dagre');
 
 grapher.Renderer = class {
+    constructor(host, svgElement, node2idList, id2opList, supportOp) {
+        this._host        = host;
+        this._svgElement  = svgElement;
+        this._node2idList = node2idList;        // TODO: do I really need this?
+        this._id2opList   = id2opList;
+        this._supportOp   = supportOp;
 
-    constructor(svgElement) {
-        this._svgElement = svgElement;
-        // TODO get list here
+        this._unsupportedOp = [];
     }
 
     render(graph) {
@@ -16,58 +20,51 @@ grapher.Renderer = class {
         var svgClusterGroup = this.createElement('g');
         svgClusterGroup.setAttribute('id', 'clusters');
         svgClusterGroup.setAttribute('class', 'clusters');
-        // svgClusterGroup.style.setProperty('fill', 'red');   // useless
-        // svgClusterGroup.style.setProperty('stroke', 'green'); //    useless
         this._svgElement.appendChild(svgClusterGroup);
 
         var svgEdgePathGroup = this.createElement('g');
         svgEdgePathGroup.setAttribute('id', 'edge-paths');
         svgEdgePathGroup.setAttribute('class', 'edge-paths');
-        // svgEdgePathGroup.style.setProperty('fill', 'red');  // useless
-        // svgEdgePathGroup.style.setProperty('stroke', 'red');   // useless
-        // svgEdgePathGroup.style.setProperty('stroke-width', '5');   // useless
         this._svgElement.appendChild(svgEdgePathGroup);
 
         var svgEdgeLabelGroup = this.createElement('g');
         svgEdgeLabelGroup.setAttribute('id', 'edge-labels');
         svgEdgeLabelGroup.setAttribute('class', 'edge-labels');
-        // svgEdgeLabelGroup.style.setProperty('fill', 'red');  // change label color
-        // svgEdgeLabelGroup.style.setProperty('stroke', 'green');  // change label color
         this._svgElement.appendChild(svgEdgeLabelGroup);
 
         var svgNodeGroup = this.createElement('g');
         svgNodeGroup.setAttribute('id', 'nodes');
         svgNodeGroup.setAttribute('class', 'nodes');
-        // svgNodeGroup.style.setProperty('fill', 'red');
-        // svgNodeGroup.style.setProperty('stroke', 'green'); This did the same thing as below (container) and will be overwrite as below
         this._svgElement.appendChild(svgNodeGroup);
 
         graph.nodes().forEach((nodeId) => {
-            // TODO: if nodeId is not in the list, then don't render it
-            if (graph.children(nodeId).length == 0) {
-                var node = graph.node(nodeId);
-                var element = this.createElement('g');
-                if (node.id) {
-                    element.setAttribute('id', node.id);
+            var currOp = this._id2opList[nodeId] ? this._id2opList[nodeId].toLowerCase() : 'undefined';
+            if (this._supportOp.indexOf(currOp) >= 0) {
+                if (graph.children(nodeId).length == 0) {
+                    var node = graph.node(nodeId);
+                    var element = this.createElement('g');
+                    if (node.id) {
+                        element.setAttribute('id', node.id);
+                    }
+                    element.setAttribute('class', node.hasOwnProperty('class') ? ('node ' + node.class) : 'node');
+                    element.style.setProperty('opacity', 0);
+                    var container = this.createElement('g');
+                    container.appendChild(node.label);
+                    element.appendChild(container);
+                    svgNodeGroup.appendChild(element);
+                    var bbox = node.label.getBBox();
+                    var x = - bbox.width / 2;
+                    var y = - bbox.height / 2;
+                    container.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+                    node.width = bbox.width;
+                    node.height = bbox.height;
+                    node.element = element;
                 }
-                element.setAttribute('class', node.hasOwnProperty('class') ? ('node ' + node.class) : 'node');
-                element.style.setProperty('opacity', 0);
-                // element.style.setProperty('fill', 'red');    // This did the same thing as below (container) and will be overwrite as below
-                // element.style.setProperty('stroke', 'red');
-                var container = this.createElement('g');
-                container.appendChild(node.label);
-                element.appendChild(container);
-                svgNodeGroup.appendChild(element);
-                var bbox = node.label.getBBox();
-                var x = - bbox.width / 2;
-                var y = - bbox.height / 2;
-                container.setAttribute('transform', 'translate(' + x + ',' + y + ')');
-                // container.style.setProperty('fill', 'red');     // This makes all text red, except the upper left part
-                // container.style.setProperty('stroke', 'green');       // This makes all text red and super bold, hard to read (ok with following)
-                // container.style.setProperty('stroke-width', '0.5');       // This set the width of the text
-                node.width = bbox.width;
-                node.height = bbox.height;
-                node.element = element;
+            }
+            else {
+                if (this._unsupportedOp.indexOf(this._id2opList[nodeId]) < 0 && currOp !== 'undefined') {
+                    this._unsupportedOp.push(this._id2opList[nodeId]);
+                }
             }
         });
 
@@ -99,13 +96,15 @@ grapher.Renderer = class {
         dagre.layout(graph);
 
         graph.nodes().forEach((nodeId) => {
-            // TODO: if nodeId is not in the list, then don't render it
-            if (graph.children(nodeId).length == 0) {
-                var node = graph.node(nodeId);
-                var element = node.element;
-                element.setAttribute('transform', 'translate(' + node.x + ',' + node.y + ')');
-                element.style.setProperty('opacity', 1);
-                delete node.element;
+            var currOp = this._id2opList[nodeId] ? this._id2opList[nodeId].toLowerCase() : 'undefined';
+            if (this._supportOp.indexOf(currOp) >= 0) {
+                if (graph.children(nodeId).length == 0) {
+                    var node = graph.node(nodeId);
+                    var element = node.element;
+                    element.setAttribute('transform', 'translate(' + node.x + ',' + node.y + ')');
+                    element.style.setProperty('opacity', 1);
+                    delete node.element;
+                }
             }
         });
 
@@ -176,6 +175,12 @@ grapher.Renderer = class {
                 svgClusterGroup.appendChild(element);
             }
         });
+
+        if (this._unsupportedOp.length > 0) {
+            var x = this._unsupportedOp.join();
+            var msg = "Following operations are not supported (won't show on GUI):\n\n" + x;
+            this._host.info('Information', msg)
+        }
     }
 
     createElement(name) {

@@ -35,6 +35,8 @@ view.View = class {
         this._searchText = '';
         this._zoomMode = 'd3';
         this._modelFactoryService = new view.ModelFactoryService(this._host);
+        this._node2idList = {};
+        this._id2opList = {};
         document.documentElement.style.overflow = 'hidden';
         document.body.scroll = 'no';
         document.getElementById('model-properties-button').addEventListener('click', (e) => {
@@ -601,6 +603,8 @@ view.View = class {
                     }
 
                     if (dagNodeID && dagNodeOp) {
+                        this._node2idList[dagNodeID] = nodeId;
+                        this._id2opList[nodeId] = dagNodeOp;
                         dag.setNode(dagNodeID, { op: dagNodeOp });
                         if (!this._isSplit) {
                             jMan.addNewNode(graphObj, this._inputFileBaseName, dagNodeID, '');
@@ -916,8 +920,8 @@ view.View = class {
 
                 setTimeout(() => {
                     try {
-                        // TODO, pass list to renderer
-                        var graphRenderer = new grapher.Renderer(originElement);
+                        var supportOp = this.getSupportedOperations();
+                        var graphRenderer = new grapher.Renderer(this._host, originElement, this._node2idList, this._id2opList, supportOp);
                         graphRenderer.render(g);
             
                         var inputElements = graphElement.getElementsByClassName('graph-input');
@@ -1024,6 +1028,13 @@ view.View = class {
             }
         }
         return _id;
+    }
+
+    getSupportedOperations() {
+        var path = this.getPath('user_json/config_json', 'airunner_supported_operations.json');
+        var raw = fs.readFileSync(path);
+        var jsonObj = JSON.parse(raw);
+        return jsonObj.support;
     }
 
     nodeElementClickHandler(button, params) {

@@ -1,0 +1,8 @@
+{
+    "support": [
+        "conv2d",
+        "conv",
+        "relu",
+        "maxpool"
+    ]
+  }

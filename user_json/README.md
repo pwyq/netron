@@ -4,6 +4,16 @@
 - Stores developer-defined configuration settings
 - Do not change the file name
 
+### airunner_check_list.json
+- Stores unsupported combinations (eg. `float-point` is not supported on `APEX`)
+
+### airunner_custom_attributes.json
+- Stores supported custom attributes
+
+### airunner_supported_operations.json
+- Stores AIRunner supported operations
+- __Important__: Keep all characters to lowercase
+
 ## Model Configuration JSON files
 - This directory stores model configuration JSONs, where each file combines selected custom attributes JSON file and group grouping JSON file
 
