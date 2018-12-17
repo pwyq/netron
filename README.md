@@ -2,7 +2,13 @@
 
 - To develop `Netron`, please read **DEVELOPMENT.md**
 - To see new features on `Netron`, please read **USER_MANUAL.md**
+- To sync `Netron` with the original author
+  - Checkout to your target branch
+  - `$ git pull https://github.com/lutzroeder/netron.git`
+  - Solve merge conflict (if any)
 - Following is original README
+
+---
 
 ---
 
