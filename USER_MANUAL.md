@@ -4,19 +4,29 @@
 |:---:|:---:|
 | Created by | Yanqing Wu <yanqing.wu@nxp.com> |
 | Updated by | Yanqing Wu <yanqing.wu@nxp.com> |
-| Last Updated | Dec. 15th, 2018 |
+| Last Updated | Dec. 17th, 2018 |
 
 __This file introduces the new features which added for AIRunner on Netron.__
 
 If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.com>.
 
+# Content
+- [Load Configuration](#load-configuration)
+- [Export Text File](#export-text-file)
+- [Custom Attributes](#custom-attributes)
+- [Group-Nodes-Mode](#group-nodes-mode)
+- [Hide-Node](#hide-node)
+
 ## Load Configuration
 - Allows users to load own configuration files
 	- __Important__: Please ensure file name ended with `{your_filename}_config.json`
 	- __Important__: In the config JSON, please ensure the first key value matches with `{your_filename}`
-- The `_config.json` file will auto create upon `Export`/`Save` on `Group Nodes Mode`
+- `Clear Cache` (on top menu) every time before loading `*_config.json`
+- The `*_config.json` file will auto create upon `Export`/`Save` on `Group Nodes Mode`
 	- The file combines `{}_custom_attributes.json` and `{}_subgraph_grouping.json`, which can be modified separately
-- For developers: there are script's methods to merge/split user's configuration JSON in `{Netron root}/src/json-manipulate.json`
+- __For developers__
+	- There are script's methods to merge/split user's configuration JSON in `{Netron root}/src/json-manipulate.json`
+	- When being loaded, `*_config.json` will be splitted into `*_custom_attributes.json` and `*_subgraph_grouping.json` for further operations
 
 ## Export Text File
 ![alt text][text_export]
@@ -35,11 +45,9 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 
 #### Features
 - Allows user to set custom attributes of specific nodes, and _automatically_ saves custom setting to local `.json` file
-- _deprecated_ ~Netron will import custom settings if corresponding custom-attribute-setting `.json` file is available~
-	- `{Netron root}/user_json/custom_json/{model_name}_custom_attributes.json`
-- Allows developers/users to modify available attributes in the configuration file:
+- Allows users to modify available attributes in the configuration file:
 	- `{Netron root}/user_json/config_json/airunner_custom_attributes.json`
-- Allows developers/users to modify the forbidden combinations of custom attribute in the configuration file:
+- Allows users to modify the unsupported combinations of custom attribute in the configuration file:
 	- `{Netron root}/user_json/config_json/airunner_check_list.json`
 - Supported models:
 	- ALL models
@@ -52,8 +60,6 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 
 #### Features
 - Allows user to group nodes (i.e. layers) into subgraphs, and exports/saves the group setting to local `.json` file
-- _deprecated_ ~Netron will import group settings if corresponding nodes-grouping `.json` file is available~
-	- `{Netron root}/user_json/graph_grouping_json/{model_name}_subgraph_grouping.json`
 - Allows user to edit group settings on Netron
 	- Add/Delete/Rename sub-graphs
 	- Add/Delete a node (layer) in a sub-graph
@@ -89,6 +95,11 @@ If you experience bugs using Netron, please report to Yanqing <yanqing.wu@nxp.co
 	- click `Export` (for first time grouping) or `Save` (to overwrite old settings)
 - __Color groups__:
 	- After you saved your group settings, press `F5`
+
+## Hide Node
+- Allows user to only render (show) supported operations on GUI
+	- Config: `{Netron root}/user_json/config_json/airunner_supported_operations.json`
+- Unsupported operations will be shown in a message box
 
 [text_export]: media/user_manual/text_export.png "Export Text File"
 [custom_attr]: media/user_manual/node_right_click.PNG "Edit Node Custom Attributes (Right-click Node)"

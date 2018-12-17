@@ -31,10 +31,12 @@ PYTHONPATH=build/python/lib python -c "import netron; netron.main()"
 
 ---
 
-__Note__: Following is added by Yanqing.
+__Note Following is added by Yanqing__
+
+---
 
 ## Debug Renderer Process
-- nstall `Debugger for Chrome` in `VS Code` to use the DEBUG configuration.
+- Install `Debugger for Chrome` in `VS Code` to use the DEBUG configuration.
 - Install following:
     - `protoc`
     - `python`  (I use python3)
