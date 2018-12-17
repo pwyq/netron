@@ -4,7 +4,7 @@ Netron can run as both an [Electron](https://electronjs.org) app or a Python web
 
 ## Develop the Electron app
 
-To start the Electron app, install [Node.js](https://nodejs.org) and run:  (for Windows user, run under the root of this repository in `cmd`)
+To start the Electron app, install [Node.js](https://nodejs.org) and run:
 
 ```bash
 npm install
@@ -29,34 +29,29 @@ python setup.py build
 PYTHONPATH=build/python/lib python -c "import netron; netron.main()"
 ```
 
+---
+
+__Note__: Following is added by Yanqing.
+
 ## Debug Renderer Process
-Install `Debugger for Chrome` to use this DEBUG configuration.
-- `protoc`
-- `python 3`
-- `pip3`
-- `yarn` (recommended to use this as packge manager)
-- `virtualenv`
-    - On windows:
-        - `pip install virtualenv`
-        - `pip install virtualenvwrapper-win`
-- `pip install google`
-- `pip3 install pyinstaller`
+- nstall `Debugger for Chrome` in `VS Code` to use the DEBUG configuration.
+- Install following:
+    - `protoc`
+    - `python`  (I use python3)
+    - `pip`
+    - `virtualenv`
+        - On windows:
+            - `pip install virtualenv`
+            - `pip install virtualenvwrapper-win`
+    - `pip install google`
+    - `pip install pyinstaller`
 
-```bash
-cd tools
-./tf sync install schema metadata
-```
-
-## To use python scripts
+## To use export to txt/json
 1. add python scripts under `${root}/python_scripts`
-2. compile python scripts to executable, using `pyinstaller your_python_scripts.py -y`
-3. use `execFile`
-
-#### Remark
-1. If there is linking issue using pylint in VS Code, see [link](https://stackoverflow.com/a/50432805/10620764)
 2. Before building, clean up `python_scripts/build/{updated python scripts}` and `python_scripts/dist/{updated python scripts}`
-3. pyinstaller warning `lib not found` can be ignore (I don't find it affect anything so far)
-
+3. compile python scripts to executable, using `pyinstaller your_python_scripts.py -y`
+    - pyinstaller warning `lib not found` can be safely ignored (I don't find it affect anything so far)
+4. use `execFile` command in `.js`
 
 # Note
 1. Ask user to use no white-space paths
@@ -64,7 +59,8 @@ cd tools
 3. The configuration file naming must be `{your_preferred_filename}_config.json`; inside the `{}_config.json`, the first key name must also be the same as `{your_preferred_filename}`.
 
 # TODO
-- add NXP copyright
-- only add stuff to local client, haven't changed `view-browser.js` (webpage client)
-- test white-space path
-- change a group's attributes
+- Add NXP copyright
+- Test on Linux, macOS
+- Modify `view-browser.js` (webpage client)
+- Test white-space path on export txt/json function
+- Modify all attributes within the same group at the same time

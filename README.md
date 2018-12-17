@@ -1,7 +1,7 @@
 # NEW README
 
-- To develop `Netron`, please read [**DEVELOPMENT.md**](../dev/DEVELOPMENT.md)
-- To see new features on `Netron`, please read [**USER_MANUAL.md**](../dev/USER_MANUAL.md)
+- To develop `Netron`, please read **DEVELOPMENT.md**
+- To see new features on `Netron`, please read **USER_MANUAL.md**
 - Following is original README
 
 ---
