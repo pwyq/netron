@@ -8,7 +8,7 @@ src=${root}/src
 tools=${root}/tools
 third_party=${root}/third_party
 
-identifier=caffe
+identifier=darknet
 
 bold() {
     echo "$(tty -s && tput bold)$1$(tty -s && tput sgr0)" 
@@ -27,19 +27,13 @@ git_sync() {
 }
 
 clean() {
-    bold "caffe clean"
-    rm -rf ${third_party}/caffe
+    bold "darknet clean"
+    rm -rf ${third_party}/${identifier}
 }
 
 sync() {
-    bold "caffe sync"
-    git_sync caffe https://github.com/BVLC/caffe.git
-}
-
-schema() {
-    bold "caffe schema"
-    ${node_modules}/protobufjs/bin/pbjs -t static-module -w closure --no-encode --no-delimited --no-comments --keep-case --decode-text -r caffe -o ${src}/caffe-proto.js ${third_party}/${identifier}/src/caffe/proto/caffe.proto
-    node ${tools}/update_pbjs.js array ${src}/caffe-proto.js data float 1
+    bold "darknet sync"
+    git_sync darknet https://github.com/pjreddie/darknet.git
 }
 
 while [ "$#" != 0 ]; do
@@ -47,6 +41,5 @@ while [ "$#" != 0 ]; do
     case "${command}" in
         "clean") clean;;
         "sync") sync;;
-        "schema") schema;;
     esac
 done

@@ -9,13 +9,17 @@ torch.ModelFactory = class {
     match(context, host) {
         var extension = context.identifier.split('.').pop().toLowerCase();
         if (extension == 't7') {
+            var buffer = context.buffer;
+            if (buffer.length >= 1 && buffer[0] > 58) {
+                return false;
+            }
             return true;
         }
         return false;
     }
 
     open(context, host, callback) {
-        torch.OperatorMetadata.open(host, (err, metadata) => {
+        torch.Metadata.open(host, (err, metadata) => {
             var identifier = context.identifier;
             try {
                 var reader = new torch.T7Reader(context.buffer, (name) => {
@@ -104,14 +108,12 @@ torch.Graph = class {
                 groups.push(key);
                 var subInputs = inputs;
                 var subOutputs = [];
-                var keys = Object.keys(module.modules);
-                keys.sort(); 
-                var last = keys[keys.length - 1];
-                keys.forEach((key, index) => {
-                    if (key == last.toString()) {
+                var length = module.modules.length;
+                module.modules.forEach((module, index) => {
+                    if (index == length - 1) {
                         subOutputs = outputs;
-                    }
-                    this._loadModule(metadata, module.modules[key], groups, key, subInputs, subOutputs);
+                    }                    
+                    this._loadModule(metadata, module, groups, index.toString(), subInputs, subOutputs);
                     subInputs = subOutputs;
                     subOutputs = [];
                 });
@@ -119,14 +121,12 @@ torch.Graph = class {
                 break;
             case 'nn.Parallel':
                 groups.push(key);
-                var keys = Object.keys(module.modules);
-                keys.sort();
                 var newInputs = [];
                 var newOutputs = [];
-                keys.forEach((key, index) => {
+                module.modules.forEach((module, index) => {
                     var subInputs = inputs.map((input) => input);
                     var subOutputs = outputs.map((output) => output);
-                    this._loadModule(metadata, module.modules[key], groups, key, subInputs, subOutputs);
+                    this._loadModule(metadata, module, groups, index.toString(), subInputs, subOutputs);
                     if (inputs.length == 0) {
                         subInputs.forEach((input) => {
                             newInputs.push(input);
@@ -148,22 +148,19 @@ torch.Graph = class {
                 break;
             case 'nn.Concat':
             case 'nn.ConcatTable':
-                groups.push(key);
-                var keys = Object.keys(module.modules);
-                keys.sort();
+                var prefix = key;
                 if (inputs.length == 0) {
-                    inputs.push(new torch.Connection(groups.join('/') + '/' + key, null, null));
+                    inputs.push(new torch.Connection(groups.join('/') + ':' + key + ':in', null, null));
                 }
                 var concatInputs = [];
-                keys.forEach((key, index) => {
+                module.modules.forEach((module, index) => {
                     var streamInputs = inputs.map((input) => input);
                     var streamOutputs = [];
-                    this._loadModule(metadata, module.modules[key], groups, key, streamInputs, streamOutputs);
+                    this._loadModule(metadata, module, groups, prefix + '.' + index.toString(), streamInputs, streamOutputs);
                     streamOutputs.forEach((output) => {
                         concatInputs.push(output);
                     });
                 });
-                groups.pop();
                 delete module.modules;
                 delete module.dimension;
                 this._createNode(metadata, module, groups, key, concatInputs, outputs);
@@ -233,34 +230,53 @@ torch.Connection = class {
 
 torch.Node = class {
 
-    constructor(metadata, module, groups, key, inputs, outputs) {
+    constructor(metadata, module, groups, name, inputs, outputs) {
         this._metadata = metadata;
         this._group = groups.join('/');
-        this._name = this._group + '/' + key;
+        if (module.name) {
+            this._name = module.name;
+            delete module.name;
+        }
+        else {
+            this._name = this._group ? (this._group + ':' + name) : name;
+        }
         var type = module.__type__;
-        this._operator = type ? type.split('.').pop() : 'Object';
+        this._operator = type ? type.split('.').pop() : 'Unknown';
         var initializers = [];
         Object.keys(module).forEach((key) => {
             var obj = module[key];
             if (obj.__type__ && obj.__type__ == 'torch.LongStorage') {
-                module[key] = obj.data;
+                var array = [];
+                obj.reset();
+                for (var i = 0; i < obj.size; i++) {
+                    array.push(obj.read());    
+                }
+                module[key] = array;
             }
         });
         delete module.iSize;
-        delete module.gradInput;
         delete module.finput;
         delete module.fgradInput;
         delete module.output;
+        delete module.gradInput;
         delete module.gradWeight;
         delete module.gradBias;
+        delete module.grad_tmp;
         delete module.scaleT;
+        delete module._input;
+        delete module._output;
+        delete module._gradInput;
+        delete module._gradOutput;
+        delete module.buffer;
+        delete module.buffer2;
         switch (type) {
             case 'nn.Linear':
                 delete module.addBuffer;
                 break;
-            case 'nn.Reshape':
-                delete module._input;
-                delete module._gradOutput;
+            case 'nn.Normalize':
+                delete module.addBuffer;
+                delete module.normp;
+                delete module.norm;
                 break;
             case 'cudnn.SpatialConvolution':
             case 'cudnn.SpatialFullConvolution':
@@ -269,6 +285,9 @@ torch.Node = class {
             case 'nn.SpatialDilatedConvolution':
             case 'nn.SpatialFullConvolution':
                 delete module.ones;
+                delete module.input_slice;
+                delete module.output_slice;
+                delete module.convDescData;
                 this._updateSize(module, 'adj');
                 this._updateSize(module, 'd');
                 this._updateSize(module, 'dilation');
@@ -283,11 +302,24 @@ torch.Node = class {
                 delete module.save_mean;
                 delete module.save_std;
                 delete module.gradWeight;
-                module.mean = module.running_mean;
-                module.var = module.running_var;
-                delete module.running_mean;
-                delete module.running_var;
+                delete module.normalized;
+                delete module.centered;
+                if (module.running_mean) {
+                    module.mean = module.running_mean;
+                    delete module.running_mean;
+                }
+                if (module.running_var) {
+                    module.var = module.running_var;
+                    delete module.running_var;
+                }
+                if (module.running_std) {
+                    module.std = module.running_std;
+                    delete module.running_std;
+                }
                 delete module.bn; // TODO InstanceNormalization
+                break;
+            case 'nn.SpatialCrossMapLRN':
+                delete module.scale;
                 break;
             case 'cudnn.SpatialMaxPooling':
             case 'cudnn.SpatialAveragePooling':
@@ -309,33 +341,39 @@ torch.Node = class {
             case 'nn.Dropout':
                 delete module.noise;
                 break;
+            case 'nn.gModule':
+                delete module.forwardnodes;
+                delete module.backwardnodes;
+                break;
         }
         this._attributes = [];
-        Object.keys(module).forEach((key) => {
-            if (key == '__type__' || key == '_type') {
-                return;
-            }
-            var obj = module[key];
-            if (obj.__type__ && obj.__type__.startsWith('torch.') && obj.__type__.endsWith('Tensor')) {
-                if (obj.size.length == 0) {
-                    debugger;
-                    // console.log("  " + type + "::" + key);
+        if (module.__type__) {
+            Object.keys(module).forEach((key) => {
+                if (key == '__type__' || key == '_type') {
+                    return;
                 }
-                initializers.push(new torch.Argument(key, true, [ 
-                    new torch.Connection(key, null, new torch.Tensor(obj))
-                ]));
-                return;
-            }
-            if (key == 'modules' || obj.__type__) {
-                debugger;                
-                // console.log("  " + type + "::" + key);
-                return;
-            }
-            this._attributes.push(new torch.Attribute(this._metadata, this._operator, key, obj));
-        });
+                var obj = module[key];
+                if (obj.__type__ && obj.__type__.startsWith('torch.') && obj.__type__.endsWith('Tensor')) {
+                    if (obj.size.length == 0) {
+                        debugger;
+                        // console.log("  " + type + "::" + key);
+                    }
+                    initializers.push(new torch.Argument(key, true, [ 
+                        new torch.Connection(key, null, new torch.Tensor(obj))
+                    ]));
+                    return;
+                }
+                if (key == 'modules' || obj.__type__) {
+                    debugger;                
+                    // console.log("  " + type + "::" + key);
+                    return;
+                }
+                this._attributes.push(new torch.Attribute(this._metadata, this._operator, key, obj));
+            });
+        }
         this._inputs = [];
         if (inputs.length == 0) {
-            inputs.push(new torch.Connection(this._name + '/in', null, null));
+            inputs.push(new torch.Connection(this._name + ':in', null, null));
         }
         this._inputs.push(new torch.Argument('input', true, inputs));
         this._outputs = [];
@@ -457,7 +495,84 @@ torch.Tensor = class {
     }
 
     get state() {
-        return 'Not implemented.';
+        return this._context().state || null;
+    }
+
+    get value() {
+        var context = this._context();
+        if (context.state) {
+            return null;
+        }
+        context.limit = Number.MAX_SAFE_INTEGER;
+        return this._decode(context, 0);
+    }
+
+    toString() {
+        var context = this._context();
+        if (context.state) {
+            return '';
+        }
+        context.limit = 1000;
+        var value = this._decode(context, 0);
+        return JSON.stringify(value, null, 4);
+    }
+
+    _context() {
+        var context = {};
+        context.state = null;
+        context.index = 0;
+        context.count = 0;
+        if (!this._storage || !this._storage.reader) {
+            context.state = 'Tensor data is empty.';
+            return context;
+        }
+        switch (this._type.dataType) {
+            case 'uint8':
+            case 'int8':
+            case 'int16':
+            case 'int32':
+            case 'int64':
+            case 'float32':
+            case 'float64':
+                break;
+            default:
+                context.state = 'Tensor data type is not implemented.';
+                break;
+        }
+        context.dimensions = this._type.shape.dimensions;
+        if (!context.dimensions && context.dimensions.length == 0) {
+            context.state =  'Tensor has no dimensions.';
+            return context;
+        }
+        context.storage = this._storage;
+        context.storage.reset();
+        return context;
+    }
+
+    _decode(context, dimension) {
+        var results = [];
+        var size = context.dimensions[dimension];
+        if (dimension == context.dimensions.length - 1) {
+            for (var i = 0; i < size; i++) {
+                if (context.count > context.limit) {
+                    results.push('...');
+                    return results;
+                }
+                results.push(context.storage.read());
+                context.index++;
+                context.count++;
+            }
+        }
+        else {
+            for (var j = 0; j < size; j++) {
+                if (context.count > context.limit) {
+                    results.push('...');
+                    return results;
+                }
+                results.push(this._decode(context, dimension + 1));
+            }
+        }
+        return results;
     }
 };
 
@@ -502,433 +617,17 @@ torch.TensorShape = class {
     }
 };
 
-torch.Error = class extends Error {
-    constructor(message) {
-        super(message);
-        this.name = 'Error loading Torch model.';
-    }
-};
 
-torch.T7Reader = class {
-
-    constructor(buffer, callback) {
-        this._buffer = buffer;
-        this._position = 0;
-        this._dataView = new DataView(this._buffer.buffer, this._buffer.byteOffset, this._buffer.byteLength);
-        this._textDecoder = new TextDecoder('ascii');
-        this._callback = callback; 
-        this._memo = {};
-
-        this._registry = {};
-        this._registry['cudnn.BatchNormalization'] = function(reader, version) { reader.nn(this); };
-        this._registry['cudnn.SpatialConvolution'] = function(reader, version) { reader.nn(this); };
-        this._registry['cudnn.ReLU'] = function(reader, version) { reader.nn(this); };
-        this._registry['cudnn.SpatialAveragePooling'] = function(reader, version) { reader.nn(this); };
-        this._registry['cudnn.SpatialBatchNormalization'] = function(reader, version) { reader.nn(this); };
-        this._registry['cudnn.SpatialFullConvolution'] = function(reader, version) { reader.nn(this); };
-        this._registry['cudnn.SpatialMaxPooling'] = function(reader, version) { reader.nn(this); };
-        this._registry['inn.SpatialMaxPooling'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.CAddTable'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Concat'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.ConcatTable'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.DepthConcat'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Dropout'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Identity'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Inception'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.InstanceNormalization'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.LeakyReLU'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Linear'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Mean'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Parallel'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.ReLU'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Reshape'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SelectTable'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Sequential'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Sigmoid'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialAveragePooling'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialBatchNormalization'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialConvolution'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialConvolutionMM'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialDilatedConvolution'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialFullConvolution'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialMaxPooling'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialReflectionPadding'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.SpatialZeroPadding'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.Tanh'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.View'] = function(reader, version) { reader.nn(this); };
-        this._registry['nn.gModule'] = function(reader, version) { reader.nn(this); };
-        this._registry['nngraph.Node'] = function(reader, version) { reader.nn(this); };
-        this._registry['torch.ByteTensor'] = function(reader, version) { reader.tensor(this); };
-        this._registry['torch.CharTensor'] = function(reader, version) { reader.tensor(this); };
-        this._registry['torch.ShortTensor'] = function(reader, version) { reader.tensor(this); };
-        this._registry['torch.IntTensor'] = function(reader, version) { reader.tensor(this); };
-        this._registry['torch.LongTensor'] = function(reader, version) { reader.tensor(this); };
-        this._registry['torch.FloatTensor'] = function(reader, version) { reader.tensor(this); };
-        this._registry['torch.DoubleTensor'] = function(reader, version) { reader.tensor(this); };
-        this._registry['torch.CudaByteTensor'] = function(reader, version) {reader.tensor(this); };
-        this._registry['torch.CudaCharTensor'] = function(reader, version) {reader.tensor(this); };
-        this._registry['torch.CudaShortTensor'] = function(reader, version) {reader.tensor(this); };
-        this._registry['torch.CudaIntTensor'] = function(reader, version) {reader.tensor(this); };
-        this._registry['torch.CudaLongTensor'] = function(reader, version) {reader.tensor(this); };
-        this._registry['torch.CudaTensor'] = function(reader, version) {reader.tensor(this); };
-        this._registry['torch.CudaDoubleTensor'] = function(reader, version) {reader.tensor(this); };
-        this._registry['torch.ByteStorage'] = function(reader, version) { reader.storage(this, 'uint8', 1); };
-        this._registry['torch.CharStorage'] = function(reader, version) { reader.storage(this, 'int8', 1); };
-        this._registry['torch.ShortStorage'] = function(reader, version) { reader.storage(this, 'int16', 2); };
-        this._registry['torch.IntStorage'] = function(reader, version) { reader.storage(this, 'int32', 4); };
-        this._registry['torch.LongStorage'] = function(reader, version) { reader.storage(this, 'int64', 8); };
-        this._registry['torch.FloatStorage'] = function(reader, version) { reader.storage(this, 'float32', 4); };
-        this._registry['torch.DoubleStorage'] = function(reader, version) { reader.storage(this, 'float64', 8); };
-        this._registry['torch.CudaByteStorage'] = function(reader, version) { reader.storage(this, 'uint8', 1); };
-        this._registry['torch.CudaCharStorage'] = function(reader, version) { reader.storage(this, 'int8', 1); };
-        this._registry['torch.CudaShortStorage'] = function(reader, version) { reader.storage(this, 'int16', 2); };
-        this._registry['torch.CudaIntStorage'] = function(reader, version) { reader.storage(this, 'int32', 4); };
-        this._registry['torch.CudaLongStorage'] = function(reader, version) { reader.storage(this, 'int64', 8); };
-        this._registry['torch.CudaIntStorage'] = function(reader, version) { reader.storage(this, 'int32', 4); };
-        this._registry['torch.CudaStorage'] = function(reader, version) { reader.storage(this, 'float32', 4); };
-        this._registry['torch.CudaFloatStorage'] = function(reader, version) { reader.storage(this, 'float64', 8); };
-        this._registry['w2nn.AuxiliaryLossTable'] = function(reader, version) { reader.nn(this); };
-        this._registry['w2nn.InplaceClip01'] = function(reader, version) { reader.nn(this); };
-        this._registry['w2nn.ScaleTable'] = function(reader, version) { reader.nn(this); };
-
-        if (this._buffer.length == 0) {
-            throw new torch.Error('File is empty.');            
-        }
-        if (this._buffer[0] > 8) {
-            this._ascii = true;
-            this.int32();
-            this._position = 0;
-        }
-    }
-
-    line(size) {
-        var start = this._position;
-        size++;
-        while (size > 0) {
-            var c = this._buffer[this._position++];
-            if (c == 0x0a) {
-                var text = this._textDecoder.decode(this._buffer.slice(start, this._position - 1));
-                return text;
-            }
-            size--;
-        }
-        throw torch.Error('Line exceeded maximum length.');
-    }
-
-    read() {
-        var type = this.int32();
-        switch (type) {
-            case 0: return null;
-            case 1: return this.float64();
-            case 2: return this.string();
-            case 3: return this.table();
-            case 4: return this.object();
-            case 5: return this.boolean();
-            case 6: return this.function();
-            case 7: return this.function();
-            case 8: return this.function();
-            default: throw new torch.Error("File format has invalid type '" + type + "'.");
-        }
-    }
-
-    boolean() {
-        return this.int32() == 1;
-    }
-
-    bytes(size) {
-        if (this._ascii) {
-            debugger;
-        }
-        var data = this._buffer.subarray(this._position, this._position + size);
-        this._position += size;
-        return data;
-    }
-
-    int8() {
-        if (this._ascii) {
-            return this.int64();
-        }
-        var value = this._dataView.getInt8(this._position, true);
-        this._position += 1;
-        return value;
-    }
-
-    int16() {
-        if (this._ascii) {
-            return this.int64();
-        }
-        var value = this._dataView.getInt16(this._position, true);
-        this._position += 2;
-        return value;
-    }
-
-    int32() {
-        if (this._ascii) {
-            return this.int64();
-        }
-        var value = this._dataView.getInt32(this._position, true);
-        this._position += 4;
-        return value;
-    }
-
-    int64() {
-        if (this._ascii) {
-            var token = this.line(20);
-            var number = Number.parseInt(token, 10);
-            if (Number.isNaN(token - number)) {
-                throw new torch.Error("Couldn't parse int64 '" + token + "'.");
-            }
-            return number;
-        }
-        var lo = this.int32();
-        var hi = this.int32();
-        if (lo == -1 && hi == -1) {
-            return -1;
-        }
-        if (hi != 0) {
-            throw new torch.Error('Invalid int64 value.');
-        }
-        return lo;
-    }
-
-    int64s(size) {
-        var array = [];
-        if (this._ascii && size > 0) {
-            var text = this.line(Number.MAX_SAFE_INTEGER);
-            text.split(' ').forEach((token) => {
-                var number = Number.parseInt(token, 10);
-                if (Number.isNaN(token - number)) {
-                    throw new torch.Error("Couldn't parse int64 '" + token + "'.");
-                }
-                array.push(number);
-            });
-        }
-        else {
-            for (var i = 0; i < size; i++) {
-                array.push(this.int64());
-            }
-        }
-        return array;
-    }
-    
-    float32() {
-        if (this._ascii) {
-            return this.float64();
-        }
-        var value = this._dataView.getFloat32(this._position, true);
-        this._position += 4;
-        return value;
-    }
-
-    float64() {
-        if (this._ascii) {
-            var token = this.line(20);
-            var number = Number.parseFloat(token);
-            if (Number.isNaN(token - number)) {
-                throw new Error("Couldn't parse float '" + token + "'.");
-            }
-            return number;
-        }
-        var value = this._dataView.getFloat64(this._position, true);
-        this._position += 8;
-        return value;
-    }
-
-    string() {
-        var size = this.int32();
-        if (this._ascii) {
-            var text = this.line(size);
-            if (size != text.length) {
-                throw torch.Error('Invalid text length.');
-            }
-            return text;
-        }
-        var buffer = this.bytes(size);
-        return this._textDecoder.decode(buffer);
-    }
-
-    object() {
-        var index = this.int32();
-        if (this._memo[index]) {
-            return this._memo[index];
-        }
-
-        var version = this.string();
-        var name = null;
-        if (version.startsWith('V ')) {
-            name = this.string();
-            version = Number(version.split(' ')[1]);
-        }
-        else {
-            name = version;
-            version = 0;
-        }
-
-        var obj = { __type__: name };
-        var constructor = this._registry[name];
-        if (constructor) {
-            constructor.apply(obj, [ this, version ]);
-        }
-        else {
-            constructor = this._callback(name);
-            if (constructor) {
-                constructor.apply(obj, [ this, version ]);
-            }
-            this.nn(obj);
-        }
-        this._memo[index] = obj;
-        return obj;
-    }
-
-    table() {
-        var index = this.int32();
-        if (this._memo[index]) {
-            return this._memo[index];
-        }
-        var size = this.int32();
-        var table = {};
-        for (var i = 0; i < size; i++) {
-            var key = this.read();
-            var value = this.read();
-            table[key] = value;
-        }
-        this._memo[index] = table;
-        return table;
-    }
-
-    function() {
-        if (this._ascii) {
-            throw new torch.Error('Function not supported in ASCII mode.');
-        }
-        var size = this.int32();
-        var dumped = this.bytes(size);
-        var upvalues = this.read();
-        return { size: size, dumped: dumped, upvalues: upvalues };
-    }
-
-    nn(obj) {
-        var attributes = this.read();
-        if (attributes != null) {
-            Object.keys(attributes).forEach((key) => {
-                obj[key] = attributes[key];
-            });
-        }
-    }
-
-    tensor(obj) {
-        var dim = this.int32();
-        obj.size = this.int64s(dim);
-        obj.stride = this.int64s(dim);
-        obj.storage_offset = this.int64() - 1;
-        obj.storage = this.read();
-    }
-
-    storage(obj, dataType, itemSize) {
-        obj.dataType = dataType;
-        obj.itemSize = itemSize;
-        obj.size = this.int64();
-        var size = obj.size;
-        switch (dataType) {
-            case 'uint8':
-                obj.data = new Uint8Array(size);
-                break;
-            case 'int8':
-                obj.data = new Int8Array(size);
-                break;
-            case 'int16':
-                obj.data = new Int16Array(size);
-                break;
-            case 'int32':
-                obj.data = new Int32Array(size);
-                break;
-            case 'int64':
-                obj.data = new Float64Array(size);
-                break;
-            case 'float32':
-                obj.data = new Float32Array(size);
-                break;
-            case 'float64':
-                obj.data = new Float64Array(size);
-                break;
-        }
-        var data = obj.data;
-        if (obj.size > 0) {
-            if (this._ascii) {
-                var float = dataType.startsWith('float');
-                var text = this.line(Number.MAX_SAFE_INTEGER);
-                var index = 0;
-                text.split(' ').forEach((token) => {
-                    var number = null;
-                    if (float) {
-                        if (token.startsWith('-nan')) {
-                            return -NaN;
-                        }
-                        if (token.startsWith('nan')) {
-                            return NaN;
-                        }
-                        if (token.startsWith('inf')) {
-                            return Infinity;
-                        }
-                        if (token.startsWith('-inf')) {
-                            return -Infinity;
-                        }
-                                            number = Number.parseFloat(token);
-                        if (Number.isNaN(token - number)) {
-                            throw new Error("Couldn't parse float '" + token + "'.");
-                        }        
-                    }
-                    else {
-                        number = Number.parseInt(token, 10);
-                        if (Number.isNaN(token - number)) {
-                            throw new Error("Couldn't parse int '" + token + "'.");
-                        }        
-                    }
-                    data[index++] = number;
-                });
-            }
-            else {
-                for (var i = 0; i < size; i++) {
-                    switch (dataType) {
-                        case 'uint8':
-                            data[i] = this.byte();
-                            break;
-                        case 'int8':
-                            data[i] = this.int8();
-                            break;
-                        case 'int16':
-                            data[i] = this.int16();
-                            break;
-                        case 'int32':
-                            data[i] = this.int32();
-                            break;
-                        case 'int64':
-                            data[i] = this.int64();
-                            break;
-                        case 'float32':
-                            data[i] = this.float32();
-                            break;
-                        case 'float64':
-                            data[i] = this.float64();
-                            break;
-                        default:
-                            throw new torch.Error("Unknown storage data type '" + type + "'.");
-                    }
-                }
-            }
-        }
-    }
-};
-
-torch.OperatorMetadata = class {
+torch.Metadata = class {
 
     static open(host, callback) {
-        if (torch.OperatorMetadata._metadata) {
-            callback(null, torch.OperatorMetadata._metadata);
+        if (torch.Metadata._metadata) {
+            callback(null, torch.Metadata._metadata);
             return;
         }
         host.request(null, 'torch-metadata.json', 'utf-8', (err, data) => {
-            torch.OperatorMetadata._metadata = new torch.OperatorMetadata(data);
-            callback(null, torch.OperatorMetadata._metadata);
+            torch.Metadata._metadata = new torch.Metadata(data);
+            callback(null, torch.Metadata._metadata);
             return;
         });
     }
@@ -966,7 +665,495 @@ torch.OperatorMetadata = class {
     }
 };
 
+torch.Error = class extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'Error loading Torch model.';
+    }
+};
+
+torch.T7Reader = class {
+
+    constructor(buffer, callback) {
+        this._callback = callback; 
+        this._memo = {};
+
+        this._registry = {};
+        this._registry['cudnn.BatchNormalization'] = function(reader, version) { reader.nn(this); };
+        this._registry['cudnn.SpatialConvolution'] = function(reader, version) { reader.nn(this); };
+        this._registry['cudnn.ReLU'] = function(reader, version) { reader.nn(this); };
+        this._registry['cudnn.SoftMax'] = function(reader, version) { reader.nn(this); };
+        this._registry['cudnn.SpatialAveragePooling'] = function(reader, version) { reader.nn(this); };
+        this._registry['cudnn.SpatialBatchNormalization'] = function(reader, version) { reader.nn(this); };
+        this._registry['cudnn.SpatialFullConvolution'] = function(reader, version) { reader.nn(this); };
+        this._registry['cudnn.SpatialMaxPooling'] = function(reader, version) { reader.nn(this); };
+        this._registry['cudnn.Tanh'] = function(reader, version) { reader.nn(this); };
+        this._registry['inn.SpatialMaxPooling'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.CAddTable'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Concat'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Copy'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.ConcatTable'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.DepthConcat'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Dropout'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Identity'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Inception'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.InstanceNormalization'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.JoinTable'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.LeakyReLU'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Linear'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.LogSoftMax'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Mean'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.MulConstant'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.MM'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Normalize'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Parallel'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.ParallelTable'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.ReLU'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Reshape'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.ShaveImage'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SelectTable'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Sequential'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Sigmoid'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SoftMax'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialAveragePooling'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialBatchNormalization'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialConvolution'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialConvolutionMM'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialCrossMapLRN'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialDilatedConvolution'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialFullConvolution'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialLPPooling'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialMaxPooling'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialReflectionPadding'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialUpSamplingNearest'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.SpatialZeroPadding'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Square'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Sqrt'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.Tanh'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.TotalVariation'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.View'] = function(reader, version) { reader.nn(this); };
+        this._registry['nn.gModule'] = function(reader, version) { reader.nn(this); };
+        this._registry['nngraph.Node'] = function(reader, version) { reader.nn(this); };
+        this._registry['graph.Edge'] = function(reader, version) { reader.nn(this); };
+        this._registry['graph.Graph'] = function(reader, version) { reader.nn(this); };
+        this._registry['torch.ByteTensor'] = function(reader, version) { reader.tensor(this); };
+        this._registry['torch.CharTensor'] = function(reader, version) { reader.tensor(this); };
+        this._registry['torch.ShortTensor'] = function(reader, version) { reader.tensor(this); };
+        this._registry['torch.IntTensor'] = function(reader, version) { reader.tensor(this); };
+        this._registry['torch.LongTensor'] = function(reader, version) { reader.tensor(this); };
+        this._registry['torch.FloatTensor'] = function(reader, version) { reader.tensor(this); };
+        this._registry['torch.DoubleTensor'] = function(reader, version) { reader.tensor(this); };
+        this._registry['torch.CudaByteTensor'] = function(reader, version) {reader.tensor(this); };
+        this._registry['torch.CudaCharTensor'] = function(reader, version) {reader.tensor(this); };
+        this._registry['torch.CudaShortTensor'] = function(reader, version) {reader.tensor(this); };
+        this._registry['torch.CudaIntTensor'] = function(reader, version) {reader.tensor(this); };
+        this._registry['torch.CudaLongTensor'] = function(reader, version) {reader.tensor(this); };
+        this._registry['torch.CudaTensor'] = function(reader, version) {reader.tensor(this); };
+        this._registry['torch.CudaDoubleTensor'] = function(reader, version) {reader.tensor(this); };
+        this._registry['torch.ByteStorage'] = function(reader, version) { reader.storage(this, 'uint8', 1); };
+        this._registry['torch.CharStorage'] = function(reader, version) { reader.storage(this, 'int8', 1); };
+        this._registry['torch.ShortStorage'] = function(reader, version) { reader.storage(this, 'int16', 2); };
+        this._registry['torch.IntStorage'] = function(reader, version) { reader.storage(this, 'int32', 4); };
+        this._registry['torch.LongStorage'] = function(reader, version) { reader.storage(this, 'int64', 8); };
+        this._registry['torch.FloatStorage'] = function(reader, version) { reader.storage(this, 'float32', 4); };
+        this._registry['torch.DoubleStorage'] = function(reader, version) { reader.storage(this, 'float64', 8); };
+        this._registry['torch.CudaByteStorage'] = function(reader, version) { reader.storage(this, 'uint8', 1); };
+        this._registry['torch.CudaCharStorage'] = function(reader, version) { reader.storage(this, 'int8', 1); };
+        this._registry['torch.CudaShortStorage'] = function(reader, version) { reader.storage(this, 'int16', 2); };
+        this._registry['torch.CudaIntStorage'] = function(reader, version) { reader.storage(this, 'int32', 4); };
+        this._registry['torch.CudaLongStorage'] = function(reader, version) { reader.storage(this, 'int64', 8); };
+        this._registry['torch.CudaIntStorage'] = function(reader, version) { reader.storage(this, 'int32', 4); };
+        this._registry['torch.CudaStorage'] = function(reader, version) { reader.storage(this, 'float32', 4); };
+        this._registry['torch.CudaFloatStorage'] = function(reader, version) { reader.storage(this, 'float64', 8); };
+        this._registry['w2nn.AuxiliaryLossTable'] = function(reader, version) { reader.nn(this); };
+        this._registry['w2nn.InplaceClip01'] = function(reader, version) { reader.nn(this); };
+        this._registry['w2nn.ScaleTable'] = function(reader, version) { reader.nn(this); };
+
+        if (buffer.length == 0) {
+            throw new torch.Error('File is empty.');            
+        }
+        if (buffer[0] <= 8) {
+            this._reader = new torch.BinaryReader(buffer);
+        }
+        else {
+            this._reader = new torch.TextReader(buffer);
+            this._reader.int32();
+            this._reader.reset();
+        }
+    }
+
+    read() {
+        var type = this.int32();
+        switch (type) {
+            case 0: return null;
+            case 1: return this.float64();
+            case 2: return this.string();
+            case 3: return this.table();
+            case 4: return this.object();
+            case 5: return this.boolean();
+            case 6: return this.function();
+            case 7: return this.function();
+            case 8: return this.function();
+            default: throw new torch.Error("File format has invalid type '" + type + "'.");
+        }
+    }
+
+    boolean() {
+        return this._reader.boolean();
+    }
+
+    bytes(size) {
+        return this._reader.bytes(size);
+    }
+
+    int32() {
+        return this._reader.int32();
+    }
+
+    int64() {
+        return this._reader.int64();
+    }
+
+    int64s(size) {
+        return this._reader.int64s(size);
+    }
+
+    float64() {
+        return this._reader.float64();
+    }
+
+    string() {
+        return this._reader.string();
+    }
+
+    object() {
+        var index = this.int32();
+        if (this._memo[index]) {
+            return this._memo[index];
+        }
+
+        var version = this.string();
+        var name = null;
+        if (version.startsWith('V ')) {
+            name = this.string();
+            version = Number(version.split(' ')[1]);
+        }
+        else {
+            name = version;
+            version = 0;
+        }
+
+        var obj = { __type__: name };
+        this._memo[index] = obj;
+
+        var constructor = this._registry[name];
+        if (constructor) {
+            constructor.apply(obj, [ this, version ]);
+        }
+        else {
+            constructor = this._callback(name);
+            if (constructor) {
+                constructor.apply(obj, [ this, version ]);
+            }
+            this.nn(obj);
+        }
+        return obj;
+    }
+
+    table() {
+        var index = this.int32();
+        if (this._memo[index]) {
+            return this._memo[index];
+        }
+        var table = {};
+        this._memo[index] = table;
+        var size = this.int32();
+        var convert = true;
+        var sum = 0;
+        for (var i = 0; i < size; i++) {
+            var key = this.read();
+            var value = this.read();
+            table[key] = value;
+            if (Number.isInteger(key) && key >= 0) {
+                sum += key;
+            }
+            else {
+                convert = false;
+            }
+        }
+        var n = Object.keys(table).length;
+        if (convert && (n * (n + 1)) == (2 * sum)) {
+            var list = [];
+            for (var j = 0; j < n; j++) {
+                var item = table[j + 1];
+                if (item == table) {
+                    item = list;
+                }
+                list.push(item);
+            }
+            this._memo[index] = list;
+            if (index == 1016) {
+                debugger;
+            }
+            return list;
+        }
+        return table;
+    }
+
+    function() {
+        var size = this.int32();
+        var dumped = this.bytes(size);
+        var upvalues = this.read();
+        return { size: size, dumped: dumped, upvalues: upvalues };
+    }
+
+    nn(obj) {
+        var attributes = this.read();
+        if (attributes != null) {
+            Object.keys(attributes).forEach((key) => {
+                obj[key] = attributes[key];
+            });
+        }
+    }
+
+    tensor(obj) {
+        var dim = this.int32();
+        obj.size = this.int64s(dim);
+        obj.stride = this.int64s(dim);
+        obj.storage_offset = this.int64() - 1;
+        obj.storage = this.read();
+    }
+
+    storage(obj, dataType, itemSize) {
+        obj.dataType = dataType;
+        obj.itemSize = itemSize;
+        obj.size = this.int64();
+        obj.reader = this._reader.storage(obj.size, obj.itemSize);
+        obj.reset = function() {
+            this.reader.reset();
+        };
+        obj.read = function() {
+            switch (dataType) {
+                case 'uint8':
+                    return this.reader.byte();
+                case 'int8':
+                    return this.reader.int8();
+                case 'int16':
+                    return this.reader.int16();
+                case 'int32':
+                    return this.reader.int32();
+                case 'int64':
+                    return this.reader.int64();
+                case 'float32':
+                    return this.reader.float32();
+                case 'float64':
+                    return this.reader.float64();
+            }
+            return null;
+        };
+    }
+};
+
+torch.BinaryReader = class {
+
+    constructor(buffer) {
+        this._buffer = buffer;
+        this._position = 0;
+        this._dataView = new DataView(this._buffer.buffer, this._buffer.byteOffset, this._buffer.byteLength);
+        this._textDecoder = new TextDecoder('ascii');
+    }
+
+    reset() {
+        this._position = 0;
+    }
+
+    boolean() {
+        return this.int32() == 1;
+    }
+
+    bytes(size) {
+        var data = this._buffer.subarray(this._position, this._position + size);
+        this._position += size;
+        return data;
+    }
+
+    int8() {
+        var value = this._dataView.getInt8(this._position, true);
+        this._position += 1;
+        return value;
+    }
+
+    int16() {
+        var value = this._dataView.getInt16(this._position, true);
+        this._position += 2;
+        return value;
+    }
+
+    int32() {
+        var value = this._dataView.getInt32(this._position, true);
+        this._position += 4;
+        return value;
+    }
+
+    int64() {
+        var lo = this._dataView.getInt32(this._position, true);
+        var hi = this._dataView.getInt32(this._position, true);
+        this._position += 8;
+        if (hi == 0 || hi == -1) {
+            return lo;
+        }
+        lo = this._dataView.getUint32(this._position - 8, true);
+        hi = this._dataView.getInt32(this._position - 4, true);
+        if (hi < 32677) {
+            return hi << 32 || lo;
+        }
+        throw new torch.Error('Invalid int64 value.');
+    }
+
+    int64s(size) {
+        var array = [];
+        for (var i = 0; i < size; i++) {
+            array.push(this.int64());
+        }
+        return array;
+    }
+    
+    float32() {
+        var value = this._dataView.getFloat32(this._position, true);
+        this._position += 4;
+        return value;
+    }
+
+    float64() {
+        var value = this._dataView.getFloat64(this._position, true);
+        this._position += 8;
+        return value;
+    }
+
+    string() {
+        var size = this.int32();
+        var buffer = this.bytes(size);
+        return this._textDecoder.decode(buffer);
+    }
+
+    storage(size, itemSize) {
+        return new torch.BinaryReader(this.bytes(size * itemSize));
+    }
+};
+
+torch.TextReader = class {
+
+    constructor(buffer, separator) {
+        this._buffer = buffer;
+        this._position = 0;
+        this._dataView = new DataView(this._buffer.buffer, this._buffer.byteOffset, this._buffer.byteLength);
+        this._textDecoder = new TextDecoder('ascii');
+        this._separator = separator || 0x0a;
+    }
+
+    reset() {
+        this._position = 0;
+    }
+
+    line(size) {
+        var start = this._position;
+        while (this._position < this._buffer.length && size > -1) {
+            var c = this._buffer[this._position++];
+            if (c == this._separator) {
+                return this._buffer.slice(start, this._position - 1);
+            }
+            else if (this._position == this._buffer.length) {
+                return this._buffer.slice(start, this._position);
+            }
+            size--;
+        }
+        throw torch.Error('Line exceeded maximum length.');
+    }
+
+    boolean() {
+        return this.int32() == 1;
+    }
+
+    bytes(size) {
+        throw new torch.Error('Byte array not supported in ASCII mode.');
+    }
+
+    int8() {
+        return this.int64();
+    }
+
+    int16() {
+        return this.int64();
+    }
+
+    int32() {
+        return this.int64();
+    }
+
+    int64() {
+        var token = this._textDecoder.decode(this.line(20));
+        var number = Number.parseInt(token, 10);
+        if (Number.isNaN(token - number)) {
+            throw new torch.Error("Couldn't parse int64 '" + token + "'.");
+        }
+        return number;
+    }
+
+    int64s(size) {
+        var array = [];
+        if (size > 0) {
+            var text = this._textDecoder.decode(this.line(Number.MAX_SAFE_INTEGER));
+            text.split(' ').forEach((token) => {
+                var number = Number.parseInt(token, 10);
+                if (Number.isNaN(token - number)) {
+                    throw new torch.Error("Couldn't parse int64 '" + token + "'.");
+                }
+                array.push(number);
+            });
+        }
+        return array;
+    }
+    
+    float32() {
+        return this.float64();
+    }
+
+    float64() {
+        var token = this._textDecoder.decode(this.line(20));
+        if (token.startsWith('-nan')) {
+            return -NaN;
+        }
+        if (token.startsWith('nan')) {
+            return NaN;
+        }
+        if (token.startsWith('inf')) {
+            return Infinity;
+        }
+        if (token.startsWith('-inf')) {
+            return -Infinity;
+        }
+        var number = Number.parseFloat(token);
+        if (Number.isNaN(token - number)) {
+            throw new Error("Couldn't parse float '" + token + "'.");
+        }
+        return number;
+    }
+
+    string() {
+        var size = this.int32();
+        var text = this._textDecoder.decode(this.line(size));
+        if (size != text.length) {
+            throw torch.Error('Invalid text length.');
+        }
+        return text;
+    }
+
+    storage(size, itemSize) {
+        var data = size > 0 ? this.line(Number.MAX_SAFE_INTEGER) : new Uint8Array(0);
+        return new torch.TextReader(data, 0x20);
+    }
+};
+
 if (typeof module !== 'undefined' && typeof module.exports === 'object') {
     module.exports.ModelFactory = torch.ModelFactory;
 }
-

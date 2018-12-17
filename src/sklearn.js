@@ -59,6 +59,10 @@ sklearn.ModelFactory = class {
                                 this.itemsize = Number(obj.substring(1));
                                 this.name = 'object';
                             }
+                            else if (obj.startsWith('S')) {
+                                this.itemsize = Number(obj.substring(1));
+                                this.name = 'string';
+                            }
                             else {
                                 throw new sklearn.Error("Unknown dtype '" + obj.toString() + "'.");
                             }
@@ -99,12 +103,21 @@ sklearn.ModelFactory = class {
                         array.__type__ = this.subtype;
                         array.dtype = this.typecode;
                         array.shape = this.shape;
+                        var size = array.dtype.itemsize;
+                        for (var i = 0; i < array.shape.length; i++) {
+                            size = size * array.shape[i];                                
+                        }
                         if (typeof this.rawdata == 'string') {
-                            array.data = sklearn.ModelFactory._unescape(this.rawdata);
+                            array.data = unpickler.unescape(this.rawdata, size);
+                            if (array.data.length != size) {
+                                throw new sklearn.Error('Invalid string array data size.');
+                            }
                         }
                         else {
-                            debugger;
                             array.data = this.rawdata;
+                            if (array.data.length != size) {
+                                throw new sklearn.Error('Invalid array data size.');
+                            }
                         }
                         return array;
                     };
@@ -153,7 +166,8 @@ sklearn.ModelFactory = class {
                 constructorTable['sklearn.feature_extraction.text.CountVectorizer​'] = function() {};
                 constructorTable['sklearn.feature_extraction.text.TfidfVectorizer​'] = function() {};
                 constructorTable['sklearn.impute.SimpleImputer'] = function() {};
-                constructorTable['sklearn.linear_model.LogisticRegression'] = function() {}; 
+                constructorTable['sklearn.linear_model.base.LinearRegression'] = function() {};
+                constructorTable['sklearn.linear_model.LogisticRegression'] = function() {};
                 constructorTable['sklearn.linear_model.logistic.LogisticRegression'] = function() {};
                 constructorTable['sklearn.linear_model.LassoLars​'] = function() {};
                 constructorTable['sklearn.model_selection._search.GridSearchCV'] = function() {};
@@ -164,11 +178,16 @@ sklearn.ModelFactory = class {
                 constructorTable['sklearn.neighbors.KNeighborsClassifier​'] = function() {};
                 constructorTable['sklearn.neighbors.KNeighborsRegressor'] = function() {};
                 constructorTable['sklearn.neural_network.rbm.BernoulliRBM'] = function() {};
+                constructorTable['sklearn.neural_network.multilayer_perceptron.MLPRegressor'] = function() {};
+                constructorTable['sklearn.neural_network._stochastic_optimizers.AdamOptimizer'] = function() {};
+                constructorTable['sklearn.neural_network._stochastic_optimizers.SGDOptimizer'] = function() {};
                 constructorTable['sklearn.pipeline.Pipeline'] = function() {};
                 constructorTable['sklearn.preprocessing._encoders.OneHotEncoder'] = function() {};
                 constructorTable['sklearn.preprocessing.data.Binarizer'] = function() {};
                 constructorTable['sklearn.preprocessing.data.StandardScaler'] = function() {};
+                constructorTable['sklearn.preprocessing.label.LabelEncoder'] = function() {};
                 constructorTable['sklearn.svm.classes.SVC'] = function() {};
+                constructorTable['sklearn.svm.classes.SVR'] = function() {};
                 constructorTable['sklearn.tree._tree.Tree'] = function(n_features, n_classes, n_outputs) {
                     this.n_features = n_features;
                     this.n_classes = n_classes;
@@ -184,12 +203,17 @@ sklearn.ModelFactory = class {
                 constructorTable['sklearn.tree.tree.DecisionTreeRegressor'] = function() {};
                 constructorTable['sklearn.tree.tree.ExtraTreeClassifier'] = function() {};
                 constructorTable['sklearn.utils.deprecation.DeprecationDict'] = function() {};
+                constructorTable['xgboost.core.Booster'] = function() {};
+                constructorTable['xgboost.sklearn.XGBClassifier'] = function() {};
 
                 functionTable['copy_reg._reconstructor'] = function(cls, base, state) {
                     if (base == '__builtin__.object') {
                         var obj = {};
                         obj.__type__ = cls;
                         return obj;
+                    }
+                    if (base == '__builtin__.tuple') {
+                        return state;
                     }
                     throw new sklearn.Error("Unknown base type '" + base + "'.");
                 };
@@ -226,6 +250,12 @@ sklearn.ModelFactory = class {
                 functionTable['collections.defaultdict'] = function(default_factory) {
                     return {};
                 };
+                functionTable['__builtin__.bytearray'] = function(data, encoding) {
+                    return { data: data, encoding: encoding };
+                };
+                functionTable['numpy.random.__RandomState_ctor'] = function() {
+                    return {};
+                };
 
                 var function_call = (name, args) => {
                     var func = functionTable[name];
@@ -258,10 +288,11 @@ sklearn.ModelFactory = class {
                 return;
             }
 
-            sklearn.OperatorMetadata.open(host, (err, metadata) => {
+            sklearn.Metadata.open(host, (err, metadata) => {
                 try {
-                    var model = new sklearn.Model(obj);
+                    var model = new sklearn.Model(metadata, obj);
                     callback(null, model);
+                    return;
                 }
                 catch (error) {
                     host.exception(error, false);
@@ -271,79 +302,18 @@ sklearn.ModelFactory = class {
             });
         });
     }
-
-    static _unescape(token) {
-        var i = 0;
-        var o = 0;
-        var length = token.length;
-        var a = new Uint8Array(length);
-        while (i < length) {
-            var c = token.charCodeAt(i++);
-            if (c !== 0x5C) {
-                a[o++] = c;
-            }
-            else {
-                if (i >= length) {
-                    throw new sklearn.Error("Unexpected end of bytes string.");
-                }
-                c = token.charCodeAt(i++);
-                switch (c) {
-                    case 0x27: a[o++] = 0x27; break; // '
-                    case 0x5C: a[o++] = 0x5C; break; // \\
-                    case 0x22: a[o++] = 0x22; break; // "
-                    case 0x72: a[o++] = 0x0D; break; // \r
-                    case 0x6E: a[o++] = 0x0A; break; // \n
-                    case 0x74: a[o++] = 0x09; break; // \t
-                    case 0x62: a[o++] = 0x08; break; // \b
-                    case 0x58: // x
-                    case 0x78: // X
-                        for (var xi = 0; xi < 2; xi++) {
-                            if (i >= length) {
-                                throw new sklearn.Error("Unexpected end of bytes string.");
-                            }
-                            var xd = token.charCodeAt(i++);
-                            xd = xd >= 65 && xd <= 70 ? xd - 55 : xd >= 97 && xd <= 102 ? xd - 87 : xd >= 48 && xd <= 57 ? xd - 48 : -1;
-                            if (xd === -1) {
-                                throw new sklearn.Error("Unexpected hex digit '" + xd + "' in bytes string.");
-                            }
-                            a[o] = a[o] << 4 | xd;
-                        }
-                        o++;
-                        break;
-                    default:
-                        if (c < 48 || c > 57) { // 0-9
-                            throw new sklearn.Error("Unexpected character '" + c + "' in bytes string.");
-                        }
-                        i--;
-                        for (var oi = 0; oi < 3; oi++) {
-                            if (i >= length) {
-                                throw new sklearn.Error("Unexpected end of bytes string.");
-                            }
-                            var od = token.charCodeAt(i++);
-                            if (od < 48 || od > 57) {
-                                throw new sklearn.Error("Unexpected octal digit '" + od + "' in bytes string.");
-                            }
-                            a[o] = a[o] << 3 | od - 48;
-                        }
-                        o++;
-                        break;
-                }
-           }
-        }
-        return a.slice(0, o);
-    }
 };
 
 sklearn.Model = class {
 
-    constructor(obj) {
+    constructor(metadata, obj) {
         this._format = 'scikit-learn';
         if (obj._sklearn_version) {
             this._format += ' ' + obj._sklearn_version.toString();
         }
 
         this._graphs = [];
-        this._graphs.push(new sklearn.Graph(obj));
+        this._graphs.push(new sklearn.Graph(metadata, obj));
     }
 
     get format() {
@@ -357,7 +327,7 @@ sklearn.Model = class {
 
 sklearn.Graph = class {
 
-    constructor(obj) {
+    constructor(metadata, obj) {
         this._nodes = [];
         this._groups = false;
 
@@ -366,12 +336,12 @@ sklearn.Graph = class {
             case 'sklearn.pipeline.Pipeline':
                 this._groups = true;
                 for (var step of obj.steps) {
-                    this._nodes.push(new sklearn.Node('pipeline', step[0], step[1], [ input ], [ step[0] ]));
+                    this._nodes.push(new sklearn.Node(metadata, 'pipeline', step[0], step[1], [ input ], [ step[0] ]));
                     input = step[0];
                 }
                 break;
             default:
-                this._nodes.push(new sklearn.Node(null, null, obj, [], []));
+                this._nodes.push(new sklearn.Node(metadata, null, null, obj, [], []));
                 break;
         }
 
@@ -438,7 +408,8 @@ sklearn.Connection = class {
 
 sklearn.Node = class {
 
-    constructor(group, name, obj, inputs, outputs) {
+    constructor(metadata, group, name, obj, inputs, outputs) {
+        this._metadata = metadata;
         if (group) {
             this._group = group;
         }
@@ -456,7 +427,7 @@ sklearn.Node = class {
                 var value = obj[key];
 
                 if (Array.isArray(value) || Number.isInteger(value) || value == null) {
-                    this._attributes.push(new sklearn.Attribute(this, key, value));
+                    this._attributes.push(new sklearn.Attribute(this._metadata, this, key, value));
                 }
                 else {
                     switch (value.__type__) {
@@ -464,7 +435,7 @@ sklearn.Node = class {
                             this._initializers.push(new sklearn.Tensor(key, value));
                             break;
                         default: 
-                            this._attributes.push(new sklearn.Attribute(this, key, value));
+                            this._attributes.push(new sklearn.Attribute(this._metadata, this, key, value));
                     }
                 }
             }
@@ -484,7 +455,7 @@ sklearn.Node = class {
     }
 
     get documentation() {
-        var schema = sklearn.OperatorMetadata.operatorMetadata.getSchema(this.operator);
+        var schema = this._metadata.getSchema(this.operator);
         if (schema) {
             schema = JSON.parse(JSON.stringify(schema));
             schema.name = this.operator;
@@ -525,7 +496,7 @@ sklearn.Node = class {
     }
 
     get category() {
-        var schema = sklearn.OperatorMetadata.operatorMetadata.getSchema(this.operator);
+        var schema = this._metadata.getSchema(this.operator);
         return (schema && schema.category) ? schema.category : null;
     }
 
@@ -552,11 +523,11 @@ sklearn.Node = class {
 
 sklearn.Attribute = class {
 
-    constructor(node, name, value) {
+    constructor(metadata, node, name, value) {
         this._name = name;
         this._value = value;
 
-        var schema = sklearn.OperatorMetadata.operatorMetadata.getAttributeSchema(node.operator, this._name);
+        var schema = metadata.getAttributeSchema(node.operator, this._name);
         if (schema) {
             if (schema.hasOwnProperty('option') && schema.option == 'optional' && this._value == null) {
                 this._visible = false;
@@ -844,16 +815,16 @@ sklearn.TensorShape = class {
     }
 };
 
-sklearn.OperatorMetadata = class {
+sklearn.Metadata = class {
 
     static open(host, callback) {
-        if (sklearn.OperatorMetadata.operatorMetadata) {
-            callback(null, sklearn.OperatorMetadata.operatorMetadata);
+        if (sklearn.Metadata._metadata) {
+            callback(null, sklearn.Metadata._metadata);
         }
         else {
             host.request(null, 'sklearn-metadata.json', 'utf-8', (err, data) => {
-                sklearn.OperatorMetadata.operatorMetadata = new sklearn.OperatorMetadata(data);
-                callback(null, sklearn.OperatorMetadata.operatorMetadata);
+                sklearn.Metadata._metadata = new sklearn.Metadata(data);
+                callback(null, sklearn.Metadata._metadata);
             });    
         }
     }

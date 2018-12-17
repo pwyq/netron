@@ -10,12 +10,21 @@ onnx.ModelFactory = class {
     match(context, host) {
         var identifier = context.identifier;
         var extension = identifier.split('.').pop().toLowerCase();
-        if (extension == 'onnx' || extension == 'pb') {
+        if (extension == 'onnx') {
+            return true;
+        }
+        if (extension == 'pb') {
             if (identifier.endsWith('saved_model.pb')) {
                 return false;
             }
             if (identifier.endsWith('predict_net.pb') || identifier.endsWith('predict_net.pb') || identifier == 'init_net.pb') {
                 return false;
+            }
+            if (identifier == 'input_0.pb' || identifier == 'output_0.pb') {
+                var buffer = context.buffer;
+                if (buffer.length > 5 && buffer[0] == 0x08 && buffer[1] == 0x01 && buffer[2] == 0x08 && (buffer[3] == 0xE8 || buffer[3] == 0x03)) {
+                    return false;
+                }
             }
             return true;
         }
@@ -64,9 +73,9 @@ onnx.ModelFactory = class {
                     return;
                 }
             }
-            onnx.OperatorMetadata.open(host, (err, metadata) => {
+            onnx.Metadata.open(host, (err, metadata) => {
                 try {
-                    var result = new onnx.Model(model);
+                    var result = new onnx.Model(metadata, model);
                     callback(null, result);
                 }
                 catch (error) {
@@ -81,7 +90,7 @@ onnx.ModelFactory = class {
 
 onnx.Model = class {
 
-    constructor(model) {
+    constructor(metadata, model) {
         this._graphs = [];
         this._irVersion = model.ir_version;
         this._opsetImport = model.opset_import;
@@ -126,8 +135,8 @@ onnx.Model = class {
         }
         this._graphs = [];
         if (model && model.graph) {
-            var metadata = new onnx.GraphOperatorMetadata(this._opsetImport);
-            var graph = new onnx.Graph(metadata, model.graph, 0, this._imageFormat);
+            var graphMetadata = new onnx.GraphMetadata(metadata, this._opsetImport);
+            var graph = new onnx.Graph(graphMetadata, this._imageFormat, model.graph);
             this._graphs.push(graph);
         }
     }
@@ -214,18 +223,16 @@ onnx.Model = class {
 
 onnx.Graph = class {
 
-    constructor(metadata, graph, index, imageFormat) {
-        this._metadata = metadata;
+    constructor(metadata, imageFormat, graph) {
         this._node = '';
         this._description = '';
         this._nodes = [];
         this._inputs = [];
         this._outputs = [];
         this._operators = {};
-        this._imageFormat = imageFormat;
 
         if (graph) {
-            this._name = graph.name || ('(' + index.toString() + ')');
+            this._name = graph.name || null;
             this._description = graph.doc_string || '';
 
             var initializers = {};
@@ -275,7 +282,7 @@ onnx.Graph = class {
             nodes.forEach((node) => {
                 var inputs = [];
                 if (node.input) {
-                    inputs = this._metadata.getInputs(node.op_type, node.input);
+                    inputs = metadata.getInputs(node.op_type, node.input);
                     inputs = inputs.map((input) => {
                         return new onnx.Argument(input.name, input.connections.map((connection) => {
                             return this._connection(connections, connection.id, null, null, initializers[connection.id]);
@@ -284,14 +291,14 @@ onnx.Graph = class {
                 }
                 var outputs = [];
                 if (node.output) {
-                    outputs = this._metadata.getOutputs(node.op_type, node.output);
+                    outputs = metadata.getOutputs(node.op_type, node.output);
                     outputs = outputs.map((output) => {
                         return new onnx.Argument(output.name, output.connections.map((connection) => {
                             return this._connection(connections, connection.id, null, null, initializers[connection.id]);
                         }));
                     });
                 }
-                this._nodes.push(new onnx.Node(this, node.op_type, node.domain, node.name, node.doc_string, node.attribute, inputs, outputs));
+                this._nodes.push(new onnx.Node(metadata, imageFormat, node.op_type, node.domain, node.name, node.doc_string, node.attribute, inputs, outputs));
             });
         }
     }
@@ -395,8 +402,8 @@ onnx.Connection = class {
 
 onnx.Node = class {
 
-    constructor(graph, operator, domain, name, description, attributes, inputs, outputs) {
-        this._graph = graph;
+    constructor(metadata, imageFormat, operator, domain, name, description, attributes, inputs, outputs) {
+        this._metadata = metadata;
         this._operator = operator;
         if (domain) {
             this._domain = domain;
@@ -410,7 +417,7 @@ onnx.Node = class {
         this._attributes = [];
         if (attributes && attributes.length > 0) {
             attributes.forEach((attribute) => { 
-                this._attributes.push(new onnx.Attribute(this.graph.metadata, this.operator, attribute));
+                this._attributes.push(new onnx.Attribute(this._metadata, imageFormat, this.operator, attribute));
             });
         }            
         this._inputs = inputs;
@@ -434,7 +441,7 @@ onnx.Node = class {
     }
 
     get documentation() {
-        var schema = this._graph.metadata.getSchema(this._operator);
+        var schema = this._metadata.getSchema(this._operator);
         if (schema) {
             var options = { baseUrl: 'https://github.com/onnx/onnx/blob/master/docs/' };
             schema = JSON.parse(JSON.stringify(schema));
@@ -489,7 +496,7 @@ onnx.Node = class {
     }
 
     get category() {
-        var schema = this._graph.metadata.getSchema(this._operator);
+        var schema = this._metadata.getSchema(this._operator);
         return (schema && schema.category) ? schema.category : null;
     }
 
@@ -512,15 +519,11 @@ onnx.Node = class {
     get dependencies() {
         return [];
     }
-
-    get graph() {
-        return this._graph;
-    }
 };
 
 onnx.Attribute = class {
 
-    constructor(metadata, operator, attribute) {
+    constructor(metadata, imageFormat, operator, attribute) {
         this._name = attribute.name;
         this._type = null;
         this._value = null;
@@ -561,7 +564,7 @@ onnx.Attribute = class {
             }
         }
         else if (attribute.graphs && attribute.graphs.length > 0) {
-            this._value = arg.graphs.map((graph) => new onnx.Graph(metadata, graph));
+            this._value = arg.graphs.map((graph) => new onnx.Graph(metadata, imageFormat, graph));
             this._type = 'graph[]';
         }
         else if (attribute.s && attribute.s.length > 0) {
@@ -584,7 +587,7 @@ onnx.Attribute = class {
         }
         else if (attribute.hasOwnProperty('g')) {
             this._type = 'graph';
-            this._value = new onnx.Graph(metadata, attribute.g);
+            this._value = new onnx.Graph(metadata, imageFormat, attribute.g);
         }
 
         var attributeSchema = metadata.getAttributeSchema(operator, attribute.name);
@@ -1030,7 +1033,10 @@ onnx.TensorShape = class {
     }
 
     toString() {
-        return (this._dimensions && this._dimensions.length) ? ('[' + this._dimensions.join(',') + ']') : '';
+        if (!this._dimensions || this._dimensions.length == 0) {
+            return '';
+        }
+        return '[' + this._dimensions.join(',') + ']';
     }
 };
 
@@ -1092,9 +1098,10 @@ onnx.OpaqueType = class {
     }
 };
 
-onnx.GraphOperatorMetadata = class {
+onnx.GraphMetadata = class {
 
-    constructor(opsetImport) {
+    constructor(metadata, opsetImport) {
+        this._metadata = metadata;
         this._cache = {};
         this._imports = {};
         if (opsetImport) {
@@ -1117,7 +1124,7 @@ onnx.GraphOperatorMetadata = class {
     getSchema(operator) {
         var schema = this._cache[operator];
         if (!schema) {
-            schema = onnx.OperatorMetadata.operatorMetadata.getSchema(operator, this._imports);
+            schema = this._metadata.getSchema(operator, this._imports);
             if (schema) {
                 this._cache[operator] = schema;
             }
@@ -1213,16 +1220,16 @@ onnx.GraphOperatorMetadata = class {
     }
 };
 
-onnx.OperatorMetadata = class {
+onnx.Metadata = class {
 
     static open(host, callback) {
-        if (onnx.OperatorMetadata.operatorMetadata) {
-            callback(null, onnx.OperatorMetadata.operatorMetadata);
+        if (onnx.Metadata._metadata) {
+            callback(null, onnx.Metadata._metadata);
         }
         else {
             host.request(null, 'onnx-metadata.json', 'utf-8', (err, data) => {
-                onnx.OperatorMetadata.operatorMetadata = new onnx.OperatorMetadata(data);
-                callback(null, onnx.OperatorMetadata.operatorMetadata);
+                onnx.Metadata._metadata = new onnx.Metadata(data);
+                callback(null, onnx.Metadata._metadata);
             });
         }    
     }

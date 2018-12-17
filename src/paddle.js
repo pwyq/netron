@@ -31,9 +31,9 @@ paddle.ModelFactory = class {
                 callback(new paddle.Error("File format is not paddle.ProgramDesc (" + error.message + ") in '" + identifier + "'."), null);
                 return;
             }
-            paddle.OperatorMetadata.open(host, (err, metadata) => {
+            paddle.Metadata.open(host, (err, metadata) => {
                 try {
-                    var model = new paddle.Model(desc);
+                    var model = new paddle.Model(metadata, desc);
                     callback(null, model);
                 }
                 catch (error) {
@@ -48,10 +48,10 @@ paddle.ModelFactory = class {
 
 paddle.Model = class {
 
-    constructor(desc) {
+    constructor(metadata, desc) {
         this._graphs = [];
         desc.blocks.forEach((block) => {
-            this._graphs.push(new paddle.Graph(block));
+            this._graphs.push(new paddle.Graph(metadata, block));
         });
     }
 
@@ -66,7 +66,7 @@ paddle.Model = class {
 
 paddle.Graph = class {
 
-    constructor(block) {
+    constructor(metadata, block) {
         this._nodes = [];
         this._inputs = [];
         this._outputs = [];
@@ -74,7 +74,9 @@ paddle.Graph = class {
         var initializers = {};
         var types = {};
         block.vars.forEach((variable) => {
-            if (variable.persistable) {
+            if (variable.persistable && variable.type && 
+                variable.type.type != paddle.proto.VarType.Type.FETCH_LIST && 
+                variable.type.type != paddle.proto.VarType.Type.FEED_MINIBATCH) {
                 initializers[variable.name] = new paddle.Tensor(variable);
             }
             else {
@@ -114,7 +116,7 @@ paddle.Graph = class {
                 })));
             }
             else {
-                this._nodes.push(new paddle.Node(op, initializers, types));
+                this._nodes.push(new paddle.Node(metadata, op, initializers, types));
             }
         });
     }
@@ -135,7 +137,6 @@ paddle.Graph = class {
         switch (variable.type.type) {
             case paddle.proto.VarType.Type.LOD_TENSOR:
                 return new paddle.TensorType(variable.type.lod_tensor.tensor);
-                break;
             default:
                 debugger;
                 break;
@@ -198,13 +199,14 @@ paddle.Connection = class {
 
 paddle.Node = class {
 
-    constructor(op, initializers, types) {
+    constructor(metadata, op, initializers, types) {
+        this._metadata = metadata;
         this._operator = op.type;
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
         op.attrs.forEach((attr) => {
-            this._attributes.push(new paddle.Attribute(this._operator, attr));
+            this._attributes.push(new paddle.Attribute(metadata, this._operator, attr));
         });
         op.inputs.forEach((input) => {
             if (input.arguments.length > 0) {
@@ -218,6 +220,10 @@ paddle.Node = class {
                 this._outputs.push(new paddle.Argument(output.parameter, connections));              
             }
         });
+        this._update(this._inputs, 'X');
+        this._update(this._inputs, 'Input');
+        this._update(this._outputs, 'Y');
+        this._update(this._outputs, 'Out');
     }
 
     get operator() {
@@ -225,7 +231,7 @@ paddle.Node = class {
     }
 
     get category() {
-        var schema = paddle.OperatorMetadata.operatorMetadata.getSchema(this._operator);
+        var schema = this._metadata.getSchema(this._operator);
         return (schema && schema.category) ? schema.category : null;
     }
 
@@ -240,11 +246,25 @@ paddle.Node = class {
     get outputs() {
         return this._outputs;
     }
+
+    _update(list, name) {
+        var item = null;
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].name == name) {
+                item = list[i];
+                list.splice(i, 1);
+                break;
+            }
+        }
+        if (item) {
+            list.splice(0, 0, item);
+        }
+    }
 };
 
 paddle.Attribute = class {
 
-    constructor(operator, attr) {
+    constructor(metadata, operator, attr) {
         this._name = attr.name;
         this._value = '?';
         switch (attr.type) {
@@ -304,7 +324,7 @@ paddle.Attribute = class {
                 break;
         }
 
-        var schema = paddle.OperatorMetadata.operatorMetadata.getAttributeSchema(operator, this._name);
+        var schema = metadata.getAttributeSchema(operator, this._name);
         if (schema) {
             if (schema.hasOwnProperty('default')) {
                 if (schema.default == this._value) {
@@ -400,16 +420,16 @@ paddle.TensorShape = class {
     }
 };
 
-paddle.OperatorMetadata = class {
+paddle.Metadata = class {
 
     static open(host, callback) {
-        if (paddle.OperatorMetadata.operatorMetadata) {
-            callback(null, paddle.OperatorMetadata.operatorMetadata);
+        if (paddle.Metadata._metadata) {
+            callback(null, paddle.Metadata._metadata);
         }
         else {
             host.request(null, 'paddle-metadata.json', 'utf-8', (err, data) => {
-                paddle.OperatorMetadata.operatorMetadata = new paddle.OperatorMetadata(data);
-                callback(null, paddle.OperatorMetadata.operatorMetadata);
+                paddle.Metadata._metadata = new paddle.Metadata(data);
+                callback(null, paddle.Metadata._metadata);
             });
         }    
     }

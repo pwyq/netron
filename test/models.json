@@ -1,6 +1,13 @@
 [
   {
     "type":   "caffe",
+    "target": "1D_lstm.prototxt",
+    "source": "https://raw.githubusercontent.com/cwlacewe/netscope/master/presets/1D_lstm.prototxt",
+    "format": "Caffe v2",
+    "link":   "https://github.com/cwlacewe/netscope"
+  },
+  {
+    "type":   "caffe",
     "target": "age_net.caffemodel",
     "source": "https://raw.githubusercontent.com/eveningglow/age-and-gender-classification/master/model/age_net.caffemodel",
     "format": "Caffe v1",
@@ -448,7 +455,6 @@
     "type":   "caffe",
     "target": "ResNet-50_merged.qconv.winograd.cwl.prototxt",
     "source": "https://raw.githubusercontent.com/cwlacewe/netscope/master/presets/ResNet-50_merged.qconv.winograd.cwl.prototxt",
-    "error":  "File text format is not caffe.NetParameter (Unknown field 'evaluation_method' at 13:3) in 'ResNet-50_merged.qconv.winograd.cwl.prototxt'.",
     "link":   "https://github.com/cwlacewe/netscope"
   },
   {
@@ -775,6 +781,13 @@
   },
   {
     "type":   "cntk",
+    "target": "v1/01_OneHidden.dnn",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/Tests/UnitTests/NetworkTests/Models/01_OneHidden.dnn",
+    "format": "CNTK v1.18",
+    "link":   "https://github.com/Microsoft/CNTK"
+  },
+  {
+    "type":   "cntk",
     "target": "v1/AlexNet.model",
     "source": "https://www.cntk.ai/Models/AlexNet/AlexNet.model",
     "format": "CNTK v1.14"
@@ -784,6 +797,20 @@
     "target": "v1/AlexNetBS.model",
     "source": "https://www.cntk.ai/Models/AlexNet/AlexNetBS.model",
     "format": "CNTK v1.15"
+  },
+  {
+    "type":   "cntk",
+    "target": "v1/cifar10.pretrained.cmf",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/Tutorials/ImageHandsOn/cifar10.pretrained.cmf",
+    "format": "CNTK v1.14",
+    "link":   "https://github.com/Microsoft/CNTK"
+  },
+  {
+    "type":   "cntk",
+    "target": "v1/cifar10.ResNet.cmf",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/Tutorials/ImageHandsOn/cifar10.ResNet.cmf",
+    "format": "CNTK v1.10",
+    "link":   "https://github.com/Microsoft/CNTK"
   },
   {
     "type":   "cntk",
@@ -804,6 +831,41 @@
     "source": "https://www.cntk.ai/Models/FRCN_Grocery/Fast-RCNN_grocery100.model",
     "format": "CNTK v1.15",
     "link":   "https://github.com/Microsoft/CNTK/blob/7c838d3b6c448004e5a06aa00c984a629f880416/PretrainedModels/download_model.py"
+  },
+  {
+    "type":   "cntk",
+    "target": "v1/ResNet20_CIFAR10_DataAug.dnn",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/Tests/UnitTests/NetworkTests/Models/ResNet20_CIFAR10_DataAug.dnn",
+    "format": "CNTK v1.18",
+    "link":   "https://github.com/Microsoft/CNTK"
+  },
+  {
+    "type":   "cntk",
+    "target": "v1/slu.forward.backward.cmf",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/Tutorials/SLUHandsOn/slu.forward.backward.cmf",
+    "format": "CNTK v1.14",
+    "link":   "https://github.com/Microsoft/CNTK"
+  },
+  {
+    "type":   "cntk",
+    "target": "v1/slu.forward.cmf",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/Tutorials/SLUHandsOn/slu.forward.cmf",
+    "format": "CNTK v1.14",
+    "link":   "https://github.com/Microsoft/CNTK"
+  },
+  {
+    "type":   "cntk",
+    "target": "v1/slu.forward.nobn.cmf",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/Tutorials/SLUHandsOn/slu.forward.nobn.cmf",
+    "format": "CNTK v1.14",
+    "link":   "https://github.com/Microsoft/CNTK"
+  },
+  {
+    "type":   "cntk",
+    "target": "v1/slu.forward.lookahead.cmf",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/Tutorials/SLUHandsOn/slu.forward.lookahead.cmf",
+    "format": "CNTK v1.14",
+    "link":   "https://github.com/Microsoft/CNTK"
   },
   {
     "type":   "cntk",
@@ -851,6 +913,20 @@
     "source": "https://www.cntk.ai/Models/SuperResolution/DRNN.model",
     "format": "CNTK v2",
     "link":   "https://cntk.ai/pythondocs/CNTK_302A_Evaluation_of_Pretrained_Super-resolution_Models.html"
+  },
+  {
+    "type":   "cntk",
+    "target": "v2/HotailorPOC2.model",
+    "source": "https://privdatastorage.blob.core.windows.net/github/cntk-python-web-service-on-azure/HotailorPOC2.model",
+    "format": "CNTK v2",
+    "link":   "https://github.com/karolzak/cntk-python-web-service-on-azure"
+  },
+  {
+    "type":   "cntk",
+    "target": "v2/initial_policy_network.dnn",
+    "source": "https://raw.githubusercontent.com/Microsoft/CNTK/master/bindings/python/cntk/contrib/deeprl/tests/data/initial_policy_network.dnn",
+    "format": "CNTK v2",
+    "link":   "https://github.com/Microsoft/CNTK"
   },
   {
     "type":   "cntk",
@@ -1506,6 +1582,55 @@
     "type":   "coreml",
     "target": "VisualSentimentCNN.mlmodel",
     "source": "https://s3-us-west-2.amazonaws.com/coreml-models/VisualSentimentCNN.mlmodel"
+  },
+  {
+    "type":   "coreml",
+    "target": "wave.mlmodel",
+    "source": "https://raw.githubusercontent.com/UnusualWolf/coreML/master/StyleArt-master/StyleArt/CoreMLModels/wave.mlmodel",
+    "format": "CoreML v1",
+    "link":   "https://github.com/UnusualWolf/coreML"
+  },
+  {
+    "type":   "darknet",
+    "target": "alexnet.cfg,alexnet.weights",
+    "source": "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/alexnet.cfg,https://pjreddie.com/media/files/alexnet.weights",
+    "format": "Darknet",
+    "link":   "https://pjreddie.com/darknet/imagenet"
+  },
+  {
+    "type":   "darknet",
+    "target": "darknet53_448.cfg,darknet53_448.weights",
+    "source": "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/darknet53_448.cfg,https://pjreddie.com/media/files/darknet53_448.weights",
+    "format": "Darknet",
+    "link":   "https://pjreddie.com/darknet/imagenet"
+  },
+  {
+    "type":   "darknet",
+    "target": "go.cfg,go.weights",
+    "source": "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/go.cfg,https://pjreddie.com/media/files/go.weights",
+    "format": "Darknet",
+    "link":   "https://pjreddie.com/darknet/darkgo-go-in-darknet"
+  },
+  {
+    "type":   "darknet",
+    "target": "jnet-conv.cfg,jnet-conv.weights",
+    "source": "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-spp.cfg,https://pjreddie.com/media/files/yolov3-spp.weights",
+    "format": "Darknet",
+    "link":   "https://pjreddie.com/darknet/nightmare"
+  },
+  {
+    "type":   "darknet",
+    "target": "grrm.cfg,grrm.weights",
+    "source": "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/rnn.cfg,https://pjreddie.com/media/files/grrm.weights",
+    "format": "Darknet",
+    "link":   "https://pjreddie.com/darknet/rnns-in-darknet"
+  },
+  {
+    "type":   "darknet",
+    "target": "yolov3-spp.cfg,yolov3-spp.weights",
+    "source": "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/jnet-conv.cfg,https://pjreddie.com/media/files/jnet-conv.weights",
+    "format": "Darknet",
+    "link":   "https://pjreddie.com/darknet/yolo"
   },
   {
     "type":   "keras",
@@ -2325,16 +2450,72 @@
     "source": "https://s3.amazonaws.com/download.onnx/models/opset_9/zfnet512.tar.gz[zfnet512/model.onnx]"
   },
   {
-    "type":   "onnx",
-    "target": "1D_lstm.prototxt",
-    "source": "https://raw.githubusercontent.com/cwlacewe/netscope/master/presets/1D_lstm.prototxt",
-    "format": "Caffe v2",
-    "link":   "https://github.com/cwlacewe/netscope"
-  },
-  {
     "type":   "openvino",
     "target": "age-gender-recognition-retail-0013.xml",
     "source": "https://download.01.org/openvinotoolkit/2018_R3/open_model_zoo/age-gender-recognition-retail-0013/FP32/age-gender-recognition-retail-0013.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "emotions-recognition-retail-0003.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/emotions-recognition-retail-0003/FP32/emotions-recognition-retail-0003.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "face-detection-adas-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-detection-adas-0001/FP32/face-detection-adas-0001.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "face-detection-retail-0004.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-detection-retail-0004/FP32/face-detection-retail-0004.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "face-person-detection-retail-0002.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-person-detection-retail-0002/FP32/face-person-detection-retail-0002.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "face-reidentification-retail-0071.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-reidentification-retail-0071/FP32/face-reidentification-retail-0071.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "face-reidentification-retail-0071.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-reidentification-retail-0071/FP32/face-reidentification-retail-0071.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "facial-landmarks-35-adas-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/facial-landmarks-35-adas-0001/FP32/facial-landmarks-35-adas-0001.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "head-pose-estimation-adas-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "human-pose-estimation-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/human-pose-estimation-0001/FP32/human-pose-estimation-0001.xml",
     "format": "OpenVINO IR",
     "link":   "https://download.01.org/openvinotoolkit"
   },
@@ -2361,15 +2542,8 @@
   },
   {
     "type":   "openvino",
-    "target": "rm_cnn4a.xml",
-    "source": "https://download.01.org/openvinotoolkit/2018_R3/models_contrib/GNA/rm_cnn4a_smbr/rm_cnn4a.xml",
-    "format": "OpenVINO IR",
-    "link":   "https://download.01.org/openvinotoolkit"
-  },
-  {
-    "type":   "openvino",
-    "target": "wsj_dnn5b.xml",
-    "source": "https://download.01.org/openvinotoolkit/2018_R3/models_contrib/GNA/wsj_dnn5b_smbr/wsj_dnn5b.xml",
+    "target": "landmarks-regression-retail-0009.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml",
     "format": "OpenVINO IR",
     "link":   "https://download.01.org/openvinotoolkit"
   },
@@ -2382,8 +2556,141 @@
   },
   {
     "type":   "openvino",
+    "target": "license-plate-recognition-barrier-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/license-plate-recognition-barrier-0001/FP32/license-plate-recognition-barrier-0001.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "pedestrian-and-vehicle-detector-adas-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/pedestrian-and-vehicle-detector-adas-0001/FP32/pedestrian-and-vehicle-detector-adas-0001.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "pedestrian-detection-adas-0002.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/pedestrian-detection-adas-0002/FP32/pedestrian-detection-adas-0002.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "person-attributes-recognition-crossroad-0031.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/person-attributes-recognition-crossroad-0031/FP32/person-attributes-recognition-crossroad-0031.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "person-detection-action-recognition-0003.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/person-detection-action-recognition-0003/FP32/person-detection-action-recognition-0003.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "person-detection-retail-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/person-detection-retail-0001/FP32/person-detection-retail-0001.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "person-detection-retail-0013.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/person-detection-retail-0013/FP32/person-detection-retail-0013.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "person-reidentification-retail-0031.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/person-reidentification-retail-0031/FP32/person-reidentification-retail-0031.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "person-reidentification-retail-0076.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/person-reidentification-retail-0076/FP32/person-reidentification-retail-0076.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "person-reidentification-retail-0079.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/person-reidentification-retail-0079/FP32/person-reidentification-retail-0079.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "person-vehicle-bike-detection-crossroad-0078.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/person-vehicle-bike-detection-crossroad-0078/FP32/person-vehicle-bike-detection-crossroad-0078.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "road-segmentation-adas-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/road-segmentation-adas-0001/FP32/road-segmentation-adas-0001.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "rm_cnn4a.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R3/models_contrib/GNA/rm_cnn4a_smbr/rm_cnn4a.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
     "target": "rm_lstm4f.xml",
     "source": "https://download.01.org/openvinotoolkit/2018_R3/models_contrib/GNA/rm_lstm4f/rm_lstm4f.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "semantic-segmentation-adas-0001.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/semantic-segmentation-adas-0001/FP32/semantic-segmentation-adas-0001.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "single-image-super-resolution-0034.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/single-image-super-resolution-0034/FP32/single-image-super-resolution-0034.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "vehicle-attributes-recognition-barrier-0039.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/vehicle-attributes-recognition-barrier-0039/FP32/vehicle-attributes-recognition-barrier-0039.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "vehicle-detection-adas-0002.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/vehicle-detection-adas-0002/FP32/vehicle-detection-adas-0002.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "vehicle-license-plate-detection-barrier-0106.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/vehicle-license-plate-detection-barrier-0106/FP32/vehicle-license-plate-detection-barrier-0106.xml",
+    "format": "OpenVINO IR",
+    "link":   "https://download.01.org/openvinotoolkit"
+  },
+  {
+    "type":   "openvino",
+    "target": "wsj_dnn5b.xml",
+    "source": "https://download.01.org/openvinotoolkit/2018_R3/models_contrib/GNA/wsj_dnn5b_smbr/wsj_dnn5b.xml",
     "format": "OpenVINO IR",
     "link":   "https://download.01.org/openvinotoolkit"
   },
@@ -2582,9 +2889,23 @@
   {
     "type":   "sklearn",
     "target": "forest_iris_DecisionTreeClassifier.pkl",
-    "source": "https://github.com/lutzroeder/netron/files/2592356/forest_iris_models.zip[forest_iris_DecisionTreeClassifier.pkl     ]",
+    "source": "https://github.com/lutzroeder/netron/files/2592356/forest_iris_models.zip[forest_iris_DecisionTreeClassifier.pkl]",
     "format": "scikit-learn 0.19.2",
     "link":   "https://github.com/lutzroeder/netron/issues/182"
+  },
+  {
+    "type":   "sklearn",
+    "target": "pima.xgboost.joblib.pkl",
+    "source": "https://github.com/lutzroeder/netron/files/2656501/pima.xgboost.joblib.pkl.zip[pima.xgboost.joblib.pkl]",
+    "format": "scikit-learn",
+    "link":   "https://github.com/lutzroeder/netron/issues/182"
+  },
+  {
+    "type":   "sklearn",
+    "target": "resnet50.pkl",
+    "source": "https://s3.amazonaws.com/lasagne/recipes/pretrained/imagenet/resnet50.pkl",
+    "error":  "Root object has no type.",
+    "link":   "https://github.com/kundan2510/resnet50-feature-extractor"
   },
   {
     "type":   "sklearn",
@@ -2598,6 +2919,13 @@
     "target": "svc.pkl",
     "source": "https://github.com/lutzroeder/netron/files/2592359/svc.zip[svc.pkl]",
     "format": "scikit-learn 0.19.1",
+    "link":   "https://github.com/lutzroeder/netron/issues/182"
+  },
+  {
+    "type":   "sklearn",
+    "target": "wiki-aa-mlp.pkl",
+    "source": "https://github.com/lutzroeder/netron/files/2674319/wiki-aa-mlp.pkl.zip[wiki-aa-mlp.pkl]",
+    "format": "scikit-learn 0.19.0",
     "link":   "https://github.com/lutzroeder/netron/issues/182"
   },
   {
@@ -2692,6 +3020,13 @@
     "target": "faster_rcnn_resnet50_lowproposals_coco_2017_11_08_saved_model.pb",
     "source": "http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet50_lowproposals_coco_2017_11_08.tar.gz[faster_rcnn_resnet50_lowproposals_coco_2017_11_08/saved_model/saved_model.pb]",
     "format": "TensorFlow Saved Model v1"
+  },
+  {
+    "type":   "tf",
+    "target": "graphdef_saved_model.pb",
+    "source": "https://github.com/lutzroeder/netron/files/2528688/saved_model.zip[saved_model.pb]",
+    "format": "TensorFlow Graph",
+    "link":   "https://github.com/lutzroeder/netron/issues/171"
   },
   {
     "type":   "tf",
@@ -3003,7 +3338,7 @@
     "target": "densenet.tflite",
     "source": "https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/densenet_2018_04_27.tgz[densenet/densenet.tflite]"
   },
-  {
+    {
     "type":   "tflite",
     "target": "inception_resnet_v2.tflite",
     "source": "https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/inception_resnet_v2_2018_04_27.tgz[./inception_resnet_v2.tflite]"
@@ -3182,10 +3517,31 @@
   },
   {
     "type":   "torch",
+    "target": "bedrooms_4_net_G.t7",
+    "source": "https://github.com/soumith/lfs/raw/master/dcgan.torch/bedrooms_4_net_G.t7",
+    "format": "Torch v7",
+    "link":   "https://github.com/soumith/dcgan.torch"
+  },
+  {
+    "type":   "torch",
+    "target": "celebA_25_net_G.t7",
+    "source": "https://github.com/soumith/lfs/raw/master/dcgan.torch/celebA_25_net_G.t7",
+    "format": "Torch v7",
+    "link":   "https://github.com/soumith/dcgan.torch"
+  },
+  {
+    "type":   "torch",
     "target": "completionnet_places2.t7",
     "source": "http://hi.cs.waseda.ac.jp/~iizuka/data/completionnet_places2.t7",
     "format": "Torch v7",
     "link":   "https://github.com/yangwangx/inpainting_glcic_pytorch"
+  },
+  {
+    "type":   "torch",
+    "target": "composition_vii.t7",
+    "source": "https://cs.stanford.edu/people/jcjohns/fast-neural-style/models/eccv16/composition_vii.t7",
+    "format": "Torch v7",
+    "link":   "https://github.com/jcjohnson/fast-neural-style"
   },
   {
     "type":   "torch",
@@ -3196,6 +3552,20 @@
   },
   {
     "type":   "torch",
+    "target": "densenet-121.t7",
+    "source": "https://drive.google.com/uc?export=download&id=0B8ReS-sYUS-HWFViYlVlZk9sdHc",
+    "format": "Torch v7",
+    "link":   "https://github.com/liuzhuang13/DenseNet"
+  },
+  {
+    "type":   "torch",
+    "target": "densenet_cosine_264_k48.t7",
+    "source": "https://drive.google.com/uc?export=download&id=0By1NwtA2JPGzcnFDSE1HQVh4c0k",
+    "format": "Torch v7",
+    "link":   "https://github.com/liuzhuang13/DenseNet"
+  },
+  {
+    "type":   "torch",
     "target": "facades_photo2label.t7",
     "source": "https://people.eecs.berkeley.edu/~taesung_park/CycleGAN/models/facades_photo2label.t7",
     "format": "Torch v7",
@@ -3203,10 +3573,38 @@
   },
   {
     "type":   "torch",
+    "target": "Helen_8x.t7",
+    "source": "https://raw.githubusercontent.com/tyshiwo/FSRNet/master/models/Helen_8x.t7",
+    "format": "Torch v7",
+    "link":   "https://github.com/tyshiwo/FSRNet"
+  },
+  {
+    "type":   "torch",
     "target": "inception.t7",
     "source": "https://raw.githubusercontent.com/cpra/fer-cnn-sota/master/models/inception.t7",
     "format": "Torch v7",
     "link":   "https://github.com/cpra/fer-cnn-sota"
+  },
+  {
+    "type":   "torch",
+    "target": "openface.nn4.small2.v1.t7",
+    "source": "https://raw.githubusercontent.com/pyannote/pyannote-data/master/openface.nn4.small2.v1.t7",
+    "format": "Torch v7",
+    "link":   "https://github.com/pyannote/pyannote-data"
+  },
+  {
+    "type":   "torch",
+    "target": "portrait_584_net_D_cpu.t7",
+    "source": "https://drive.google.com/uc?export=download&id=1KJMUW0sOZ3CRjshCEsJPd76DN4GT6Otv",
+    "format": "Torch v7",
+    "link":   "https://github.com/robbiebarrat/art-DCGAN/issues/3"
+  },
+  {
+    "type":   "torch",
+    "target": "RefineNet.t7",
+    "source": "http://www.visionlab.cs.hku.hk/data/TOM-Net/TOM-Net_model.tgz[TOM-Net_model/RefineNet.t7]",
+    "format": "Torch v7",
+    "link":   "https://github.com/guanyingc/TOM-Net"
   },
   {
     "type":   "torch",
@@ -3220,21 +3618,35 @@
     "target": "resnet-18.t7",
     "source": "https://d2j0dndfm35trm.cloudfront.net/resnet-18.t7",
     "format": "Torch v7",
-    "link":   "https://github.com/facebook/fb.resnet.torch/tree/master/pretrained"
+    "link":   "https://github.com/facebook/fb.resnet.torch"
   },
   {
     "type":   "torch",
     "target": "resnet-34.t7",
     "source": "https://d2j0dndfm35trm.cloudfront.net/resnet-34.t7",
     "format": "Torch v7",
-    "link":   "https://github.com/facebook/fb.resnet.torch/tree/master/pretrained"
+    "link":   "https://github.com/facebook/fb.resnet.torch"
   },
   {
     "type":   "torch",
     "target": "resnet-50.t7",
     "source": "https://d2j0dndfm35trm.cloudfront.net/resnet-50.t7",
     "format": "Torch v7",
-    "link":   "https://github.com/facebook/fb.resnet.torch/tree/master/pretrained"
+    "link":   "https://github.com/facebook/fb.resnet.torch"
+  },
+  {
+    "type":   "torch",
+    "target": "resnet-200.t7",
+    "source": "https://d2j0dndfm35trm.cloudfront.net/resnet-200.t7",
+    "format": "Torch v7",
+    "link":   "https://github.com/facebook/fb.resnet.torch"
+  },
+  {
+    "type":   "torch",
+    "target": "resnext_101_64x4d.t7",
+    "source": "https://s3.amazonaws.com/resnext/imagenet_models/resnext_101_64x4d.t7",
+    "format": "Torch v7",
+    "link":   "https://github.com/facebookresearch/ResNeXt"
   },
   {
     "type":   "torch",
@@ -3270,5 +3682,12 @@
     "source": "https://raw.githubusercontent.com/cpra/fer-cnn-sota/master/models/vgg.t7",
     "format": "Torch v7",
     "link":   "https://github.com/cpra/fer-cnn-sota"
+  },
+ {
+    "type":   "torch",
+    "target": "vgg16.t7",
+    "source": "https://cs.stanford.edu/people/jcjohns/fast-neural-style/models/vgg16.t7",
+    "format": "Torch v7",
+    "link":   "https://github.com/jcjohnson/fast-neural-style"
   }
 ]
