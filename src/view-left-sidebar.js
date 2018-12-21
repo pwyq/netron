@@ -80,6 +80,7 @@ class GroupModeSidebar {
         this._endOn = false;
         this._startNode = null;
         this._endNode = null;
+        this._loadedConfigName = loadedConfigName;
 
         this._contentElement = document.createElement('div');
         this._contentElement.setAttribute('class', 'left-sidebar-view-group');
@@ -90,23 +91,23 @@ class GroupModeSidebar {
             this.highlightHandler(e.target);
         });
 
-        var loadConfigName = document.createElement('div');
-        loadConfigName.setAttribute('class', 'left-sidebar-name');
-        loadConfigName.innerHTML = 'Loaded Configuration: ';
-        var loadConfigNameText = document.createElement('div');
-        loadConfigNameText.setAttribute('class', 'left-sidebar-value');
-        loadConfigNameText.innerHTML = loadedConfigName;
-        loadConfigName.appendChild(loadConfigNameText);
-        
+        this._loadConfigName = document.createElement('div');
+        this._loadConfigName.setAttribute('class', 'left-sidebar-name');
+        this._loadConfigName.innerHTML = 'Loaded Configuration: ';
+        this._loadConfigNameText = document.createElement('div');
+        this._loadConfigNameText.setAttribute('class', 'left-sidebar-value');
+        this._loadConfigNameText.innerHTML = this._loadedConfigName;
+        this._loadConfigName.appendChild(this._loadConfigNameText);
+
         this._addButtons();
-        
+
         var divider = document.createElement('div');
         divider.setAttribute('style', 'margin-bottom: 80px');
         
         this._topInfoElement = document.createElement('div');
         this._topInfoElement.setAttribute('id', 'left-sidebar-top-section')
         this._topInfoElement.setAttribute('style', 'position: fixed; top: 50px; background: #00cc00; border-radius: 15px; padding: 10px');
-        this._topInfoElement.appendChild(loadConfigName);
+        this._topInfoElement.appendChild(this._loadConfigName);
         this._topInfoElement.appendChild(this._buttonsElement);
         this._contentElement.appendChild(this._topInfoElement);
         this._contentElement.appendChild(divider);
@@ -319,7 +320,6 @@ class GroupModeSidebar {
                 }
                 else {
                     t.selected = false;
-                    this._selectedSubgraph = null;
                     this.highlightOff(target);
                 }
             }
@@ -454,6 +454,16 @@ class GroupModeSidebar {
         Helper methods
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
+    updateConfigName(config) {
+        this._loadConfigNameText.innerHTML = config;
+    }
+
+    showTop() {
+        if (this._topInfoElement) {
+            this._topInfoElement.style.visibility = 'visible';
+        }
+    }
+
     validate(name, id) {
         for (var i = 0; i < this._subgraphs.length; i++) {
             if (name == this._subgraphs[i].subgraphName) {
@@ -489,14 +499,15 @@ class GroupModeSidebar {
         target.style.background = "#e6e6ff";
         //   target.style.color = "#ffffff";
         this.nodeButtonsOn();
-        this._topInfoElement.style.visibility = 'visible';
     }
 
     highlightOff(target) {
         target.style.background = document.getElementById('sidebar').style.backgroundColor;
         target.style.color = document.getElementById('sidebar').style.color;
-        this.clean();
         this.nodeButtonsOff();
+        this._selectedSubgraph = null;
+        this._startNode = null;
+        this._endNode = null;
     }
 
     findObjectIndex(array, subgraphID) {
@@ -523,6 +534,12 @@ class GroupModeSidebar {
     }
 
     clean() {
+        if (this._selectedSubgraph) {
+            // turn off highlight
+            var tmpID = 'list-' + this._selectedSubgraph.id;
+            var x = document.getElementById(tmpID);
+            this.highlightOff(x);
+        }
         this._topInfoElement.style.visibility = 'hidden';
         this.nodeButtonsOff();
         this._selectedSubgraph = null;

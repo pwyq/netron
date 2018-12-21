@@ -207,7 +207,6 @@ view.View = class {
 
     groupNodeMode() {
         if (this._activeGraph) {
-            // TODO: optimize file passing after vSKY-1438
             var outputFileName = this._inputFileBaseName + '_subgraph_grouping.json';
             var filePath = this.getPath('user_json/graph_grouping_json', outputFileName);
             var dfAttrFileName = this._modelName + '_default_attributes.json';
@@ -215,16 +214,24 @@ view.View = class {
             var cusFileName = this._inputFileBaseName + '_custom_attributes.json';
             var cusPath = this.getPath('user_json/custom_json', cusFileName);
 
-            var view = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, modelPath, cusPath, this._graph, this._loadedConfigFile);
-            this._eventEmitter.on('share-node-id', (data) => {
-                view.appendNode(data)
-            });
-            this._eventEmitter.on('clean-group-node-mode', (data) => {
-                if (data) {
-                    view.clean();
+            if (!this._leftSidebarView) {
+                this._leftSidebarView = new GroupModeSidebar(this._host, this._inputFileBaseName, filePath, modelPath, cusPath, this._graph, this._loadedConfigFile);
+                this._eventEmitter.on('share-node-id', (data) => {
+                    this._leftSidebarView.appendNode(data);
+                });
+                this._eventEmitter.on('clean-group-node-mode', (data) => {
+                    if (data) {
+                        this._leftSidebarView.clean();
+                    }
+                });
+            }
+            else {
+                this._leftSidebarView.showTop();
+                if (this._loadedConfigFile) {
+                    this._leftSidebarView.updateConfigName(this._loadedConfigFile);
                 }
-            });
-            this._leftSidebar.open(view.content, 'Group Nodes Mode', 500);
+            }
+            this._leftSidebar.open(this._leftSidebarView.content, 'Group Nodes Mode', 500);
         }
     }
 

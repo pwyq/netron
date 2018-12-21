@@ -63,6 +63,6 @@ __Note Following is added by Yanqing__
 ## TODO
 - Add NXP copyright
 - Test on Linux, macOS
-- Modify `view-browser.js` (webpage client)
+- Modify `view-browser.js` (web client)
 - Test white-space path on export txt/json function
 - Modify all attributes within the same group at the same time
